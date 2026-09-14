@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useLessonStore } from '@/lib/store';
 
 interface LessonHeaderProps {
@@ -29,7 +30,13 @@ export default function LessonHeader({
   return (
     <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-black/5 bg-brand-dark px-4 py-3 text-white">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-lg font-bold">한</div>
+        <Link
+          href="/courses"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-lg font-bold"
+          title="코스 목록으로"
+        >
+          한
+        </Link>
         <div>
           <p className="text-sm font-semibold leading-tight">
             한글케어 <span className="text-brand-light/80">HangulCare</span>
@@ -39,6 +46,12 @@ export default function LessonHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        <Link
+          href="/courses"
+          className="hidden rounded-lg border border-white/20 px-2.5 py-1 text-xs sm:inline-block"
+        >
+          ← 코스 목록
+        </Link>
         <button
           type="button"
           onClick={onPrev}

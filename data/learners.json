@@ -1,0 +1,7 @@
+[
+  { "id": "l1", "name": "Maria Santos", "nationality": "필리핀", "level": "TOPIK 2급", "wordsPracticed": 128, "avgAccuracy": 82, "lastActiveKo": "오늘" },
+  { "id": "l2", "name": "Nguyen Thi Lan", "nationality": "베트남", "level": "TOPIK 1급", "wordsPracticed": 64, "avgAccuracy": 74, "lastActiveKo": "1일 전" },
+  { "id": "l3", "name": "Bat-Erdene", "nationality": "몽골", "level": "TOPIK 2급", "wordsPracticed": 201, "avgAccuracy": 88, "lastActiveKo": "오늘" },
+  { "id": "l4", "name": "Sari Wulandari", "nationality": "인도네시아", "level": "TOPIK 1급", "wordsPracticed": 37, "avgAccuracy": 65, "lastActiveKo": "3일 전" },
+  { "id": "l5", "name": "Dawa Sherpa", "nationality": "네팔", "level": "TOPIK 2급", "wordsPracticed": 95, "avgAccuracy": 79, "lastActiveKo": "2일 전" }
+]

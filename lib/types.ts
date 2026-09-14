@@ -18,6 +18,9 @@ export interface Sentence {
 
 export interface Situation {
   id: string;
+  /** 진도관리(코스 선택) 화면 메뉴에 쓰는 짧은 이름. titleKo/En은 상황 설명 문장이라 메뉴에는 부적합. */
+  menuLabelKo: string;
+  menuLabelEn: string;
   titleKo: string;
   titleEn: string;
   descriptionKo: string;
@@ -65,3 +68,14 @@ export interface ChatMessage {
 }
 
 export type Lang = 'ko' | 'en';
+
+/** 관리자 진도관리 화면용 학습자 요약. 실제 다중 사용자 백엔드가 없어 목데이터다. */
+export interface Learner {
+  id: string;
+  name: string;
+  nationality: string;
+  level: string;
+  wordsPracticed: number;
+  avgAccuracy: number;
+  lastActiveKo: string;
+}

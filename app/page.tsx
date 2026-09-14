@@ -1,11 +1,26 @@
-import { redirect } from 'next/navigation';
-import { getUnits } from '@/lib/content';
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/auth';
 
 export default function HomePage() {
-  const [firstUnit] = getUnits();
-  const firstSituation = firstUnit?.situations[0];
-  if (!firstUnit || !firstSituation) {
-    return <p className="p-6">학습 콘텐츠가 없습니다.</p>;
-  }
-  redirect(`/learn/${firstUnit.id}/${firstSituation.id}`);
+  const router = useRouter();
+  const account = useAuthStore((s) => s.account);
+  const hydrated = useAuthStore((s) => s.hydrated);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!account) {
+      router.replace('/login');
+    } else {
+      router.replace(account.role === 'admin' ? '/admin' : '/courses');
+    }
+  }, [hydrated, account, router]);
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-surface text-sm text-gray-400">
+      불러오는 중…
+    </div>
+  );
 }

@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { ChatMessage, FeedbackItem, Lang, ScoreResult } from './types';
+import { safeLocalStorage } from './storage';
 
 // 학습 사이클 상태머신. docs/PROGRAM_DESIGN.md §3.3 참고:
 // 상황제시 -> 용어학습 -> 아바타시범 -> 녹음중 -> 채점중 -> 결과표시
@@ -88,23 +89,7 @@ export const useStatsStore = create<StatsState>()(
     }),
     {
       name: 'hangulcare-stats',
-      storage: createJSONStorage(() => {
-        try {
-          return localStorage;
-        } catch {
-          // 접근 불가(프라이빗 모드 등) 시 메모리로 대체해 크래시를 막는다.
-          const memory = new Map<string, string>();
-          return {
-            getItem: (key: string) => memory.get(key) ?? null,
-            setItem: (key: string, value: string) => {
-              memory.set(key, value);
-            },
-            removeItem: (key: string) => {
-              memory.delete(key);
-            },
-          };
-        }
-      }),
+      storage: createJSONStorage(safeLocalStorage),
     },
   ),
 );

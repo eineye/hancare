@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getSituation } from '@/lib/content';
 import LessonScreen from '@/components/LessonScreen';
+import AuthGuard from '@/components/AuthGuard';
 
 export default async function LearnPage({
   params,
@@ -11,5 +12,9 @@ export default async function LearnPage({
   const found = getSituation(unitId, situationId);
   if (!found) notFound();
 
-  return <LessonScreen unit={found.unit} situation={found.situation} />;
+  return (
+    <AuthGuard role="any">
+      <LessonScreen unit={found.unit} situation={found.situation} />
+    </AuthGuard>
+  );
 }
