@@ -11,11 +11,19 @@ import UserStatsPanel from './UserStatsPanel';
 import PronunciationScore from './PronunciationScore';
 import AIFeedback from './AIFeedback';
 import ChatPanel, { type ChatPanelHandle } from './ChatPanel';
-import { findAdjacentSituation, unitProgress } from '@/lib/content';
 import { useLessonStore } from '@/lib/store';
 import type { Situation, Unit } from '@/lib/types';
 
-export default function LessonScreen({ unit, situation }: { unit: Unit; situation: Situation }) {
+interface LessonScreenProps {
+  unit: Unit;
+  situation: Situation;
+  /** 이전/다음 상황 경로. 서버(app/learn/.../page.tsx)에서 콘텐츠를 읽어 미리 계산해 넘겨준다. */
+  prevHref?: string;
+  nextHref?: string;
+  progress: { current: number; total: number };
+}
+
+export default function LessonScreen({ unit, situation, prevHref, nextHref, progress }: LessonScreenProps) {
   const router = useRouter();
   const chatRef = useRef<ChatPanelHandle>(null);
 
@@ -30,11 +38,10 @@ export default function LessonScreen({ unit, situation }: { unit: Unit; situatio
   }, [situation.id]);
 
   const sentence = situation.sentences[Math.min(sentenceIndex, situation.sentences.length - 1)];
-  const progress = unitProgress(unit.id, situation.id);
 
   function goToSituation(direction: 1 | -1) {
-    const target = findAdjacentSituation(unit.id, situation.id, direction);
-    if (target) router.push(`/learn/${target.unitId}/${target.situationId}`);
+    const href = direction === 1 ? nextHref : prevHref;
+    if (href) router.push(href);
   }
 
   function handleStartConversation() {
@@ -57,8 +64,8 @@ export default function LessonScreen({ unit, situation }: { unit: Unit; situatio
         total={progress.total}
         onPrev={() => goToSituation(-1)}
         onNext={() => goToSituation(1)}
-        canPrev={!!findAdjacentSituation(unit.id, situation.id, -1)}
-        canNext={!!findAdjacentSituation(unit.id, situation.id, 1)}
+        canPrev={!!prevHref}
+        canNext={!!nextHref}
       />
 
       <main className="mx-auto grid max-w-6xl grid-cols-1 gap-4 p-4 lg:grid-cols-[1fr_320px]">

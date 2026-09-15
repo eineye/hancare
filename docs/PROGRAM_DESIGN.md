@@ -427,3 +427,14 @@ hancare/
 라우트 보호는 `components/AuthGuard.tsx`가 클라이언트에서 `localStorage` 인증 상태를
 확인하는 방식으로만 이뤄진다(서버 세션 검증 아님) — UX 흐름 검증용이며, 실제 접근
 제어는 서버 인증 도입 시 별도로 구현해야 한다.
+
+### 실습내용(콘텐츠) 외부 파일화
+
+기초한글·실습한글 콘텐츠는 `data/`(웹팩 번들에 정적으로 포함되는 위치)가 아니라
+저장소 루트의 `content/*.json`에 두고, `lib/content.ts`가 `node:fs/promises`로
+**매 요청마다 다시 읽는다**. `/courses`, `/admin`, `/learn/...` 라우트는
+`export const dynamic = 'force-dynamic'`로 정적 프리렌더링을 꺼서, 콘텐츠 파일을
+바꾸면 재빌드·재배포 없이 다음 요청부터 바로 반영되게 했다(§7 로드맵의 "운영 중
+콘텐츠 수시 갱신" 요구사항 대응). 스키마와 편집 방법은 `content/README.md` 참고.
+이 방식은 파일시스템에 접근 가능한 자체 호스팅(Node 서버) 전제이며, 향후 §4 Content
+Service로 옮겨갈 때는 이 파일들을 그대로 시드 데이터로 재사용할 수 있다.

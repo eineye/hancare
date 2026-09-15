@@ -34,6 +34,8 @@ export interface Situation {
 
 export interface Unit {
   id: string;
+  /** 진도관리 화면에서 이 유닛을 기초한글/실습한글 중 어디에 넣을지 결정한다. */
+  category: 'basic' | 'practice';
   titleKo: string;
   titleEn: string;
   situations: Situation[];
