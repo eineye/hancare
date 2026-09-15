@@ -4,7 +4,7 @@
 // - 그 외 요청(HTML 페이지, API)은 네트워크 우선(network-first) 후 캐시 폴백
 // 오프라인에서도 마지막으로 방문한 학습 화면을 다시 열 수 있게 하는 것이 목적이다.
 
-const CACHE_NAME = 'hangulcare-v1';
+const CACHE_NAME = 'hangulcare-v2';
 const APP_SHELL = ['/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
