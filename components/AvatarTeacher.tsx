@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useLessonStore } from '@/lib/store';
 import { speak } from '@/lib/speech';
+import Avatar2D from './Avatar2D';
 import type { Sentence } from '@/lib/types';
 
 const STATE_LABEL: Record<string, string> = {
@@ -50,18 +51,13 @@ export default function AvatarTeacher({
         <span className="rounded-full bg-white/15 px-2 py-0.5 text-xs">{STATE_LABEL[avatarState]}</span>
       </div>
 
-      <div className="flex aspect-[4/3] items-center justify-center rounded-xl bg-brand-dark/40">
-        <div className={`flex flex-col items-center gap-3 transition-transform ${closeup ? 'scale-125' : ''}`}>
-          <div className="flex gap-4">
-            <span className="h-2.5 w-2.5 rounded-full bg-white" />
-            <span className="h-2.5 w-2.5 rounded-full bg-white" />
-          </div>
-          <div
-            className={`h-2 w-8 rounded-full bg-white/90 ${avatarState === 'speaking' ? 'animate-talk' : ''}`}
-            aria-hidden
-          />
-        </div>
+      <div className="aspect-[4/3] overflow-hidden rounded-xl bg-brand-dark/40">
+        <Avatar2D state={avatarState} closeup={closeup} />
       </div>
+      <p className="mt-1 text-[10px] text-white/50">
+        * 실제 발음 분석이 아닌, 말하는 동안 일정한 리듬으로 음소 그룹별 입모양 중
+        하나를 무작위로 보여주는 근사치입니다.
+      </p>
 
       <div className="mt-3 rounded-lg bg-white/10 p-3 text-sm">
         <p className="font-medium">{sentence.textKo}</p>
