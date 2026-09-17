@@ -139,12 +139,9 @@
 
   .avatarCard { background: var(--brand); color: #fff; border-radius: 16px; padding: 14px; }
   .avatarFace { aspect-ratio: 4/3; border-radius: 12px; background: rgba(10,31,24,.4); display: flex; align-items: center; justify-content: center; }
-  .avatarFace .dots { display: flex; gap: 16px; }
-  .avatarFace .eye { width: 10px; height: 10px; border-radius: 999px; background: #fff; }
-  .avatarFace .mouth { width: 32px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.9); margin-top: 14px; }
-  .avatarFace.speaking .mouth { animation: talk .35s ease-in-out infinite; }
-  @keyframes talk { 0%,100%{transform:scaleY(.4);} 50%{transform:scaleY(1);} }
-  @media (prefers-reduced-motion: reduce) { .avatarFace.speaking .mouth { animation: none; } }
+  .avatarFace svg { width: 62%; height: 62%; }
+  @keyframes avatarPulse { 0%,100%{opacity:.25;} 50%{opacity:.6;} }
+  @media (prefers-reduced-motion: reduce) { .avatarFace svg circle[stroke] { animation: none !important; } }
 
   .scoreCircle { width: 64px; height: 64px; border-radius: 999px; border: 4px solid var(--brand); display: flex; align-items: center; justify-content: center; font-weight: 700; flex: none; }
   .barTrack { height: 6px; border-radius: 999px; background: var(--chip-bg); margin-top: 3px; }
@@ -388,6 +385,7 @@
       state.lesson = {
         unitId: found.unit.id, situationId: found.situation.id, lang: "ko",
         sentenceIndex: 0, recordingState: "idle", avatarState: "idle",
+        avatarMouthShape: "closed", avatarBlink: false,
         lastScore: null, lastFeedback: [], chatMessages: [], recErr: null
       };
     }
@@ -525,6 +523,103 @@
   }
   var App_nav = function (v) { navigate(v); };
 
+  /* ============================== AVATAR (2D 일러스트 + 음소 그룹별 입모양) ==============================
+     애니메이션 업계의 "음소 그룹별 입모양(viseme)" 관례를 참고해 직접 그린 오리지널
+     입모양 6종. Web Speech API는 음소 타이밍을 주지 않아 실제 발음을 분석해 고르는
+     것이 아니라, 말하는 동안(state.lesson.avatarState === "speaking") 스스로
+     일정한 리듬으로 하나씩 무작위로 순환하는 근사치다. 처음에는 TTS의 onBoundary
+     (단어 경계) 이벤트에 맞춰봤지만, 브라우저·음성 조합(특히 일부 한국어 음성)에
+     따라 이 이벤트가 아예 발생하지 않아 입이 안 움직이는 문제가 있었다. 그래서
+     이벤트에 기대지 않는 자체 타이머 방식으로 구현했다. */
+  var AVATAR_LIP = "#b6534e";
+  var AVATAR_CAVITY = "#5b211d";
+  var AVATAR_MOUTH_SHAPES = ["wideOpen", "round", "teeth", "smile", "fv"];
+  var avatarMouthTimerRunning = false;
+  var avatarBlinkTimerRunning = false;
+
+  function avatarMouthSvg(shape) {
+    switch (shape) {
+      case "wideOpen": // A, E, I 계열 — 크게 벌어진 입
+        return '<path d="M72 120 Q100 106 128 120 Q126 158 100 160 Q74 158 72 120 Z" fill="' + AVATAR_CAVITY + '" />' +
+          '<rect x="80" y="116" width="40" height="9" rx="3.5" fill="#fff" />';
+      case "round": // U, Q/W 계열 — 오므린 입
+        return '<ellipse cx="100" cy="132" rx="13" ry="15" fill="' + AVATAR_CAVITY + '" stroke="' + AVATAR_LIP + '" stroke-width="6" />';
+      case "teeth": // C,D,N,S,T,Th 계열 — 이가 살짝 보이는 좁은 입
+        return '<rect x="75" y="125" width="50" height="13" rx="6" fill="' + AVATAR_CAVITY + '" />' +
+          '<rect x="78" y="126" width="44" height="5" rx="2.5" fill="#fff" />';
+      case "smile": // E, G/K 계열 — 옆으로 넓게 웃는 입
+        return '<path d="M68 124 Q100 114 132 124 Q129 138 100 140 Q71 138 68 124 Z" fill="' + AVATAR_CAVITY + '" />' +
+          '<rect x="75" y="121" width="50" height="7" rx="3.5" fill="#fff" />';
+      case "fv": // F, V 계열 — 윗니가 아랫입술에 닿은 모양
+        return '<rect x="77" y="129" width="46" height="11" rx="5" fill="' + AVATAR_LIP + '" />' +
+          '<rect x="81" y="123" width="38" height="7" rx="3.5" fill="#fff" />';
+      case "closed":
+      default: // B, M, P 계열 — 다문 입
+        return '<rect x="78" y="130" width="44" height="7" rx="3.5" fill="' + AVATAR_LIP + '" />';
+    }
+  }
+
+  function avatarFaceSvg() {
+    var L = state.lesson;
+    if (!L) return "";
+    var listening = L.avatarState === "listening";
+    var speaking = L.avatarState === "speaking";
+    var eyeRy = L.avatarBlink ? 1.2 : 9;
+    return (
+      '<svg viewBox="0 0 200 200" role="img" aria-label="AI 아바타 선생님 얼굴">' +
+        (listening ? '<circle cx="100" cy="100" r="90" fill="none" stroke="#fff" stroke-width="3" opacity="0.5" style="animation:avatarPulse 1.6s ease-in-out infinite;" />' : "") +
+        '<circle cx="100" cy="100" r="80" fill="#faf7ef" />' +
+        '<ellipse cx="72" cy="88" rx="9" ry="' + eyeRy + '" fill="#0f2e24" style="transition:ry 90ms ease;" />' +
+        '<ellipse cx="128" cy="88" rx="9" ry="' + eyeRy + '" fill="#0f2e24" style="transition:ry 90ms ease;" />' +
+        avatarMouthSvg(speaking ? L.avatarMouthShape : "closed") +
+      "</svg>"
+    );
+  }
+
+  function renderAvatarFace() {
+    var box = document.getElementById("avatarFaceBox");
+    if (!box) return false;
+    box.innerHTML = avatarFaceSvg();
+    return true;
+  }
+
+  function tickAvatarMouth() {
+    var L = state.lesson;
+    if (!L || !renderAvatarFace()) { avatarMouthTimerRunning = false; return; }
+    if (L.avatarState !== "speaking") {
+      if (L.avatarMouthShape !== "closed") { L.avatarMouthShape = "closed"; renderAvatarFace(); }
+      setTimeout(tickAvatarMouth, 200);
+      return;
+    }
+    var prev = L.avatarMouthShape;
+    var next = AVATAR_MOUTH_SHAPES[Math.floor(Math.random() * AVATAR_MOUTH_SHAPES.length)];
+    if (next === prev) next = AVATAR_MOUTH_SHAPES[(AVATAR_MOUTH_SHAPES.indexOf(next) + 1) % AVATAR_MOUTH_SHAPES.length];
+    L.avatarMouthShape = next;
+    renderAvatarFace();
+    setTimeout(tickAvatarMouth, 110 + Math.random() * 130);
+  }
+  function ensureAvatarMouthTimer() {
+    if (avatarMouthTimerRunning) return;
+    avatarMouthTimerRunning = true;
+    tickAvatarMouth();
+  }
+
+  function tickAvatarBlink() {
+    var L = state.lesson;
+    if (!L || !renderAvatarFace()) { avatarBlinkTimerRunning = false; return; }
+    L.avatarBlink = true;
+    renderAvatarFace();
+    setTimeout(function () {
+      if (state.lesson) { state.lesson.avatarBlink = false; renderAvatarFace(); }
+    }, 130);
+    setTimeout(tickAvatarBlink, 2800 + Math.random() * 2000);
+  }
+  function ensureAvatarBlinkTimer() {
+    if (avatarBlinkTimerRunning) return;
+    avatarBlinkTimerRunning = true;
+    tickAvatarBlink();
+  }
+
   /* ============================== LESSON ============================== */
   function renderLesson() {
     var L = state.lesson;
@@ -614,7 +709,8 @@
         "</div>" +
         '<div class="stack">' +
           '<div class="avatarCard"><div style="display:flex;justify-content:space-between;"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 아바타 선생님</p><span class="pill" style="background:rgba(255,255,255,.15);">' + (L.avatarState === "speaking" ? "● 말하는 중" : L.avatarState === "listening" ? "● 듣는 중" : "대기 중") + "</span></div>" +
-            '<div class="avatarFace ' + (L.avatarState === "speaking" ? "speaking" : "") + '" style="margin-top:8px;"><div class="dots" style="flex-direction:column;align-items:center;gap:6px;"><div style="display:flex;gap:16px;"><span class="eye"></span><span class="eye"></span></div><div class="mouth"></div></div></div>' +
+            '<div class="avatarFace" id="avatarFaceBox" style="margin-top:8px;">' + avatarFaceSvg() + "</div>" +
+            '<p style="margin-top:4px;font-size:.68rem;color:rgba(255,255,255,.5);">* 실제 발음 분석이 아닌, 말하는 동안 일정한 리듬으로 음소 그룹별 입모양 중 하나를 무작위로 보여주는 근사치입니다.</p>' +
             '<div style="margin-top:10px;background:rgba(255,255,255,.1);border-radius:10px;padding:9px 11px;font-size:.84rem;">' + esc(sentence.textKo) + '<div style="font-size:.72rem;opacity:.75;margin-top:2px;">' + esc(sentence.textEn) + "</div></div>" +
             '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;"><button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(1,true)">다시 듣기</button><button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(0.5,true)">입모양 보기</button><button class="btn" style="background:#fff;color:var(--brand-dark);" onclick="App.startRoleplay()">대화 시작</button></div>' +
           "</div>" +
@@ -632,6 +728,8 @@
           '<form style="display:flex;gap:6px;margin-top:8px;" onsubmit="App.submitChat(event)"><input id="chatInput" placeholder="메시지를 입력하세요…" style="flex:1;border:1px solid var(--card-border);border-radius:9px;padding:8px 11px;background:var(--bg);color:var(--text);" /><button class="btn btn-primary" type="submit">↑</button></form>' +
         "</div>" +
       "</section>";
+    ensureAvatarMouthTimer();
+    ensureAvatarBlinkTimer();
   }
 
   var App_setLang = function (l) { state.lesson.lang = l; renderLesson(); };

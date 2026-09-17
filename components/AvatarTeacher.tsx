@@ -23,13 +23,11 @@ export default function AvatarTeacher({
   const setAvatarState = useLessonStore((s) => s.setAvatarState);
   const lang = useLessonStore((s) => s.lang);
   const [closeup, setCloseup] = useState(false);
-  const [pulseToken, setPulseToken] = useState(0);
 
   function handleReplay() {
     speak(sentence.textKo, {
       rate: 1,
       onStart: () => setAvatarState('speaking'),
-      onBoundary: () => setPulseToken((p) => p + 1),
       onEnd: () => setAvatarState('idle'),
     });
   }
@@ -39,7 +37,6 @@ export default function AvatarTeacher({
     speak(sentence.textKo, {
       rate: 0.5,
       onStart: () => setAvatarState('speaking'),
-      onBoundary: () => setPulseToken((p) => p + 1),
       onEnd: () => {
         setAvatarState('idle');
         setCloseup(false);
@@ -55,11 +52,11 @@ export default function AvatarTeacher({
       </div>
 
       <div className="aspect-[4/3] overflow-hidden rounded-xl bg-brand-dark/40">
-        <Avatar2D state={avatarState} pulseToken={pulseToken} closeup={closeup} />
+        <Avatar2D state={avatarState} closeup={closeup} />
       </div>
       <p className="mt-1 text-[10px] text-white/50">
-        * 실제 발음 분석이 아닌, 말하는 동안 단어 경계마다 음소 그룹별 입모양 중 하나를
-        무작위로 보여주는 근사치입니다.
+        * 실제 발음 분석이 아닌, 말하는 동안 일정한 리듬으로 음소 그룹별 입모양 중
+        하나를 무작위로 보여주는 근사치입니다.
       </p>
 
       <div className="mt-3 rounded-lg bg-white/10 p-3 text-sm">

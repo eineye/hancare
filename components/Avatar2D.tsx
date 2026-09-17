@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { AvatarState } from '@/lib/store';
 
 interface Avatar2DProps {
   state: AvatarState;
-  /** 이 값이 바뀔 때마다(단어 경계) 입모양을 한 번 바꾼다. */
-  pulseToken: number;
   closeup: boolean;
 }
 
@@ -60,32 +58,35 @@ function Mouth({ shape }: { shape: MouthShape }) {
   }
 }
 
-export default function Avatar2D({ state, pulseToken, closeup }: Avatar2DProps) {
+export default function Avatar2D({ state, closeup }: Avatar2DProps) {
   const [shape, setShape] = useState<MouthShape>('closed');
   const [blink, setBlink] = useState(false);
-  const lastShapeRef = useRef<MouthShape>('closed');
-  const initialRender = useRef(true);
 
-  useEffect(() => {
-    if (initialRender.current) {
-      initialRender.current = false;
-      return;
-    }
-    if (state !== 'speaking') return;
-    let next = SPEAKING_SHAPES[Math.floor(Math.random() * SPEAKING_SHAPES.length)];
-    if (next === lastShapeRef.current) {
-      next = SPEAKING_SHAPES[(SPEAKING_SHAPES.indexOf(next) + 1) % SPEAKING_SHAPES.length];
-    }
-    lastShapeRef.current = next;
-    setShape(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pulseToken]);
-
+  // 입모양 전환을 TTS의 onBoundary(단어 경계) 이벤트에 맞춰 해봤지만, 이 이벤트는
+  // 브라우저·음성 조합에 따라(특히 일부 한국어 음성) 아예 발생하지 않는 경우가
+  // 있어 "말하는 중"인데 입이 안 움직이는 문제가 있었다. 그래서 이벤트에 기대지
+  // 않고, 말하는 동안(state === 'speaking')에는 항상 일정한 리듬으로 스스로
+  // 입모양을 바꾸는 타이머 방식으로 바꿨다 — TTS 엔진·음성과 무관하게 동작한다.
   useEffect(() => {
     if (state !== 'speaking') {
       setShape('closed');
-      lastShapeRef.current = 'closed';
+      return;
     }
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      setShape((prev) => {
+        let next = SPEAKING_SHAPES[Math.floor(Math.random() * SPEAKING_SHAPES.length)];
+        if (next === prev) next = SPEAKING_SHAPES[(SPEAKING_SHAPES.indexOf(next) + 1) % SPEAKING_SHAPES.length];
+        return next;
+      });
+      if (!cancelled) timeoutId = setTimeout(tick, 110 + Math.random() * 130);
+    };
+    tick();
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, [state]);
 
   useEffect(() => {
