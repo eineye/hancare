@@ -409,6 +409,25 @@ hancare/
 상용 API/자체 모델로 교체 시 `lib/speech.ts`, `lib/scoring.ts`, `lib/content.ts`의
 인터페이스만 유지하면 되도록 분리해두었다.
 
+### 아바타 3D 입모양 (§6.1 보강)
+
+`components/Avatar3D.tsx`가 Three.js로 그린 3D 얼굴을 렌더링하고, TTS
+발화 중 입을 움직인다. §6.1이 전제한 "오디오 음소 타임스탬프 기반 viseme
+시퀀스"는 두 가지 이유로 이번 프로토타입에서는 근사치로 대체했다:
+
+1. `speechSynthesis`가 재생하는 오디오는 브라우저 표준상 Web Audio API의
+   `AnalyserNode`에 연결할 방법이 없다(OS/브라우저 오디오 파이프라인 밖에서
+   재생됨) — 그래서 실제 음성 파형을 읽어 입 모양을 결정할 수 없다.
+2. 음소별 정확한 viseme 타이밍을 받으려면 Azure Speech, Amazon Polly처럼
+   viseme/스피치마크를 함께 반환하는 유료 TTS API가 필요하다(§7 로드맵의
+   상용 TTS 도입 단계에 해당).
+
+대신 `lib/speech.ts`의 `speak()`가 이미 노출하던 `onBoundary`(단어 경계)
+이벤트마다 입 벌림 강도를 최대로 올리고 매 프레임 지수 감쇠시키는 방식으로,
+실제 목소리 크기는 아니지만 "말하는 리듬"에는 반응하는 3D 입모양을 구현했다.
+상용 TTS로 교체되면 `onBoundary` 대신 해당 API의 viseme 이벤트를 같은 자리에
+연결하면 된다.
+
 ### 로그인 · 진도관리(코스 선택) · 관리자 화면
 
 학습 화면(`/learn/...`) 앞단에 다음을 추가했다:
