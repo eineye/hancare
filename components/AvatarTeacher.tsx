@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLessonStore } from '@/lib/store';
 import { speak } from '@/lib/speech';
-import Avatar3D from './Avatar3D';
+import Avatar2D from './Avatar2D';
 import type { Sentence } from '@/lib/types';
 
 const STATE_LABEL: Record<string, string> = {
@@ -55,10 +55,11 @@ export default function AvatarTeacher({
       </div>
 
       <div className="aspect-[4/3] overflow-hidden rounded-xl bg-brand-dark/40">
-        <Avatar3D state={avatarState} pulseToken={pulseToken} closeup={closeup} />
+        <Avatar2D state={avatarState} pulseToken={pulseToken} closeup={closeup} />
       </div>
       <p className="mt-1 text-[10px] text-white/50">
-        * 실제 음성 파형이 아닌, 발화 리듬(단어 경계)에 반응하는 근사 3D 입모양입니다.
+        * 실제 발음 분석이 아닌, 말하는 동안 단어 경계마다 음소 그룹별 입모양 중 하나를
+        무작위로 보여주는 근사치입니다.
       </p>
 
       <div className="mt-3 rounded-lg bg-white/10 p-3 text-sm">
