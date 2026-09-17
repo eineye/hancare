@@ -1,4 +1,4 @@
-import { getUnitsByCategory } from './content';
+import { getUnitsByCategory, getXrModules } from './content';
 import type { Unit } from './types';
 
 export type CourseItemStatus = 'available' | 'coming-soon';
@@ -48,10 +48,22 @@ function itemsFromUnits(units: Unit[]): CourseItem[] {
  * 실제 콘텐츠가 없어 고정 placeholder로 둔다.
  */
 export async function getCourseSections(): Promise<CourseSection[]> {
-  const [basicUnits, practiceUnits] = await Promise.all([
+  const [basicUnits, practiceUnits, xrModules] = await Promise.all([
     getUnitsByCategory('basic'),
     getUnitsByCategory('practice'),
+    getXrModules(),
   ]);
+
+  // XR실습 화면(/xr/...)은 아직 구현 전(docs/XR_MODULE_DESIGN.md 로드맵 참고)이라
+  // "coming-soon"으로 표시하되, 실제 5대 모듈명·법정 실습시간은 미리 보여준다.
+  const xrItems: CourseItem[] = xrModules.length
+    ? xrModules.map((m) => ({
+        id: m.id,
+        labelKo: `${m.titleKo} (${m.legalHours}h)`,
+        labelEn: `${m.titleEn} (${m.legalHours}h)`,
+        status: 'coming-soon' as const,
+      }))
+    : [EMPTY_PLACEHOLDER];
 
   return [
     {
@@ -74,11 +86,9 @@ export async function getCourseSections(): Promise<CourseSection[]> {
       id: 'xr',
       titleKo: 'XR실습',
       titleEn: 'XR Practice',
-      descriptionKo: 'VR/AR 가상 병실에서 실습 상황을 몸으로 연습하는 과정입니다.',
-      descriptionEn: 'Practice situations hands-on in a VR/AR virtual patient room.',
-      items: [
-        { id: 'xr-ward', labelKo: '가상 병실 실습', labelEn: 'Virtual ward practice', status: 'coming-soon' },
-      ],
+      descriptionKo: '브라우저에서 설치 없이 실행하는 3D 가상 병실 실습(HnaCare XR)입니다.',
+      descriptionEn: 'Browser-based, install-free 3D virtual ward practice (HnaCare XR).',
+      items: xrItems,
     },
   ];
 }

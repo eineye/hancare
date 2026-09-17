@@ -8,7 +8,8 @@
 - LLM 대화 학습
 
 전체 시스템 아키텍처, 데이터 모델, API, AI/음성 파이프라인, 개발 로드맵은
-[`docs/PROGRAM_DESIGN.md`](docs/PROGRAM_DESIGN.md)를 참고하세요.
+[`docs/PROGRAM_DESIGN.md`](docs/PROGRAM_DESIGN.md)를, XR실습(HnaCare XR) 구성
+지침은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)를 참고하세요.
 
 ## 프로토타입 실행하기
 

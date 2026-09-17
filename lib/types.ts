@@ -71,6 +71,32 @@ export interface ChatMessage {
 
 export type Lang = 'ko' | 'en';
 
+/** XR실습(HnaCare XR) 모듈 내 하나의 3D 인터랙션. 실제 3D/물리 연산 결과 대신
+ * 목데이터 결과 문구를 보여주는 프로토타입 단계 스키마다. */
+export interface XrInteraction {
+  id: string;
+  labelKo: string;
+  labelEn: string;
+  resultKo: string;
+  resultEn: string;
+}
+
+/** XR실습 5대 모듈. docs/XR_MODULE_DESIGN.md 참고. */
+export interface XrModule {
+  id: string;
+  order: number;
+  titleKo: string;
+  titleEn: string;
+  /** 국가 자격 기준 법정 실습시간(시간 단위) */
+  legalHours: number;
+  patientNameKo: string;
+  situationKo: string;
+  situationEn: string;
+  /** 실제 적용 예정 기술 스택(참고용 표시 문구, PDF 스펙 그대로) */
+  techNoteKo: string;
+  interactions: XrInteraction[];
+}
+
 /** 관리자 진도관리 화면용 학습자 요약. 실제 다중 사용자 백엔드가 없어 목데이터다. */
 export interface Learner {
   id: string;

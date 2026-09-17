@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Sentence, Situation, Unit } from './types';
+import type { Sentence, Situation, Unit, XrModule } from './types';
 
 // 서버 전용 모듈(node:fs 사용) — 클라이언트 컴포넌트에서 import하면 안 된다.
 // 실습내용(기초한글/실습한글)을 웹팩 번들에 정적으로 넣지 않고, content/ 아래
@@ -73,4 +73,23 @@ export async function unitProgress(unitId: string, situationId: string) {
   if (!unit) return { current: 0, total: 0 };
   const index = unit.situations.findIndex((s) => s.id === situationId);
   return { current: index + 1, total: unit.situations.length };
+}
+
+/** XR실습(HnaCare XR) 5대 모듈. docs/XR_MODULE_DESIGN.md 참고. 다른 콘텐츠와 마찬가지로
+ * content/xr-modules.json을 매 요청마다 새로 읽는다. */
+export async function getXrModules(): Promise<XrModule[]> {
+  try {
+    const raw = await readFile(path.join(CONTENT_DIR, 'xr-modules.json'), 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) throw new Error('최상위 값은 모듈 배열(XrModule[])이어야 합니다.');
+    return (parsed as XrModule[]).sort((a, b) => a.order - b.order);
+  } catch (err) {
+    console.error('[content] xr-modules.json 을(를) 읽는 데 실패했습니다:', err);
+    return [];
+  }
+}
+
+export async function getXrModule(moduleId: string): Promise<XrModule | undefined> {
+  const modules = await getXrModules();
+  return modules.find((m) => m.id === moduleId);
 }
