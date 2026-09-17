@@ -44,11 +44,11 @@ graph LR
     E -->|리포트 제출| B
 ```
 
-- `/courses`의 "XR실습" 섹션은 이미 `lib/courses.ts`에서 `content/xr-modules.json`을
-  읽어 5대 모듈명·법정 실습시간을 보여주도록 연결해두었다(현재는 화면 미구현으로
-  "준비 중" 상태 — §7 로드맵 참고).
-- 모듈을 다 구현하면 `lib/courses.ts`의 XR 섹션 아이템에 `status: 'available'`과
-  `href: /xr/${module.id}`만 추가하면 된다(실습한글과 동일한 패턴).
+- `/courses`의 "XR실습" 섹션은 `lib/courses.ts`에서 `content/xr-modules.json`을 읽어
+  5대 모듈명·법정 실습시간을 보여주고, 각 항목이 `/xr/${module.id}`로 연결되어
+  실제로 열어볼 수 있다(Phase 1 완료 — §7 로드맵 참고).
+- `/xr`(모듈 목록)과 `/xr/[moduleId]`(실습 화면)는 다른 라우트와 동일하게
+  `AuthGuard role="any"`로 로그인만 확인한다.
 - `/xr`, `/xr/[moduleId]`도 다른 라우트와 동일하게 `AuthGuard role="any"`로 로그인
   여부만 확인한다(§4 User Service 서버 인증 붙기 전까지는 프로토타입 수준).
 
@@ -169,8 +169,8 @@ interface XrModule {
 
 | 단계 | 범위 | 상태 |
 |---|---|---|
-| **Phase 0** | 콘텐츠 스키마·진도관리 메뉴 연동(5개 모듈명·법정시간 노출) | ✅ 이번 작업에서 완료 |
-| **Phase 1** | `/xr`, `/xr/[moduleId]` 화면 셸 구현 — §4 UI를 실제 컴포넌트로, 인터랙션 버튼 클릭 시 `content`의 목데이터 결과 표시(3D 없이 텍스트/게이지만) | 예정 |
+| **Phase 0** | 콘텐츠 스키마·진도관리 메뉴 연동(5개 모듈명·법정시간 노출) | ✅ 완료 |
+| **Phase 1** | `/xr`, `/xr/[moduleId]` 화면 셸 구현 — §4 UI를 실제 컴포넌트로, 인터랙션 버튼 클릭 시 `content`의 목데이터 결과 표시(3D 없이 텍스트/게이지만) | ✅ 완료 — `components/XrModuleGrid.tsx`, `components/XrPracticeScreen.tsx`, `lib/xrStore.ts`. 독립 HTML 프로토타입(claude.ai 아티팩트)으로 먼저 검증한 뒤 동일 로직을 그대로 이식했다 |
 | **Phase 2** | 모듈 1(활력징후)에 실제 Three.js/WebGL 뷰포트 도입 — 절차적 3D 병상·환자 모형 + Raycaster 클릭 히트박스(청진기/상완동맥 등) + Web Audio 합성음(청진음) + Canvas 게이지 | 예정 |
 | **Phase 3** | 모듈 2~5에 각 모듈 고유 기술 적용 — GLSL 멸균 경계 셰이더, Cannon-es 충돌, Spatial Audio, IK 골격 트래킹. 실제 3D 에셋(glTF) 제작·튜닝 필요 | 예정(3D 에셋 확보 후) |
 | **Phase 4** | Whisper 기반 STT, 다국어 TTS(현재 앱은 ko/en만 지원 — 몽골어/베트남어/미얀마어는 `textXx` 필드 추가로 스키마 확장 가능), LMS 연동(진도 데이터 내보내기), Unity 인터랙션 콘텐츠 임베드 | 예정 |

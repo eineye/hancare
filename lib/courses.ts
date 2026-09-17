@@ -54,14 +54,15 @@ export async function getCourseSections(): Promise<CourseSection[]> {
     getXrModules(),
   ]);
 
-  // XR실습 화면(/xr/...)은 아직 구현 전(docs/XR_MODULE_DESIGN.md 로드맵 참고)이라
-  // "coming-soon"으로 표시하되, 실제 5대 모듈명·법정 실습시간은 미리 보여준다.
+  // XR실습 화면(/xr/[moduleId])이 Phase 1(화면 흐름·상호작용 셸) 수준으로 구현되어
+  // 있어 실제로 열어볼 수 있다. 3D/물리 엔진은 아직 없다(docs/XR_MODULE_DESIGN.md 로드맵).
   const xrItems: CourseItem[] = xrModules.length
     ? xrModules.map((m) => ({
         id: m.id,
         labelKo: `${m.titleKo} (${m.legalHours}h)`,
         labelEn: `${m.titleEn} (${m.legalHours}h)`,
-        status: 'coming-soon' as const,
+        status: 'available' as const,
+        href: `/xr/${m.id}`,
       }))
     : [EMPTY_PLACEHOLDER];
 
