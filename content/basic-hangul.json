@@ -1,0 +1,158 @@
+[
+  {
+    "id": "unit-basic-1",
+    "category": "basic",
+    "titleKo": "기초 한글",
+    "titleEn": "Basic Hangul",
+    "situations": [
+      {
+        "id": "basic-situation-1",
+        "menuLabelKo": "기본 인사 나누기",
+        "menuLabelEn": "Basic greetings",
+        "titleKo": "처음 만난 선생님께 인사합니다.",
+        "titleEn": "You greet a teacher you're meeting for the first time.",
+        "descriptionKo": "가장 기본적인 인사말과 감사 표현을 익힙니다.",
+        "descriptionEn": "Learn the most basic greetings and expressions of thanks.",
+        "placeTag": "교실 · Classroom",
+        "formalityTag": "존댓말 · Polite form",
+        "difficultyTag": "난이도 입문",
+        "terms": [
+          {
+            "id": "term-hello",
+            "hangul": "안녕하세요",
+            "romanization": "an-nyeong-ha-se-yo",
+            "glossEn": "hello"
+          },
+          {
+            "id": "term-thanks",
+            "hangul": "감사합니다",
+            "romanization": "gam-sa-ham-ni-da",
+            "glossEn": "thank you"
+          },
+          {
+            "id": "term-sorry",
+            "hangul": "죄송합니다",
+            "romanization": "joe-song-ham-ni-da",
+            "glossEn": "sorry"
+          },
+          {
+            "id": "term-okay",
+            "hangul": "괜찮아요",
+            "romanization": "gwaen-chan-a-yo",
+            "glossEn": "it's okay"
+          }
+        ],
+        "sentences": [
+          {
+            "id": "basic-sentence-1-1",
+            "textKo": "안녕하세요, 만나서 반갑습니다.",
+            "textEn": "Hello, nice to meet you.",
+            "romanization": "an-nyeong-ha-se-yo, man-na-seo ban-gap-seum-ni-da",
+            "syllables": [
+              "안",
+              "녕",
+              "하",
+              "세",
+              "요",
+              "만",
+              "나",
+              "서",
+              "반",
+              "갑",
+              "습",
+              "니",
+              "다"
+            ]
+          },
+          {
+            "id": "basic-sentence-1-2",
+            "textKo": "감사합니다.",
+            "textEn": "Thank you.",
+            "romanization": "gam-sa-ham-ni-da",
+            "syllables": [
+              "감",
+              "사",
+              "합",
+              "니",
+              "다"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "basic-situation-2",
+        "menuLabelKo": "이름 소개하기",
+        "menuLabelEn": "Introducing yourself",
+        "titleKo": "자기 이름을 소개합니다.",
+        "titleEn": "You introduce your own name.",
+        "descriptionKo": "이름을 말하고 묻는 가장 기본적인 표현을 연습합니다.",
+        "descriptionEn": "Practice the most basic expressions for saying and asking a name.",
+        "placeTag": "교실 · Classroom",
+        "formalityTag": "존댓말 · Polite form",
+        "difficultyTag": "난이도 입문",
+        "terms": [
+          {
+            "id": "term-name",
+            "hangul": "이름",
+            "romanization": "i-reum",
+            "glossEn": "name"
+          },
+          {
+            "id": "term-i-am",
+            "hangul": "저는",
+            "romanization": "jeo-neun",
+            "glossEn": "I am (topic)"
+          },
+          {
+            "id": "term-meet",
+            "hangul": "만나다",
+            "romanization": "man-na-da",
+            "glossEn": "to meet"
+          },
+          {
+            "id": "term-what",
+            "hangul": "무엇",
+            "romanization": "mu-eot",
+            "glossEn": "what"
+          }
+        ],
+        "sentences": [
+          {
+            "id": "basic-sentence-2-1",
+            "textKo": "제 이름은 마리아입니다.",
+            "textEn": "My name is Maria.",
+            "romanization": "je i-reum-eun ma-ri-a-ip-ni-da",
+            "syllables": [
+              "제",
+              "이",
+              "름",
+              "은",
+              "마",
+              "리",
+              "아",
+              "입",
+              "니",
+              "다"
+            ]
+          },
+          {
+            "id": "basic-sentence-2-2",
+            "textKo": "이름이 무엇입니까?",
+            "textEn": "What is your name?",
+            "romanization": "i-reum-i mu-eot-ip-ni-kka",
+            "syllables": [
+              "이",
+              "름",
+              "이",
+              "무",
+              "엇",
+              "입",
+              "니",
+              "까"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,172 @@
+[
+  {
+    "id": "xr-vital-signs",
+    "order": 1,
+    "titleKo": "활력징후 및 기초사정",
+    "titleEn": "Vital Signs & Basic Assessment",
+    "legalHours": 20,
+    "patientNameKo": "김진수",
+    "situationKo": "숨이 조금 차고 열나는것 같은데 저좀 봐주시겠어요?",
+    "situationEn": "I feel a bit short of breath and warm — could you check on me?",
+    "techNoteKo": "Web Audio 오디오 노드, Raycaster 좌표 추적, Canvas 게이지",
+    "interactions": [
+      {
+        "id": "stethoscope",
+        "labelKo": "가상 청진기",
+        "labelEn": "Virtual stethoscope",
+        "resultKo": "청진 완료 — 호흡음 정상, 미세한 수포음 감지",
+        "resultEn": "Auscultation complete — breath sounds normal, faint crackles detected"
+      },
+      {
+        "id": "brachial-contact",
+        "labelKo": "상완동맥접촉",
+        "labelEn": "Brachial artery contact",
+        "resultKo": "상완동맥 위치 확인 완료 — 맥박 68회/분",
+        "resultEn": "Brachial artery located — pulse 68 bpm"
+      },
+      {
+        "id": "bp-cuff",
+        "labelKo": "혈압계 사용",
+        "labelEn": "Blood pressure cuff",
+        "resultKo": "혈압 137/82 mmHg 측정 완료",
+        "resultEn": "Blood pressure measured: 137/82 mmHg"
+      },
+      {
+        "id": "glucose",
+        "labelKo": "혈당 채혈",
+        "labelEn": "Blood glucose sampling",
+        "resultKo": "혈당 108 mg/dL 측정 완료",
+        "resultEn": "Blood glucose measured: 108 mg/dL"
+      }
+    ]
+  },
+  {
+    "id": "xr-asepsis",
+    "order": 2,
+    "titleKo": "무균술 및 상처관리",
+    "titleEn": "Aseptic Technique & Wound Care",
+    "legalHours": 25,
+    "patientNameKo": "이영희",
+    "situationKo": "상처 소독을 도와주시겠어요? 조금 아파요.",
+    "situationEn": "Could you help disinfect my wound? It hurts a little.",
+    "techNoteKo": "GLSL 오버레이 셰이더, Cannon-es 정밀 바운딩 충돌체",
+    "interactions": [
+      {
+        "id": "sterile-drape",
+        "labelKo": "멸균포 개봉",
+        "labelEn": "Open sterile drape",
+        "resultKo": "멸균포 개봉 완료 — 오염 없음",
+        "resultEn": "Sterile drape opened — no contamination"
+      },
+      {
+        "id": "forceps-transfer",
+        "labelKo": "핀셋 기구 전달",
+        "labelEn": "Forceps instrument transfer",
+        "resultKo": "기구 전달 완료 — 멸균 유지",
+        "resultEn": "Instrument transferred — sterility maintained"
+      },
+      {
+        "id": "sterile-boundary",
+        "labelKo": "멸균 경계면 확인",
+        "labelEn": "Check sterile boundary",
+        "resultKo": "경고: 멸균 구역 5cm 침범 감지",
+        "resultEn": "Warning: 5cm sterile-zone breach detected"
+      }
+    ]
+  },
+  {
+    "id": "xr-nutrition-elimination",
+    "order": 3,
+    "titleKo": "영양 및 배설 보조",
+    "titleEn": "Nutrition & Elimination Assistance",
+    "legalHours": 20,
+    "patientNameKo": "박민수",
+    "situationKo": "속이 더부룩하고 소변줄이 불편해요.",
+    "situationEn": "My stomach feels bloated and the catheter is uncomfortable.",
+    "techNoteKo": "Spatial Audio PannerNode, 중력 벡터 판정 알고리즘",
+    "interactions": [
+      {
+        "id": "l-tube-air",
+        "labelKo": "L-tube 공기 주입음 청취",
+        "labelEn": "Listen for L-tube air insufflation",
+        "resultKo": "위내 공기음 확인 — 튜브 위치 정상",
+        "resultEn": "Gastric air sound confirmed — tube position normal"
+      },
+      {
+        "id": "catheter-fixation",
+        "labelKo": "도뇨관 고정",
+        "labelEn": "Fixate urinary catheter",
+        "resultKo": "도뇨관 고정 완료",
+        "resultEn": "Catheter fixation complete"
+      },
+      {
+        "id": "bag-height",
+        "labelKo": "소변백 높이 조정",
+        "labelEn": "Adjust urine bag height",
+        "resultKo": "소변백 높이 적절 — 역류 위험 없음",
+        "resultEn": "Urine bag height appropriate — no reflux risk"
+      }
+    ]
+  },
+  {
+    "id": "xr-medication-suction",
+    "order": 4,
+    "titleKo": "투약 및 기도흡인",
+    "titleEn": "Medication & Airway Suction",
+    "legalHours": 20,
+    "patientNameKo": "최수진",
+    "situationKo": "인슐린 주사랑 가래 흡인 좀 도와주세요.",
+    "situationEn": "Could you help with my insulin shot and clearing my airway?",
+    "techNoteKo": "3D 벡터 각도 연산, 정밀 인터벌 타이머 엔진",
+    "interactions": [
+      {
+        "id": "insulin-injection",
+        "labelKo": "인슐린 피하주사",
+        "labelEn": "Insulin subcutaneous injection",
+        "resultKo": "주사 각도 62도 — 적정 범위(45~90도) 내 판정",
+        "resultEn": "Injection angle 62° — within acceptable range (45–90°)"
+      },
+      {
+        "id": "suction-catheter",
+        "labelKo": "석션 카테터 삽입",
+        "labelEn": "Suction catheter insertion",
+        "resultKo": "흡인 시간 12초 — 권장 범위 내",
+        "resultEn": "Suction time 12s — within recommended range"
+      }
+    ]
+  },
+  {
+    "id": "xr-positioning-safety",
+    "order": 5,
+    "titleKo": "체위변경 및 안전",
+    "titleEn": "Position Change & Safety",
+    "legalHours": 15,
+    "patientNameKo": "정하늘",
+    "situationKo": "몸을 좀 돌려 눕혀 주시겠어요? 왼쪽이 잘 안 움직여요.",
+    "situationEn": "Could you help turn me over? My left side doesn't move well.",
+    "techNoteKo": "Three.js IK(역운동학), 골격 조인트 트래킹",
+    "interactions": [
+      {
+        "id": "support-point",
+        "labelKo": "지지점 선정",
+        "labelEn": "Select support point",
+        "resultKo": "지지점 선정 완료 — 편마비측 보호됨",
+        "resultEn": "Support point selected — hemiplegic side protected"
+      },
+      {
+        "id": "reposition",
+        "labelKo": "체위 변경 시행",
+        "labelEn": "Perform position change",
+        "resultKo": "체위 변경 완료 — 욕창 위험 부위 압력 해제",
+        "resultEn": "Position change complete — pressure released on at-risk areas"
+      },
+      {
+        "id": "wheelchair-brake",
+        "labelKo": "휠체어 브레이크 확인",
+        "labelEn": "Check wheelchair brake",
+        "resultKo": "브레이크 잠금 확인 완료",
+        "resultEn": "Wheelchair brake lock confirmed"
+      }
+    ]
+  }
+]

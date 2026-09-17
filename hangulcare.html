@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="로그인부터 진도관리, 기초·실습한글 학습, XR실습, 관리자 화면까지 앱 전체를 브라우저에서 바로 테스트하는 독립 프로토타입">
+<title>HangulCare</title>
+<style>
+  :root {
+    --bg: #f5f3ee;
+    --card: #ffffff;
+    --card-border: rgba(15,46,36,.10);
+    --text: #16241d;
+    --text-muted: #5b6b63;
+    --brand: #1f7a5c;
+    --brand-dark: #0f2e24;
+    --brand-soft: #e8f3ee;
+    --chip-bg: rgba(15,46,36,.06);
+    --warn-bg: #fff4e0;
+    --warn-text: #8a5a00;
+    --good-bg: #e8f6ee;
+    --good-text: #186a43;
+    --danger-bg: #fdecec;
+    --danger-text: #a23b3b;
+    --shadow: 0 1px 2px rgba(15,46,36,.06), 0 8px 24px -12px rgba(15,46,36,.18);
+    --monitor-bg: #07140f;
+    --monitor-grid: rgba(124,255,178,.10);
+    --monitor-fg: #7cffb2;
+    --monitor-dim: #3d8a63;
+    --font-body: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1613; --card: #142019; --card-border: rgba(255,255,255,.09);
+      --text: #eef2ef; --text-muted: #9fb0a8; --brand: #3cb583; --brand-dark: #0a1f18;
+      --brand-soft: rgba(60,181,131,.16); --chip-bg: rgba(255,255,255,.07);
+      --warn-bg: rgba(255,196,79,.14); --warn-text: #ffcf6b;
+      --good-bg: rgba(60,181,131,.16); --good-text: #6ee0ac;
+      --danger-bg: rgba(220,90,90,.14); --danger-text: #ff9c9c;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1613; --card: #142019; --card-border: rgba(255,255,255,.09);
+    --text: #eef2ef; --text-muted: #9fb0a8; --brand: #3cb583; --brand-dark: #0a1f18;
+    --brand-soft: rgba(60,181,131,.16); --chip-bg: rgba(255,255,255,.07);
+    --warn-bg: rgba(255,196,79,.14); --warn-text: #ffcf6b;
+    --good-bg: rgba(60,181,131,.16); --good-text: #6ee0ac;
+    --danger-bg: rgba(220,90,90,.14); --danger-text: #ff9c9c;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); }
+  h1,h2,h3 { text-wrap: balance; margin: 0; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  input { font: inherit; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+  [hidden] { display: none !important; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .app { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 0 40px; }
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; box-shadow: var(--shadow); }
+  .btn { border-radius: 10px; padding: 9px 14px; font-weight: 600; font-size: .86rem; border: 1px solid transparent; }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-ghost { background: var(--card); border-color: var(--card-border); }
+  .btn-ghost:hover { border-color: var(--brand); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .pill { border-radius: 999px; padding: 3px 10px; font-size: .68rem; font-weight: 600; }
+  .notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 12px; padding: 10px 14px; font-size: .8rem; line-height: 1.55; }
+
+  /* ---------------- topbar ---------------- */
+  .topbar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--brand-dark); color: #fff; border-radius: 16px; padding: 12px 16px; margin-block: 16px;
+  }
+  .mark { width: 38px; height: 38px; border-radius: 10px; flex: none; background: var(--brand);
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .95rem; text-decoration: none; color: #fff; }
+  .topbar .titles { min-width: 120px; flex: 1 1 140px; }
+  .topbar .titles h1 { font-size: .98rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar .titles p { margin: 1px 0 0; font-size: .72rem; color: rgba(255,255,255,.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar .chip { flex: none; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 5px 11px; font-size: .74rem; }
+  .topbar .iconbtn { flex: none; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); color: #fff; border-radius: 9px; padding: 6px 11px; font-size: .8rem; font-weight: 600; }
+  .topbar .iconbtn:hover { background: rgba(255,255,255,.18); }
+  .backlink { display: inline-block; margin-top: 4px; font-size: .78rem; font-weight: 600; color: var(--brand); text-decoration: none; }
+  .backlink:hover { text-decoration: underline; }
+
+  /* ---------------- login ---------------- */
+  .loginWrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .loginCard { width: min(380px, 100%); padding: 26px; }
+  .loginCard .head { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: .74rem; color: var(--text-muted); margin-bottom: 5px; }
+  .field input { width: 100%; border: 1px solid var(--card-border); border-radius: 10px; padding: 9px 12px; background: var(--bg); color: var(--text); }
+  .demoBox { margin-top: 14px; border-radius: 12px; background: var(--brand-soft); padding: 12px; font-size: .78rem; }
+  .demoBox .row { display: flex; gap: 8px; margin-top: 8px; }
+  .demoBox button { flex: 1; }
+  .errMsg { color: var(--danger-text); font-size: .78rem; margin: 4px 0 10px; }
+
+  /* ---------------- stat tiles ---------------- */
+  .statGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 10px; }
+  .statTile { text-align: center; padding: 12px; }
+  .statTile p:first-child { font-size: .72rem; color: var(--text-muted); }
+  .statTile p:last-child { margin-top: 4px; font-weight: 700; font-family: var(--font-mono); }
+
+  /* ---------------- course sections ---------------- */
+  .sectionHead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 18px 0 10px; }
+  .sectionHead h2 { font-size: 1rem; }
+  .itemGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 10px; }
+  .itemBtn { display: flex; align-items: center; justify-content: space-between; gap: 8px; text-align: left; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--card); font-weight: 600; font-size: .86rem; }
+  .itemBtn:hover { border-color: var(--brand); background: var(--brand-soft); }
+  .itemBtn.disabled { color: var(--text-muted); background: var(--bg); cursor: default; }
+  .itemBtn.disabled:hover { border-color: var(--card-border); background: var(--bg); }
+
+  /* ---------------- lesson screen ---------------- */
+  .lessonGrid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 14px; margin-top: 12px; }
+  @media (max-width: 860px) { .lessonGrid { grid-template-columns: 1fr; } }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .eyebrow { font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--brand); }
+  .tagRow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { background: var(--brand-soft); color: var(--brand-dark); border-radius: 999px; padding: 3px 10px; font-size: .72rem; font-weight: 600; }
+
+  .termGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap: 8px; margin-top: 10px; }
+  .termCard { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--card-border); border-radius: 12px; padding: 10px 12px; }
+  .termCard .word { font-weight: 700; }
+  .termCard .rom { font-size: .72rem; color: var(--text-muted); }
+  .playBtn { flex: none; width: 30px; height: 30px; border-radius: 999px; border: none; background: var(--brand-soft); color: var(--brand-dark); }
+  .playBtn:hover { background: var(--brand); color: #fff; }
+
+  .repeatCard { background: var(--brand-dark); color: #fff; border-radius: 16px; padding: 16px; }
+  .syllables { display: flex; flex-wrap: wrap; gap: 4px; font-size: 1.7rem; font-weight: 700; }
+  .syllables span.pending { color: #fff; }
+  .syllables span.good { color: #6ee7a4; }
+  .syllables span.mid { color: #fcd34d; }
+  .syllables span.bad { color: #fca5a5; }
+  .recordBtn { margin-top: 14px; border-radius: 999px; padding: 9px 20px; font-weight: 700; font-size: .86rem; border: none; }
+  .recordBtn.idle { background: var(--brand); color: #fff; }
+  .recordBtn.recording { background: #e05252; color: #fff; }
+
+  .avatarCard { background: var(--brand); color: #fff; border-radius: 16px; padding: 14px; }
+  .avatarFace { aspect-ratio: 4/3; border-radius: 12px; background: rgba(10,31,24,.4); display: flex; align-items: center; justify-content: center; }
+  .avatarFace .dots { display: flex; gap: 16px; }
+  .avatarFace .eye { width: 10px; height: 10px; border-radius: 999px; background: #fff; }
+  .avatarFace .mouth { width: 32px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.9); margin-top: 14px; }
+  .avatarFace.speaking .mouth { animation: talk .35s ease-in-out infinite; }
+  @keyframes talk { 0%,100%{transform:scaleY(.4);} 50%{transform:scaleY(1);} }
+  @media (prefers-reduced-motion: reduce) { .avatarFace.speaking .mouth { animation: none; } }
+
+  .scoreCircle { width: 64px; height: 64px; border-radius: 999px; border: 4px solid var(--brand); display: flex; align-items: center; justify-content: center; font-weight: 700; flex: none; }
+  .barTrack { height: 6px; border-radius: 999px; background: var(--chip-bg); margin-top: 3px; }
+  .barFill { height: 6px; border-radius: 999px; background: var(--brand); }
+  .chip-syl { border-radius: 8px; padding: 4px 7px; font-size: .68rem; font-weight: 700; text-align: center; }
+
+  .feedbackItem { border-radius: 10px; padding: 8px 10px; font-size: .82rem; }
+  .feedbackItem.warning { background: var(--warn-bg); color: var(--warn-text); }
+  .feedbackItem.success { background: var(--good-bg); color: var(--good-text); }
+
+  .chatMsg { max-width: 85%; border-radius: 12px; padding: 8px 11px; font-size: .84rem; }
+  .chatMsg.user { margin-left: auto; background: var(--brand); color: #fff; }
+  .chatMsg.assistant { background: var(--bg); }
+
+  /* ---------------- XR viewport ---------------- */
+  .viewport { position: relative; aspect-ratio: 16/10; overflow: hidden; border-radius: 16px; background: var(--monitor-bg);
+    background-image: linear-gradient(var(--monitor-grid) 1px, transparent 1px), linear-gradient(90deg, var(--monitor-grid) 1px, transparent 1px);
+    background-size: 28px 28px; }
+  .viewport .vpLabel { position: absolute; top: 12px; left: 14px; font-size: .62rem; letter-spacing: .07em; color: var(--monitor-dim); border: 1px dashed var(--monitor-dim); padding: 3px 7px; border-radius: 8px; }
+  .viewport svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .monitorPanel { position: absolute; top: 12px; right: 12px; width: min(58%,220px); background: rgba(7,20,15,.82); border: 1px solid var(--monitor-dim); border-radius: 10px; padding: 9px 11px; color: var(--monitor-fg); }
+  .monitorPanel .lbl { font-size: .6rem; letter-spacing: .06em; color: var(--monitor-dim); margin-bottom: 3px; }
+  .monitorPanel .reading { font-family: var(--font-mono); font-size: .82rem; min-height: 2.2em; }
+  .monitorPanel .log { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(124,255,178,.18); max-height: 76px; overflow-y: auto; }
+  .monitorPanel .log div { font-family: var(--font-mono); font-size: .64rem; color: var(--monitor-dim); margin-bottom: 2px; }
+  .monitorPanel .log strong { color: var(--monitor-fg); font-weight: 500; }
+  .dialogueBubble { position: absolute; left: 12px; right: 12px; bottom: 12px; max-width: 440px; background: rgba(255,255,255,.96); color: var(--brand-dark); border-radius: 12px; padding: 11px 13px; }
+  .dialogueBubble .who { font-weight: 700; font-size: .8rem; }
+  .dialogueBubble .say { font-size: .84rem; margin-top: 2px; }
+  .dialogueBubble .sayEn { font-size: .72rem; color: var(--text-muted); margin-top: 2px; }
+  .hint { position: absolute; left: 12px; bottom: 12px; color: var(--monitor-fg); font-family: var(--font-mono); font-size: .72rem; background: rgba(7,20,15,.7); padding: 7px 11px; border-radius: 9px; border: 1px solid var(--monitor-dim); }
+  .rail { display: flex; flex-direction: column; gap: 8px; }
+  .railBtn { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; border-radius: 12px; padding: 10px 13px; border: 1px solid var(--card-border); background: var(--card); font-weight: 600; font-size: .84rem; }
+  .railBtn:hover { border-color: var(--brand); }
+  .railBtn.start { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .railBtn.started { background: var(--good-bg); color: var(--good-text); }
+  .railBtn.submit { background: var(--brand-dark); color: #fff; }
+  .railBtn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .modGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 12px; margin-top: 12px; }
+  .modCard { display: flex; flex-direction: column; gap: 7px; padding: 14px; text-align: left; }
+  .modCard:hover { border-color: var(--brand); }
+  .modCard .top { display: flex; align-items: center; gap: 8px; }
+  .modCard .order { width: 28px; height: 28px; border-radius: 8px; background: var(--brand-soft); color: var(--brand-dark); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .82rem; flex: none; }
+
+  table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: .84rem; white-space: nowrap; }
+  th { text-align: left; font-size: .72rem; color: var(--text-muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--card-border); }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--card-border); }
+
+  .modalMask { position: fixed; inset: 0; background: rgba(8,16,13,.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 30; }
+  .modal { width: min(440px,100%); background: var(--card); border-radius: 16px; padding: 18px; max-height: 84vh; overflow-y: auto; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div class="modalMask" id="modalMask" hidden><div class="modal" id="modalBody"></div></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================== DATA ============================== */
+  var BASIC_UNITS = [{"id":"unit-basic-1","category":"basic","titleKo":"기초 한글","titleEn":"Basic Hangul","situations":[{"id":"basic-situation-1","menuLabelKo":"기본 인사 나누기","menuLabelEn":"Basic greetings","titleKo":"처음 만난 선생님께 인사합니다.","titleEn":"You greet a teacher you're meeting for the first time.","descriptionKo":"가장 기본적인 인사말과 감사 표현을 익힙니다.","descriptionEn":"Learn the most basic greetings and expressions of thanks.","placeTag":"교실 · Classroom","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 입문","terms":[{"id":"term-hello","hangul":"안녕하세요","romanization":"an-nyeong-ha-se-yo","glossEn":"hello"},{"id":"term-thanks","hangul":"감사합니다","romanization":"gam-sa-ham-ni-da","glossEn":"thank you"},{"id":"term-sorry","hangul":"죄송합니다","romanization":"joe-song-ham-ni-da","glossEn":"sorry"},{"id":"term-okay","hangul":"괜찮아요","romanization":"gwaen-chan-a-yo","glossEn":"it's okay"}],"sentences":[{"id":"basic-sentence-1-1","textKo":"안녕하세요, 만나서 반갑습니다.","textEn":"Hello, nice to meet you.","romanization":"an-nyeong-ha-se-yo, man-na-seo ban-gap-seum-ni-da","syllables":["안","녕","하","세","요","만","나","서","반","갑","습","니","다"]},{"id":"basic-sentence-1-2","textKo":"감사합니다.","textEn":"Thank you.","romanization":"gam-sa-ham-ni-da","syllables":["감","사","합","니","다"]}]},{"id":"basic-situation-2","menuLabelKo":"이름 소개하기","menuLabelEn":"Introducing yourself","titleKo":"자기 이름을 소개합니다.","titleEn":"You introduce your own name.","descriptionKo":"이름을 말하고 묻는 가장 기본적인 표현을 연습합니다.","descriptionEn":"Practice the most basic expressions for saying and asking a name.","placeTag":"교실 · Classroom","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 입문","terms":[{"id":"term-name","hangul":"이름","romanization":"i-reum","glossEn":"name"},{"id":"term-i-am","hangul":"저는","romanization":"jeo-neun","glossEn":"I am (topic)"},{"id":"term-meet","hangul":"만나다","romanization":"man-na-da","glossEn":"to meet"},{"id":"term-what","hangul":"무엇","romanization":"mu-eot","glossEn":"what"}],"sentences":[{"id":"basic-sentence-2-1","textKo":"제 이름은 마리아입니다.","textEn":"My name is Maria.","romanization":"je i-reum-eun ma-ri-a-ip-ni-da","syllables":["제","이","름","은","마","리","아","입","니","다"]},{"id":"basic-sentence-2-2","textKo":"이름이 무엇입니까?","textEn":"What is your name?","romanization":"i-reum-i mu-eot-ip-ni-kka","syllables":["이","름","이","무","엇","입","니","까"]}]}]}];
+
+  var PRACTICE_UNITS = [{"id":"unit-1","category":"practice","titleKo":"간호조무 실습 한국어","titleEn":"Korean for nursing-assistant trainees","situations":[{"id":"situation-1","menuLabelKo":"혈압·체온 측정","menuLabelEn":"Vital signs","titleKo":"아침 회진 전, 환자의 혈압을 측정합니다.","titleEn":"Before morning rounds, you measure the patient's blood pressure.","descriptionKo":"환자에게 인사하고, 무엇을 할지 설명한 뒤 동의를 구하세요.","descriptionEn":"Greet the patient, explain what you'll do, then ask for consent.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 2","terms":[{"id":"term-bp","hangul":"혈압","romanization":"hyeol-ap","glossEn":"blood pressure"},{"id":"term-temp","hangul":"체온","romanization":"che-on","glossEn":"body temperature"},{"id":"term-pulse","hangul":"맥박","romanization":"maek-bak","glossEn":"pulse"},{"id":"term-injection","hangul":"주사","romanization":"ju-sa","glossEn":"injection"}],"sentences":[{"id":"sentence-1-1","textKo":"혈압 좀 재겠습니다.","textEn":"I'll take your blood pressure now.","romanization":"hyeol-ap jom jae-get-seum-ni-da","syllables":["혈","압","좀","재","겠","습","니","다"]},{"id":"sentence-1-2","textKo":"팔을 조금만 올려 주세요.","textEn":"Please raise your arm a little.","romanization":"pal-eul jo-geum-man ol-lyeo ju-se-yo","syllables":["팔","을","조","금","만","올","려","주","세","요"]},{"id":"sentence-1-3","textKo":"체온도 같이 확인하겠습니다.","textEn":"I'll also check your temperature.","romanization":"che-on-do gat-i hwak-in-ha-get-seum-ni-da","syllables":["체","온","도","같","이","확","인","하","겠","습","니","다"]}]},{"id":"situation-2","menuLabelKo":"투약 시간 안내","menuLabelEn":"Medication time","titleKo":"식후 투약 시간을 안내합니다.","titleEn":"You let the patient know it's time for their medicine after a meal.","descriptionKo":"약의 이름과 복용 방법을 설명하고, 부작용이 있는지 확인하세요.","descriptionEn":"Explain the medicine's name and how to take it, then check for side effects.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 2","terms":[{"id":"term-medicine","hangul":"약","romanization":"yak","glossEn":"medicine"},{"id":"term-pill","hangul":"알약","romanization":"al-yak","glossEn":"pill"},{"id":"term-prescription","hangul":"처방전","romanization":"cheo-bang-jeon","glossEn":"prescription"},{"id":"term-side-effect","hangul":"부작용","romanization":"bu-jag-yong","glossEn":"side effect"}],"sentences":[{"id":"sentence-2-1","textKo":"지금 약 드실 시간이에요.","textEn":"It's time to take your medicine now.","romanization":"ji-geum yak deu-sil si-gan-i-e-yo","syllables":["지","금","약","드","실","시","간","이","에","요"]},{"id":"sentence-2-2","textKo":"물과 함께 드세요.","textEn":"Please take it with water.","romanization":"mul-gwa ham-kke deu-se-yo","syllables":["물","과","함","께","드","세","요"]}]},{"id":"situation-3","menuLabelKo":"통증 호소 응대","menuLabelEn":"Patient in pain","titleKo":"환자가 통증을 호소합니다.","titleEn":"The patient reports feeling pain.","descriptionKo":"어디가 아픈지, 얼마나 아픈지 물어보고 담당 간호사에게 전달하세요.","descriptionEn":"Ask where it hurts and how much, then relay it to the nurse in charge.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 1","terms":[{"id":"term-pain","hangul":"통증","romanization":"tong-jeung","glossEn":"pain"},{"id":"term-hurt","hangul":"아프다","romanization":"a-peu-da","glossEn":"to hurt"},{"id":"term-dizzy","hangul":"어지럽다","romanization":"eo-ji-reop-da","glossEn":"dizzy"},{"id":"term-uncomfortable","hangul":"불편하다","romanization":"bul-pyeon-ha-da","glossEn":"uncomfortable"}],"sentences":[{"id":"sentence-3-1","textKo":"어디가 아프세요?","textEn":"Where does it hurt?","romanization":"eo-di-ga a-peu-se-yo","syllables":["어","디","가","아","프","세","요"]},{"id":"sentence-3-2","textKo":"간호사 선생님을 불러 드릴게요.","textEn":"I'll call the nurse for you.","romanization":"gan-ho-sa seon-saeng-nim-eul bul-leo deu-ril-ge-yo","syllables":["간","호","사","선","생","님","을","불","러","드","릴","게","요"]}]}]}];
+
+  var ALL_UNITS = BASIC_UNITS.concat(PRACTICE_UNITS);
+
+  var XR_MODULES = [{"id":"xr-vital-signs","order":1,"titleKo":"활력징후 및 기초사정","titleEn":"Vital Signs & Basic Assessment","legalHours":20,"patientNameKo":"김진수","situationKo":"숨이 조금 차고 열나는것 같은데 저좀 봐주시겠어요?","situationEn":"I feel a bit short of breath and warm — could you check on me?","techNoteKo":"Web Audio 오디오 노드, Raycaster 좌표 추적, Canvas 게이지","interactions":[{"id":"stethoscope","labelKo":"가상 청진기","resultKo":"청진 완료 — 호흡음 정상, 미세한 수포음 감지"},{"id":"brachial-contact","labelKo":"상완동맥접촉","resultKo":"상완동맥 위치 확인 완료 — 맥박 68회/분"},{"id":"bp-cuff","labelKo":"혈압계 사용","resultKo":"혈압 137/82 mmHg 측정 완료"},{"id":"glucose","labelKo":"혈당 채혈","resultKo":"혈당 108 mg/dL 측정 완료"}]},{"id":"xr-asepsis","order":2,"titleKo":"무균술 및 상처관리","titleEn":"Aseptic Technique & Wound Care","legalHours":25,"patientNameKo":"이영희","situationKo":"상처 소독을 도와주시겠어요? 조금 아파요.","situationEn":"Could you help disinfect my wound? It hurts a little.","techNoteKo":"GLSL 오버레이 셰이더, Cannon-es 정밀 바운딩 충돌체","interactions":[{"id":"sterile-drape","labelKo":"멸균포 개봉","resultKo":"멸균포 개봉 완료 — 오염 없음"},{"id":"forceps-transfer","labelKo":"핀셋 기구 전달","resultKo":"기구 전달 완료 — 멸균 유지"},{"id":"sterile-boundary","labelKo":"멸균 경계면 확인","resultKo":"경고: 멸균 구역 5cm 침범 감지"}]},{"id":"xr-nutrition-elimination","order":3,"titleKo":"영양 및 배설 보조","titleEn":"Nutrition & Elimination Assistance","legalHours":20,"patientNameKo":"박민수","situationKo":"속이 더부룩하고 소변줄이 불편해요.","situationEn":"My stomach feels bloated and the catheter is uncomfortable.","techNoteKo":"Spatial Audio PannerNode, 중력 벡터 판정 알고리즘","interactions":[{"id":"l-tube-air","labelKo":"L-tube 공기 주입음 청취","resultKo":"위내 공기음 확인 — 튜브 위치 정상"},{"id":"catheter-fixation","labelKo":"도뇨관 고정","resultKo":"도뇨관 고정 완료"},{"id":"bag-height","labelKo":"소변백 높이 조정","resultKo":"소변백 높이 적절 — 역류 위험 없음"}]},{"id":"xr-medication-suction","order":4,"titleKo":"투약 및 기도흡인","titleEn":"Medication & Airway Suction","legalHours":20,"patientNameKo":"최수진","situationKo":"인슐린 주사랑 가래 흡인 좀 도와주세요.","situationEn":"Could you help with my insulin shot and clearing my airway?","techNoteKo":"3D 벡터 각도 연산, 정밀 인터벌 타이머 엔진","interactions":[{"id":"insulin-injection","labelKo":"인슐린 피하주사","resultKo":"주사 각도 62도 — 적정 범위(45~90도) 내 판정"},{"id":"suction-catheter","labelKo":"석션 카테터 삽입","resultKo":"흡인 시간 12초 — 권장 범위 내"}]},{"id":"xr-positioning-safety","order":5,"titleKo":"체위변경 및 안전","titleEn":"Position Change & Safety","legalHours":15,"patientNameKo":"정하늘","situationKo":"몸을 좀 돌려 눕혀 주시겠어요? 왼쪽이 잘 안 움직여요.","situationEn":"Could you help turn me over? My left side doesn't move well.","techNoteKo":"Three.js IK(역운동학), 골격 조인트 트래킹","interactions":[{"id":"support-point","labelKo":"지지점 선정","resultKo":"지지점 선정 완료 — 편마비측 보호됨"},{"id":"reposition","labelKo":"체위 변경 시행","resultKo":"체위 변경 완료 — 욕창 위험 부위 압력 해제"},{"id":"wheelchair-brake","labelKo":"휠체어 브레이크 확인","resultKo":"브레이크 잠금 확인 완료"}]}];
+
+  var LEARNERS = [{"id":"l1","name":"Maria Santos","nationality":"필리핀","level":"TOPIK 2급","wordsPracticed":128,"avgAccuracy":82,"lastActiveKo":"오늘"},{"id":"l2","name":"Nguyen Thi Lan","nationality":"베트남","level":"TOPIK 1급","wordsPracticed":64,"avgAccuracy":74,"lastActiveKo":"1일 전"},{"id":"l3","name":"Bat-Erdene","nationality":"몽골","level":"TOPIK 2급","wordsPracticed":201,"avgAccuracy":88,"lastActiveKo":"오늘"},{"id":"l4","name":"Sari Wulandari","nationality":"인도네시아","level":"TOPIK 1급","wordsPracticed":37,"avgAccuracy":65,"lastActiveKo":"3일 전"},{"id":"l5","name":"Dawa Sherpa","nationality":"네팔","level":"TOPIK 2급","wordsPracticed":95,"avgAccuracy":79,"lastActiveKo":"2일 전"}];
+
+  var DEMO_ACCOUNTS = [
+    { id: "student", password: "1234", name: "Maria Santos", role: "user" },
+    { id: "admin", password: "admin", name: "관리자", role: "admin" }
+  ];
+
+  /* ============================== STORAGE ============================== */
+  function ls() {
+    try { localStorage.setItem("__t__", "1"); localStorage.removeItem("__t__"); return localStorage; }
+    catch (e) {
+      var mem = {};
+      return { getItem: function (k) { return mem[k] || null; }, setItem: function (k, v) { mem[k] = v; }, removeItem: function (k) { delete mem[k]; } };
+    }
+  }
+  var STORE = ls();
+  function readJSON(key, fallback) { try { var v = STORE.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+  function writeJSON(key, val) { try { STORE.setItem(key, JSON.stringify(val)); } catch (e) {} }
+
+  function getAuth() { return readJSON("hc-demo-auth", null); }
+  function setAuth(a) { writeJSON("hc-demo-auth", a); }
+  function clearAuth() { STORE.removeItem("hc-demo-auth"); }
+
+  function getStats() { return readJSON("hc-demo-stats", { wordsPracticed: 0, accuracySum: 0, accuracyCount: 0 }); }
+  function recordPractice(accuracy) {
+    var s = getStats();
+    s.wordsPracticed += 1; s.accuracySum += accuracy; s.accuracyCount += 1;
+    writeJSON("hc-demo-stats", s);
+  }
+
+  function getXrProgress() { return readJSON("hc-demo-xr-progress", {}); }
+  function xrMarkCompleted(moduleId, interactionId) {
+    var p = getXrProgress();
+    var e = p[moduleId] || { completed: [], submitted: false };
+    if (e.completed.indexOf(interactionId) === -1) e.completed.push(interactionId);
+    p[moduleId] = e; writeJSON("hc-demo-xr-progress", p);
+  }
+  function xrMarkSubmitted(moduleId) {
+    var p = getXrProgress();
+    var e = p[moduleId] || { completed: [], submitted: false };
+    e.submitted = true; p[moduleId] = e; writeJSON("hc-demo-xr-progress", p);
+  }
+
+  /* ============================== SCORING (lib/scoring.ts 포팅) ============================== */
+  function toSyllables(text) { return Array.from(text.replace(/\s+/g, "")); }
+  function hashJitter(seed) {
+    var h = 0;
+    for (var i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+    return (h % 1000) / 1000;
+  }
+  function clamp01(v) { return Math.max(0, Math.min(100, v)); }
+  function alignSyllables(target, recognized) {
+    var m = target.length, n = recognized.length;
+    var dp = []; for (var i = 0; i <= m; i++) dp.push(new Array(n + 1).fill(0));
+    for (i = 0; i <= m; i++) dp[i][0] = i;
+    for (var j = 0; j <= n; j++) dp[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) {
+      dp[i][j] = target[i - 1] === recognized[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1]);
+    }
+    var ops = []; i = m; j = n;
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && target[i - 1] === recognized[j - 1]) { ops.unshift("match"); i--; j--; }
+      else if (i > 0 && j > 0 && dp[i][j] === dp[i - 1][j - 1] + 1) { ops.unshift("sub"); i--; j--; }
+      else if (i > 0 && dp[i][j] === dp[i - 1][j] + 1) { ops.unshift("del"); i--; }
+      else { ops.unshift("ins"); j--; }
+    }
+    return { ops: ops.filter(function (o) { return o !== "ins"; }), distance: dp[m][n] };
+  }
+  function scoreSentence(sentence, recognizedTextRaw) {
+    var target = sentence.syllables;
+    var recognizedText = recognizedTextRaw.trim();
+    var recognized = toSyllables(recognizedText);
+    var r = alignSyllables(target, recognized);
+    var perSyllable = target.map(function (syllable, idx) {
+      var op = r.ops[idx] || "del";
+      var jitter = hashJitter(syllable + idx);
+      var score;
+      if (op === "match") score = Math.round(90 + jitter * 10);
+      else if (op === "sub") score = Math.round(45 + jitter * 25);
+      else score = Math.round(10 + jitter * 15);
+      return { syllable: syllable, score: Math.min(100, score) };
+    });
+    var accuracy = target.length ? Math.round((1 - r.distance / Math.max(target.length, recognized.length, 1)) * 100) : 0;
+    var lengthRatio = recognized.length / Math.max(target.length, 1);
+    var lengthPenalty = Math.min(40, Math.abs(1 - lengthRatio) * 40);
+    var fluency = clamp01(Math.round(accuracy - lengthPenalty + hashJitter(recognizedText) * 8));
+    var intonation = clamp01(Math.round(accuracy * 0.6 + fluency * 0.3 + hashJitter(sentence.id) * 10));
+    var overall = clamp01(Math.round(accuracy * 0.5 + fluency * 0.3 + intonation * 0.2));
+    return { overall: overall, accuracy: clamp01(accuracy), fluency: fluency, intonation: intonation, perSyllable: perSyllable, recognizedText: recognizedText };
+  }
+  var S_BASE = 0xac00, V_COUNT = 21, T_COUNT = 28, N_COUNT = V_COUNT * T_COUNT;
+  var VOWEL_HINTS = { 1: "모음 'ㅐ' 발음을 확인하세요 — 입을 조금 더 벌리고 혀를 낮추세요.", 4: "모음 'ㅓ' 발음을 확인하세요 — 입을 자연스럽게 벌리고 짧게 발음하세요.", 5: "모음 'ㅔ' 발음을 확인하세요 — 'ㅐ'보다 입을 조금 덜 벌려보세요.", 18: "모음 'ㅡ' 발음을 확인하세요 — 입을 옆으로 펴고 짧게 발음하세요.", 20: "모음 'ㅣ' 발음을 확인하세요 — 입꼬리를 옆으로 당겨보세요." };
+  function vowelHintFor(syllable) {
+    var code = syllable.codePointAt(0);
+    var index = code - S_BASE;
+    if (index < 0 || index >= 11172) return undefined;
+    return VOWEL_HINTS[Math.floor((index % N_COUNT) / T_COUNT)];
+  }
+  var POLITE_ENDINGS = ["습니다", "세요", "ㅂ니다"];
+  function generateFeedback(sentence, result) {
+    var items = [];
+    var weakest = result.perSyllable.slice().sort(function (a, b) { return a.score - b.score; })[0];
+    if (weakest && weakest.score < 75) {
+      items.push({ tone: "warning", titleKo: "'" + weakest.syllable + "' 발음을 확인하세요", detailKo: vowelHintFor(weakest.syllable) || "조금 더 또박또박, 천천히 발음해보세요." });
+    }
+    var isPolite = POLITE_ENDINGS.some(function (e) { return sentence.textKo.indexOf(e) !== -1; });
+    if (isPolite && result.overall >= 80) items.push({ tone: "success", titleKo: "존댓말 어미를 정확하게 사용했습니다", detailKo: "환자 응대에 적합한 격식체를 잘 사용했습니다." });
+    if (items.length === 0) items.push({ tone: "success", titleKo: "전체적으로 정확하게 발음했습니다", detailKo: "이 속도와 정확도를 유지하며 다음 문장으로 넘어가세요." });
+    return items;
+  }
+
+  /* ============================== SPEECH (lib/speech.ts 포팅) ============================== */
+  function getRecognitionCtor() { return window.SpeechRecognition || window.webkitSpeechRecognition; }
+  function isSttSupported() { return !!getRecognitionCtor(); }
+  function isTtsSupported() { return "speechSynthesis" in window; }
+  var cachedVoice;
+  function pickKoreanVoice() {
+    if (cachedVoice) return cachedVoice;
+    var voices = window.speechSynthesis.getVoices();
+    cachedVoice = voices.filter(function (v) { return v.lang.indexOf("ko") === 0; })[0];
+    return cachedVoice;
+  }
+  function speak(text, opts) {
+    opts = opts || {};
+    if (!isTtsSupported()) { opts.onEnd && opts.onEnd(); return; }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "ko-KR"; u.rate = opts.rate || 1;
+    var v = pickKoreanVoice(); if (v) u.voice = v;
+    if (opts.onStart) u.onstart = opts.onStart;
+    u.onend = function () { opts.onEnd && opts.onEnd(); };
+    u.onerror = function () { opts.onEnd && opts.onEnd(); };
+    window.speechSynthesis.speak(u);
+  }
+  function startRecognition(handlers) {
+    var Ctor = getRecognitionCtor();
+    if (!Ctor) { handlers.onError("이 브라우저는 음성 인식을 지원하지 않습니다. Chrome을 사용해보세요."); return; }
+    var rec = new Ctor();
+    rec.lang = "ko-KR"; rec.interimResults = false; rec.maxAlternatives = 1; rec.continuous = false;
+    rec.onresult = function (e) { handlers.onResult((e.results[0] && e.results[0][0] && e.results[0][0].transcript) || ""); };
+    rec.onerror = function (e) { handlers.onError("음성 인식 오류: " + e.error + " (브라우저 설정에 따라 마이크 접근이 제한될 수 있습니다)"); };
+    rec.onend = function () { handlers.onEnd && handlers.onEnd(); };
+    try { rec.start(); } catch (e) { handlers.onError("마이크를 시작할 수 없습니다."); return; }
+    return function () { try { rec.stop(); } catch (e) {} };
+  }
+
+  /* ============================== ROUTER / STATE ============================== */
+  var el = document.getElementById("app");
+  var state = { view: "login", params: {}, lesson: null, xr: null };
+
+  function findSituation(unitId, situationId) {
+    var unit = ALL_UNITS.filter(function (u) { return u.id === unitId; })[0];
+    if (!unit) return null;
+    var situation = unit.situations.filter(function (s) { return s.id === situationId; })[0];
+    if (!situation) return null;
+    return { unit: unit, situation: situation };
+  }
+  function adjacentSituation(unitId, situationId, dir) {
+    var unit = ALL_UNITS.filter(function (u) { return u.id === unitId; })[0];
+    if (!unit) return null;
+    var idx = unit.situations.findIndex(function (s) { return s.id === situationId; });
+    var next = idx + dir;
+    if (next < 0 || next >= unit.situations.length) return null;
+    return { unitId: unit.id, situationId: unit.situations[next].id };
+  }
+
+  function navigate(view, params) {
+    state.view = view; state.params = params || {};
+    if (view === "learn") {
+      var found = findSituation(state.params.unitId, state.params.situationId);
+      state.lesson = {
+        unitId: found.unit.id, situationId: found.situation.id, lang: "ko",
+        sentenceIndex: 0, recordingState: "idle", avatarState: "idle",
+        lastScore: null, lastFeedback: [], chatMessages: [], recErr: null
+      };
+    }
+    if (view === "xr-practice") {
+      var idx = XR_MODULES.findIndex(function (m) { return m.id === state.params.moduleId; });
+      var prog = getXrProgress()[state.params.moduleId] || { completed: [], submitted: false };
+      state.xr = { moduleIndex: idx, started: false, dialogueDismissed: false, completed: prog.completed.slice(), reading: "대기 중…", sessionStart: Date.now() };
+    }
+    window.scrollTo(0, 0);
+    render();
+  }
+
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  /* ============================== RENDER: shell ============================== */
+  function render() {
+    if (state.view === "login") return renderLogin();
+    var auth = getAuth();
+    if (!auth) { state.view = "login"; return renderLogin(); }
+    if (state.view === "courses") return renderCourses();
+    if (state.view === "learn") return renderLesson();
+    if (state.view === "xr-list") return renderXrList();
+    if (state.view === "xr-practice") return renderXrPractice();
+    if (state.view === "admin") return renderAdmin();
+  }
+
+  function topbar(title, extraRight) {
+    var auth = getAuth();
+    return (
+      '<header class="topbar">' +
+        '<a class="mark" href="#" onclick="App.goHome();return false;">한</a>' +
+        '<div class="titles"><h1>한글케어 HangulCare</h1><p>' + esc(title) + '</p></div>' +
+        (extraRight || "") +
+        (auth ? '<span class="chip">' + esc(auth.name) + " · " + (auth.role === "admin" ? "관리자" : "학습자") + '</span>' : "") +
+        '<button class="iconbtn" onclick="App.logout()">로그아웃</button>' +
+      '</header>'
+    );
+  }
+
+  var App_goHome = function () {
+    var auth = getAuth();
+    navigate(auth && auth.role === "admin" ? "admin" : "courses");
+  };
+
+  /* ============================== LOGIN ============================== */
+  function renderLogin() {
+    el.innerHTML =
+      '<div class="loginWrap"><div class="card loginCard">' +
+        '<div class="head"><div class="mark" style="width:40px;height:40px;">한</div><div><div style="font-weight:700;font-size:.95rem;">한글케어 HangulCare</div><div style="font-size:.72rem;color:var(--text-muted);">로그인</div></div></div>' +
+        '<div class="field"><label for="loginId">아이디</label><input id="loginId" placeholder="student 또는 admin" /></div>' +
+        '<div class="field"><label for="loginPw">비밀번호</label><input id="loginPw" type="password" placeholder="••••" /></div>' +
+        '<p class="errMsg" id="loginErr" hidden></p>' +
+        '<button class="btn btn-primary" style="width:100%;" onclick="App.login()">로그인</button>' +
+        '<div class="demoBox">데모 계정으로 바로 시작하기 (실제 인증 아님)' +
+          '<div class="row"><button class="btn btn-ghost" onclick="App.quickLogin(\'student\')">학습자로 시작</button>' +
+          '<button class="btn btn-ghost" onclick="App.quickLogin(\'admin\')">관리자로 시작</button></div>' +
+        "</div>" +
+      "</div></div>";
+  }
+  var App_login = function () {
+    var id = document.getElementById("loginId").value.trim();
+    var pw = document.getElementById("loginPw").value;
+    var match = DEMO_ACCOUNTS.filter(function (a) { return a.id === id && a.password === pw; })[0];
+    if (!match) { var e = document.getElementById("loginErr"); e.hidden = false; e.textContent = "아이디 또는 비밀번호가 올바르지 않습니다."; return; }
+    setAuth({ id: match.id, name: match.name, role: match.role });
+    navigate(match.role === "admin" ? "admin" : "courses");
+  };
+  var App_quickLogin = function (id) {
+    var a = DEMO_ACCOUNTS.filter(function (x) { return x.id === id; })[0];
+    setAuth({ id: a.id, name: a.name, role: a.role });
+    navigate(a.role === "admin" ? "admin" : "courses");
+  };
+  var App_logout = function () { clearAuth(); navigate("login"); };
+
+  /* ============================== COURSES ============================== */
+  function itemButtonHtml(labelKo, onclickJs, available) {
+    return '<button class="itemBtn' + (available ? "" : " disabled") + '" ' + (available ? 'onclick="' + onclickJs + '"' : "disabled") + ">" +
+      esc(labelKo) + (available ? "<span>→</span>" : '<span class="pill" style="background:var(--chip-bg);color:var(--text-muted);">준비 중</span>') + "</button>";
+  }
+
+  function renderCourses() {
+    var stats = getStats();
+    var avgAcc = stats.accuracyCount ? Math.round(stats.accuracySum / stats.accuracyCount) : 0;
+    var xrProgress = getXrProgress();
+
+    var basicItems = BASIC_UNITS[0].situations.map(function (s) {
+      return itemButtonHtml(s.menuLabelKo, "App.openLesson('" + BASIC_UNITS[0].id + "','" + s.id + "')", true);
+    }).join("");
+    var practiceItems = PRACTICE_UNITS[0].situations.map(function (s) {
+      return itemButtonHtml(s.menuLabelKo, "App.openLesson('" + PRACTICE_UNITS[0].id + "','" + s.id + "')", true);
+    }).join("");
+    var xrItems = XR_MODULES.map(function (m) {
+      var done = xrProgress[m.id] && xrProgress[m.id].submitted;
+      return itemButtonHtml(m.titleKo + " (" + m.legalHours + "h)" + (done ? " ✓" : ""), "App.openXr('" + m.id + "')", true);
+    }).join("");
+
+    el.innerHTML =
+      topbar("진도관리 · 학습 단계 선택") +
+      '<main>' +
+        '<div class="notice">이 페이지는 로그인부터 학습·XR실습까지 전체 흐름을 브라우저에서만 테스트하는 독립 HTML입니다. ' +
+        '음성 인식(마이크)은 브라우저 설정·권한에 따라 제한될 수 있고, LLM 대화는 서버 연동 없이 규칙 기반 응답으로 대체되어 있습니다.</div>' +
+        '<div class="sectionHead"><h2>나의 진도</h2></div>' +
+        '<div class="statGrid">' +
+          '<div class="card statTile"><p>학습 문장 수</p><p>' + stats.wordsPracticed + "</p></div>" +
+          '<div class="card statTile"><p>평균 정확도</p><p>' + avgAcc + "%</p></div>" +
+          '<div class="card statTile"><p>학습 시간(추정)</p><p>' + Math.round(stats.wordsPracticed * 0.5) + "분</p></div>" +
+        "</div>" +
+        '<div class="sectionHead"><h2>기초한글</h2></div><div class="itemGrid">' + basicItems + "</div>" +
+        '<div class="sectionHead"><h2>실습한글</h2></div><div class="itemGrid">' + practiceItems + "</div>" +
+        '<div class="sectionHead"><h2>XR실습</h2></div><div class="itemGrid">' + xrItems + "</div>" +
+      "</main>";
+  }
+  var App_openLesson = function (unitId, situationId) { navigate("learn", { unitId: unitId, situationId: situationId }); };
+  var App_openXr = function (moduleId) { navigate("xr-practice", { moduleId: moduleId }); };
+
+  /* ============================== ADMIN ============================== */
+  function renderAdmin() {
+    var totalWords = LEARNERS.reduce(function (s, l) { return s + l.wordsPracticed; }, 0);
+    var avgAcc = Math.round(LEARNERS.reduce(function (s, l) { return s + l.avgAccuracy; }, 0) / LEARNERS.length);
+    var rows = LEARNERS.map(function (l) {
+      return "<tr><td>" + esc(l.name) + "</td><td>" + esc(l.nationality) + "</td><td>" + esc(l.level) + "</td><td>" + l.wordsPracticed + "</td><td>" + l.avgAccuracy + "%</td><td>" + esc(l.lastActiveKo) + "</td></tr>";
+    }).join("");
+    el.innerHTML =
+      topbar("관리자 · 진도관리") +
+      '<main>' +
+        '<div class="notice">학습자 목록은 실제 사용자 데이터가 아닌 데모용 목데이터입니다.</div>' +
+        '<div class="statGrid" style="margin-top:12px;">' +
+          '<div class="card statTile"><p>전체 학습자</p><p>' + LEARNERS.length + "</p></div>" +
+          '<div class="card statTile"><p>평균 정확도</p><p>' + avgAcc + "%</p></div>" +
+          '<div class="card statTile"><p>누적 학습 문장 수</p><p>' + totalWords + "</p></div>" +
+        "</div>" +
+        '<div class="card" style="margin-top:14px;padding:14px;overflow-x:auto;"><table><thead><tr><th>이름</th><th>국적</th><th>TOPIK</th><th>학습 문장 수</th><th>평균 정확도</th><th>최근 학습</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
+        '<div style="margin-top:14px;"><a class="backlink" href="#" onclick="App.nav(\'courses\');return false;">학습자 화면 미리보기 →</a></div>' +
+      "</main>";
+  }
+  var App_nav = function (v) { navigate(v); };
+
+  /* ============================== LESSON ============================== */
+  function renderLesson() {
+    var L = state.lesson;
+    var found = findSituation(L.unitId, L.situationId);
+    var unit = found.unit, situation = found.situation;
+    var sentence = situation.sentences[Math.min(L.sentenceIndex, situation.sentences.length - 1)];
+    var prev = adjacentSituation(L.unitId, L.situationId, -1);
+    var next = adjacentSituation(L.unitId, L.situationId, 1);
+    var idx = unit.situations.findIndex(function (s) { return s.id === L.situationId; });
+
+    var lang = L.lang;
+    var title = lang === "ko" ? situation.titleKo : situation.titleEn;
+    var desc = lang === "ko" ? situation.descriptionKo : situation.descriptionEn;
+
+    var termsHtml = situation.terms.map(function (t) {
+      return '<div class="termCard"><div><div class="word">' + esc(t.hangul) + '</div><div class="rom">[' + esc(t.romanization) + "] · " + esc(t.glossEn) + "</div></div>" +
+        '<button class="playBtn" onclick="App.speakText(\'' + esc(t.hangul).replace(/'/g, "\\'") + "')\">▶</button></div>";
+    }).join("");
+
+    var syllablesHtml = sentence.syllables.map(function (syl, i) {
+      var cls = "pending";
+      if (L.lastScore) {
+        var sc = L.lastScore.perSyllable[i];
+        cls = sc ? (sc.score >= 80 ? "good" : sc.score >= 60 ? "mid" : "bad") : "pending";
+      }
+      return '<span class="' + cls + '">' + esc(syl) + "</span>";
+    }).join("");
+
+    var recBtnLabel = L.recordingState === "recording" ? "● 녹음 중지" : L.recordingState === "scoring" ? "채점 중…" : "🎙 따라 말하기";
+    var recBtnCls = L.recordingState === "recording" ? "recording" : "idle";
+
+    var scoreHtml;
+    if (!L.lastScore) {
+      scoreHtml = '<p style="color:var(--text-muted);font-size:.86rem;">' + (L.recordingState === "scoring" ? "채점 중입니다…" : "따라 읽기를 완료하면 결과가 표시됩니다.") + "</p>";
+    } else {
+      var sc = L.lastScore;
+      var chips = sc.perSyllable.map(function (s) {
+        var bg = s.score >= 80 ? "background:var(--good-bg);color:var(--good-text);" : s.score >= 60 ? "background:var(--warn-bg);color:var(--warn-text);" : "background:var(--danger-bg);color:var(--danger-text);";
+        return '<div class="chip-syl" style="' + bg + '">' + esc(s.syllable) + "<br>" + s.score + "</div>";
+      }).join("");
+      scoreHtml =
+        '<div style="display:flex;gap:14px;align-items:center;">' +
+          '<div class="scoreCircle">' + sc.overall + "</div>" +
+          '<div style="flex:1;">' +
+            barRow("정확도 Accuracy", sc.accuracy) + barRow("유창성 Fluency", sc.fluency) + barRow("억양 Intonation", sc.intonation) +
+          "</div></div>" +
+        '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;">' + chips + "</div>" +
+        '<p style="margin-top:10px;font-size:.68rem;color:var(--text-muted);">* 실제 음성 채점 모델이 아닌 텍스트 유사도 근사치입니다.</p>';
+    }
+
+    var feedbackHtml;
+    if (L.recordingState !== "result") feedbackHtml = '<p style="color:var(--text-muted);font-size:.86rem;">따라 읽기를 완료하면 피드백이 표시됩니다.</p>';
+    else feedbackHtml = L.lastFeedback.map(function (f) {
+      return '<div class="feedbackItem ' + f.tone + '"><strong>' + esc(f.titleKo) + "</strong><div style=\"opacity:.85;margin-top:2px;\">" + esc(f.detailKo) + "</div></div>";
+    }).join("");
+
+    var chatHtml = L.chatMessages.length === 0
+      ? '<p style="color:var(--text-muted);font-size:.84rem;">궁금한 표현을 물어보거나, 역할극으로 대화를 연습해보세요.</p>'
+      : L.chatMessages.map(function (m) { return '<div class="chatMsg ' + m.role + '">' + esc(m.content) + "</div>"; }).join("");
+
+    el.innerHTML =
+      '<header class="topbar">' +
+        '<a class="mark" href="#" onclick="App.nav(\'courses\');return false;">한</a>' +
+        '<div class="titles"><h1>' + esc(lang === "ko" ? unit.titleKo : unit.titleEn) + '</h1><p>한글케어 학습 화면</p></div>' +
+        '<span class="chip">' + (idx + 1) + " / " + unit.situations.length + "</span>" +
+        '<button class="iconbtn" ' + (prev ? "" : "disabled") + ' onclick="App.gotoSituation(-1)">←</button>' +
+        '<button class="iconbtn" ' + (next ? "" : "disabled") + ' onclick="App.gotoSituation(1)">→</button>' +
+        '<button class="iconbtn" onclick="App.setLang(\'ko\')" style="' + (lang === "ko" ? "background:var(--brand);" : "") + '">한국어</button>' +
+        '<button class="iconbtn" onclick="App.setLang(\'en\')" style="' + (lang === "en" ? "background:var(--brand);" : "") + '">EN</button>' +
+      "</header>" +
+      '<main class="lessonGrid">' +
+        '<div class="stack">' +
+          '<div class="card" style="padding:16px;"><p class="eyebrow">상황 SITUATION</p><h2 style="font-size:1.1rem;margin-top:4px;">' + esc(title) + "</h2>" +
+            '<p style="font-size:.86rem;color:var(--text-muted);margin-top:6px;">' + esc(desc) + "</p>" +
+            '<div class="tagRow"><span class="tag">' + esc(situation.placeTag) + '</span><span class="tag">' + esc(situation.formalityTag) + '</span><span class="tag">' + esc(situation.difficultyTag) + "</span></div></div>" +
+          '<div class="card" style="padding:16px;"><p class="eyebrow">오늘의 용어 KEY TERMS</p><div class="termGrid">' + termsHtml + "</div></div>" +
+          '<div class="repeatCard"><div style="display:flex;justify-content:space-between;align-items:center;">' +
+            '<p class="eyebrow" style="color:rgba(255,255,255,.75);">따라 읽기 · REPEAT AFTER ME</p>' +
+            '<div style="display:flex;gap:10px;font-size:.74rem;opacity:.8;"><button onclick="App.speakSentence(1)" style="background:none;border:none;color:#fff;">▶ 원어민 발음</button><button onclick="App.speakSentence(0.6)" style="background:none;border:none;color:#fff;">느리게</button></div>' +
+          "</div>" +
+          '<div class="syllables" style="margin-top:8px;">' + syllablesHtml + "</div>" +
+          '<p style="margin-top:6px;font-size:.78rem;color:rgba(255,255,255,.65);">[' + esc(sentence.romanization) + "] — " + esc(sentence.textEn) + "</p>" +
+          '<button class="recordBtn ' + recBtnCls + '" ' + (L.recordingState === "scoring" ? "disabled" : "") + ' onclick="App.toggleRecording()">' + recBtnLabel + "</button>" +
+          (L.recErr ? '<p style="margin-top:8px;font-size:.76rem;color:#fca5a5;">' + esc(L.recErr) + "</p>" : "") +
+          (!isSttSupported() ? '<p style="margin-top:8px;font-size:.76rem;color:#fcd34d;">이 브라우저는 음성 인식을 지원하지 않습니다.</p>' : "") +
+          "</div>" +
+        "</div>" +
+        '<div class="stack">' +
+          '<div class="avatarCard"><div style="display:flex;justify-content:space-between;"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 아바타 선생님</p><span class="pill" style="background:rgba(255,255,255,.15);">' + (L.avatarState === "speaking" ? "● 말하는 중" : L.avatarState === "listening" ? "● 듣는 중" : "대기 중") + "</span></div>" +
+            '<div class="avatarFace ' + (L.avatarState === "speaking" ? "speaking" : "") + '" style="margin-top:8px;"><div class="dots" style="flex-direction:column;align-items:center;gap:6px;"><div style="display:flex;gap:16px;"><span class="eye"></span><span class="eye"></span></div><div class="mouth"></div></div></div>' +
+            '<div style="margin-top:10px;background:rgba(255,255,255,.1);border-radius:10px;padding:9px 11px;font-size:.84rem;">' + esc(sentence.textKo) + '<div style="font-size:.72rem;opacity:.75;margin-top:2px;">' + esc(sentence.textEn) + "</div></div>" +
+            '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;"><button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(1,true)">다시 듣기</button><button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(0.5,true)">입모양 보기</button><button class="btn" style="background:#fff;color:var(--brand-dark);" onclick="App.startRoleplay()">대화 시작</button></div>' +
+          "</div>" +
+          '<div class="card" style="padding:14px;"><div style="display:flex;align-items:center;gap:10px;"><div style="width:36px;height:36px;border-radius:999px;background:var(--brand-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--brand-dark);">MS</div><div><p style="font-size:.86rem;font-weight:700;">Maria Santos</p><p style="font-size:.72rem;color:var(--text-muted);">필리핀 · 간호조무 실습 3기 · TOPIK 2급</p></div></div>' +
+            '<div class="statGrid" style="margin-top:10px;">' + (function () { var s = getStats(); var a = s.accuracyCount ? Math.round(s.accuracySum / s.accuracyCount) : 0; return '<div class="statTile" style="padding:8px;"><p>학습 문장</p><p>' + s.wordsPracticed + "</p></div>" + '<div class="statTile" style="padding:8px;"><p>평균 정확도</p><p>' + a + "%</p></div>" + '<div class="statTile" style="padding:8px;"><p>학습 시간</p><p>' + Math.round(s.wordsPracticed * 0.5) + "분</p></div>"; })() + "</div></div>" +
+        "</div>" +
+      "</main>" +
+      '<section style="max-width:1180px;margin:14px auto 0;padding-inline:16px;display:grid;grid-template-columns:1fr;gap:12px;">' +
+        '<div class="card" style="padding:16px;"><p class="eyebrow">발음 정확도 PRONUNCIATION</p><div style="margin-top:10px;">' + scoreHtml + "</div></div>" +
+        '<div class="card" style="padding:16px;"><p class="eyebrow">AI 피드백 FEEDBACK</p><div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">' + feedbackHtml + "</div>" +
+          '<div style="display:flex;gap:8px;margin-top:12px;"><button class="btn btn-primary" style="flex:1;" ' + (L.recordingState !== "result" ? "disabled" : "") + ' onclick="App.focusPractice()">집중 연습</button><button class="btn btn-ghost" style="flex:1;" ' + (L.recordingState !== "result" || L.sentenceIndex + 1 >= situation.sentences.length ? "disabled" : "") + ' onclick="App.nextSentence()">다음 문장 →</button></div></div>' +
+        '<div class="card" style="padding:16px;display:flex;flex-direction:column;min-height:260px;"><p class="eyebrow">AI 대화 CHAT</p><p style="font-size:.7rem;color:var(--text-muted);margin-top:4px;">질문은 모국어로 해도 됩니다 (정적 데모: 규칙 기반 응답)</p>' +
+          '<div id="chatLog" style="flex:1;display:flex;flex-direction:column;gap:6px;margin-top:8px;overflow-y:auto;max-height:220px;">' + chatHtml + "</div>" +
+          '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;"><button class="btn btn-ghost" style="font-size:.74rem;padding:6px 10px;" onclick="App.sendChat(\'예문 더 보기\')">예문 더 보기</button><button class="btn btn-ghost" style="font-size:.74rem;padding:6px 10px;" onclick="App.sendChat(\'역할극 시작\')">역할극 시작</button></div>' +
+          '<form style="display:flex;gap:6px;margin-top:8px;" onsubmit="App.submitChat(event)"><input id="chatInput" placeholder="메시지를 입력하세요…" style="flex:1;border:1px solid var(--card-border);border-radius:9px;padding:8px 11px;background:var(--bg);color:var(--text);" /><button class="btn btn-primary" type="submit">↑</button></form>' +
+        "</div>" +
+      "</section>";
+  }
+
+  var App_setLang = function (l) { state.lesson.lang = l; renderLesson(); };
+  var App_gotoSituation = function (dir) {
+    var target = adjacentSituation(state.lesson.unitId, state.lesson.situationId, dir);
+    if (target) navigate("learn", target);
+  };
+  var App_speakText = function (text) { speak(text); };
+  var App_speakSentence = function (rate, isAvatar) {
+    var found = findSituation(state.lesson.unitId, state.lesson.situationId);
+    var sentence = found.situation.sentences[Math.min(state.lesson.sentenceIndex, found.situation.sentences.length - 1)];
+    if (isAvatar) state.lesson.avatarState = "speaking";
+    renderLesson();
+    speak(sentence.textKo, { rate: rate, onEnd: function () { if (isAvatar) { state.lesson.avatarState = "idle"; renderLesson(); } } });
+  };
+  var App_toggleRecording = function () {
+    var L = state.lesson;
+    if (L.recordingState === "recording") { App._stopRec && App._stopRec(); return; }
+    L.recordingState = "recording"; L.recErr = null; L.avatarState = "listening"; L.lastScore = null; L.lastFeedback = [];
+    renderLesson();
+    var found = findSituation(L.unitId, L.situationId);
+    var sentence = found.situation.sentences[Math.min(L.sentenceIndex, found.situation.sentences.length - 1)];
+    App._stopRec = startRecognition({
+      onResult: function (text) {
+        L.recordingState = "scoring"; renderLesson();
+        setTimeout(function () {
+          var score = scoreSentence(sentence, text);
+          var feedback = generateFeedback(sentence, score);
+          L.recordingState = "result"; L.lastScore = score; L.lastFeedback = feedback; L.avatarState = "idle";
+          recordPractice(score.overall);
+          renderLesson();
+        }, 450);
+      },
+      onError: function (msg) { L.recordingState = "idle"; L.avatarState = "idle"; L.recErr = msg; renderLesson(); }
+    });
+  };
+  var App_focusPractice = function () { state.lesson.recordingState = "idle"; state.lesson.lastScore = null; state.lesson.lastFeedback = []; renderLesson(); };
+  var App_nextSentence = function () {
+    var found = findSituation(state.lesson.unitId, state.lesson.situationId);
+    if (state.lesson.sentenceIndex + 1 < found.situation.sentences.length) {
+      state.lesson.sentenceIndex += 1; state.lesson.recordingState = "idle"; state.lesson.lastScore = null; state.lesson.lastFeedback = [];
+      renderLesson();
+    }
+  };
+  function mockChatReply(situation, message) {
+    var term = situation.terms.filter(function (t) { return message.indexOf(t.hangul) !== -1; })[0];
+    if (term) return "'" + term.hangul + "'는 " + term.glossEn + " 라는 뜻이에요. [" + term.romanization + "]로 발음합니다.";
+    if (message.indexOf("예문") !== -1) { var s2 = situation.sentences[1] || situation.sentences[0]; return "다른 표현 예: \"" + s2.textKo + "\" (" + s2.textEn + ")"; }
+    if (message.indexOf("역할") !== -1) return "좋아요, 제가 환자 역할을 해볼게요. \"" + situation.descriptionKo + "\" 상황이에요. 편하게 말을 걸어보세요.";
+    return "질문 감사합니다! 이 화면은 정적 데모라 미리 정해진 답변만 드려요. 실제 앱에서는 Gemini API가 상황에 맞춰 답합니다.";
+  }
+  var App_sendChat = function (text) {
+    var found = findSituation(state.lesson.unitId, state.lesson.situationId);
+    state.lesson.chatMessages.push({ role: "user", content: text });
+    state.lesson.chatMessages.push({ role: "assistant", content: mockChatReply(found.situation, text) });
+    renderLesson();
+  };
+  var App_submitChat = function (ev) {
+    ev.preventDefault();
+    var input = document.getElementById("chatInput");
+    var val = input.value.trim();
+    if (!val) return;
+    App_sendChat(val);
+  };
+  var App_startRoleplay = function () { App_sendChat("환자 역할을 맡아서 저와 대화를 시작해 주세요."); };
+
+  function barRow(label, value) {
+    return '<div style="margin-bottom:6px;"><div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--text-muted);"><span>' + label + "</span><span>" + value + '%</span></div><div class="barTrack"><div class="barFill" style="width:' + value + '%"></div></div></div>';
+  }
+
+  /* ============================== XR LIST ============================== */
+  function renderXrList() {
+    var prog = getXrProgress();
+    var cards = XR_MODULES.map(function (m) {
+      var done = prog[m.id] && prog[m.id].submitted;
+      return '<button class="card modCard" onclick="App.openXr(\'' + m.id + '\')">' +
+        '<div class="top"><span class="order">' + String(m.order).padStart(2, "0") + '</span><span style="margin-left:auto;font-size:.72rem;color:var(--text-muted);" class="mono">법정 ' + m.legalHours + "시간</span></div>" +
+        "<h3 style=\"font-size:.92rem;\">" + esc(m.titleKo) + "</h3><p style=\"font-size:.72rem;color:var(--text-muted);\">" + esc(m.titleEn) + "</p>" +
+        '<p style="font-size:.76rem;color:var(--text-muted);">환자: ' + esc(m.patientNameKo) + "</p>" +
+        '<div style="display:flex;gap:6px;margin-top:auto;"><span class="pill" style="background:var(--chip-bg);color:var(--text-muted);">테스트 가능</span>' + (done ? '<span class="pill" style="background:var(--good-bg);color:var(--good-text);">완료 ✓</span>' : "") + "</div></button>";
+    }).join("");
+    el.innerHTML = topbar("XR실습 · HnaCare XR") +
+      '<main><a class="backlink" href="#" onclick="App.nav(\'courses\');return false;">← 코스 목록</a>' +
+      '<div class="sectionHead" style="margin-top:10px;"><h2>XR실습 5대 모듈</h2></div>' +
+      '<div class="modGrid">' + cards + "</div></main>";
+  }
+
+  /* ============================== XR PRACTICE ============================== */
+  function renderXrPractice() {
+    var X = state.xr, m = XR_MODULES[X.moduleIndex];
+    var prev = X.moduleIndex > 0 ? XR_MODULES[X.moduleIndex - 1] : null;
+    var next = X.moduleIndex < XR_MODULES.length - 1 ? XR_MODULES[X.moduleIndex + 1] : null;
+
+    var logHtml = m.interactions.filter(function (it) { return X.completed.indexOf(it.id) !== -1; })
+      .map(function (it) { return "<div><strong>" + esc(it.labelKo) + "</strong> — " + esc(it.resultKo) + "</div>"; }).join("");
+
+    var interactionBtns = m.interactions.map(function (it) {
+      var done = X.completed.indexOf(it.id) !== -1;
+      return '<button class="railBtn" ' + (X.started ? "" : "disabled") + ' onclick="App.xrInteract(\'' + it.id + '\')">' + esc(it.labelKo) + (done ? ' <span style="color:var(--good-text);">✓</span>' : "") + "</button>";
+    }).join("");
+
+    el.innerHTML =
+      '<header class="topbar">' +
+        '<a class="mark" href="#" onclick="App.nav(\'xr-list\');return false;">한</a>' +
+        '<div class="titles"><h1>' + esc(m.titleKo) + '</h1><p>환자 ' + esc(m.patientNameKo) + "</p></div>" +
+        '<span class="chip">모듈 ' + (X.moduleIndex + 1) + " / " + XR_MODULES.length + "</span>" +
+        '<button class="iconbtn" ' + (prev ? "" : "disabled") + ' onclick="App.xrGoto(-1)">←</button>' +
+        '<button class="iconbtn" ' + (next ? "" : "disabled") + ' onclick="App.xrGoto(1)">→</button>' +
+        '<button class="iconbtn" onclick="App.nav(\'xr-list\')">← 목록</button>' +
+      "</header>" +
+      '<main style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;">' +
+        '<div class="viewport">' +
+          '<span class="vpLabel">3D VIEWPORT · WIREFRAME PREVIEW</span>' +
+          '<svg viewBox="0 0 400 230" fill="none" stroke="#7cffb2" stroke-width="1.4" opacity=".85">' +
+            '<rect x="26" y="150" width="230" height="46" rx="6"></rect><line x1="26" y1="168" x2="256" y2="168"></line>' +
+            '<rect x="14" y="112" width="16" height="88" rx="3"></rect><rect x="252" y="128" width="14" height="72" rx="3"></rect>' +
+            '<line x1="40" y1="196" x2="40" y2="212"></line><line x1="242" y1="196" x2="242" y2="212"></line>' +
+            '<ellipse cx="150" cy="150" rx="78" ry="17"></ellipse><rect x="70" y="128" width="46" height="24" rx="10"></rect><circle cx="92" cy="132" r="15"></circle>' +
+            '<line x1="320" y1="40" x2="320" y2="150" stroke-dasharray="2 4"></line><circle cx="320" cy="36" r="7"></circle>' +
+            '<rect x="340" y="70" width="46" height="34" rx="4"></rect><polyline points="344,90 352,90 356,78 362,100 368,84 372,90 382,90"></polyline>' +
+          "</svg>" +
+          '<div class="monitorPanel"><div class="lbl">인터랙션 결과 모니터</div><div class="reading">' + esc(X.reading) + '</div>' +
+            (logHtml ? '<div class="log">' + logHtml + "</div>" : "") + "</div>" +
+          (!X.dialogueDismissed
+            ? '<div class="dialogueBubble"><div class="who">' + esc(m.patientNameKo) + '</div><div class="say">' + esc(m.situationKo) + '</div><div class="sayEn">' + esc(m.situationEn) + '</div><button class="btn btn-primary" style="margin-top:8px;padding:6px 12px;font-size:.78rem;" onclick="App.xrDismissDialogue()">다음</button></div>'
+            : '<span class="hint">▶ 오른쪽에서 실습시작을 눌러 진행하세요</span>') +
+        "</div>" +
+        '<div class="rail">' +
+          '<button class="railBtn" onclick="App.xrModal(\'환자정보\')">환자정보</button>' +
+          '<button class="railBtn" onclick="App.xrModal(\'상황안내\')">상황안내</button>' +
+          '<button class="railBtn ' + (X.started ? "started" : "start") + '" ' + (X.started ? "disabled" : "") + ' onclick="App.xrStart()">' + (X.started ? "실습 진행 중" : "실습시작") + "</button>" +
+          interactionBtns +
+          '<button class="railBtn" onclick="App.xrModal(\'도움말\')">도움말</button>' +
+          '<button class="railBtn submit" ' + (X.completed.length === 0 ? "disabled" : "") + ' onclick="App.xrSubmit()">리포트제출</button>' +
+          (X.completed.length === 0 ? '<p style="font-size:.7rem;color:var(--text-muted);padding:0 2px;">인터랙션을 1개 이상 완료하면 제출할 수 있어요.</p>' : "") +
+        "</div>" +
+      "</main>";
+  }
+  var App_xrGoto = function (dir) {
+    var ni = state.xr.moduleIndex + dir;
+    if (ni < 0 || ni >= XR_MODULES.length) return;
+    navigate("xr-practice", { moduleId: XR_MODULES[ni].id });
+  };
+  var App_xrDismissDialogue = function () { state.xr.dialogueDismissed = true; renderXrPractice(); };
+  var App_xrStart = function () { state.xr.started = true; renderXrPractice(); };
+  var App_xrInteract = function (interactionId) {
+    var X = state.xr, m = XR_MODULES[X.moduleIndex];
+    if (!X.started) return;
+    var it = m.interactions.filter(function (i) { return i.id === interactionId; })[0];
+    X.reading = it.resultKo;
+    if (X.completed.indexOf(it.id) === -1) { X.completed.push(it.id); xrMarkCompleted(m.id, it.id); }
+    renderXrPractice();
+  };
+  var App_xrSubmit = function () {
+    var X = state.xr, m = XR_MODULES[X.moduleIndex];
+    if (X.completed.length === 0) return;
+    xrMarkSubmitted(m.id);
+    var items = m.interactions.filter(function (it) { return X.completed.indexOf(it.id) !== -1; })
+      .map(function (it) { return '<div style="border-top:1px solid var(--card-border);padding:8px 0;"><strong>' + esc(it.labelKo) + "</strong><div class=\"mono\" style=\"font-size:.76rem;color:var(--text-muted);margin-top:2px;\">" + esc(it.resultKo) + "</div></div>"; }).join("");
+    openModal("리포트 — " + m.titleKo, '<p style="font-size:.84rem;color:var(--text-muted);">환자 ' + esc(m.patientNameKo) + " · 완료 " + X.completed.length + "/" + m.interactions.length + "개 인터랙션</p>" + items);
+  };
+  var App_xrModal = function (which) {
+    var m = XR_MODULES[state.xr.moduleIndex];
+    if (which === "환자정보") openModal("환자정보", "<p style=\"font-size:.86rem;line-height:1.6;\"><strong>" + esc(m.patientNameKo) + "</strong><br>실습 모듈: " + esc(m.titleKo) + "<br>법정 실습시간: " + m.legalHours + "시간<br>적용 예정 기술: " + esc(m.techNoteKo) + "</p>");
+    else if (which === "상황안내") openModal("상황안내", "<p style=\"font-size:.84rem;color:var(--text-muted);\">(실제 서비스에서는 영상이 재생됩니다. 프로토타입은 텍스트로 대체합니다.)</p><p style=\"font-size:.86rem;\">“" + esc(m.situationKo) + "”<br><span style=\"color:var(--text-muted);\">" + esc(m.situationEn) + "</span></p>");
+    else openModal("도움말", '<p style="font-size:.84rem;">1. <strong>실습시작</strong>을 눌러 인터랙션 버튼을 활성화하세요.</p><p style="font-size:.84rem;">2. 각 버튼을 눌러 결과를 확인하세요.</p><p style="font-size:.84rem;">3. 하나 이상 완료하면 <strong>리포트제출</strong>로 마무리할 수 있어요.</p>');
+  };
+
+  /* ============================== MODAL ============================== */
+  var modalMask = document.getElementById("modalMask");
+  var modalBody = document.getElementById("modalBody");
+  function openModal(title, bodyHtml) {
+    modalBody.innerHTML = "<h3 style=\"font-size:1rem;margin-bottom:10px;\">" + esc(title) + "</h3>" + bodyHtml + '<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="App.closeModal()">닫기</button>';
+    modalMask.hidden = false;
+  }
+  modalMask.addEventListener("click", function (e) { if (e.target === modalMask) modalMask.hidden = true; });
+  var App_closeModal = function () { modalMask.hidden = true; };
+
+  /* ============================== EXPORT ============================== */
+  window.App = {
+    login: App_login, quickLogin: App_quickLogin, logout: App_logout, goHome: App_goHome, nav: App_nav,
+    openLesson: App_openLesson, openXr: App_openXr,
+    setLang: App_setLang, gotoSituation: App_gotoSituation, speakText: App_speakText, speakSentence: App_speakSentence,
+    toggleRecording: App_toggleRecording, focusPractice: App_focusPractice, nextSentence: App_nextSentence,
+    sendChat: App_sendChat, submitChat: App_submitChat, startRoleplay: App_startRoleplay,
+    xrGoto: App_xrGoto, xrDismissDialogue: App_xrDismissDialogue, xrStart: App_xrStart, xrInteract: App_xrInteract, xrSubmit: App_xrSubmit, xrModal: App_xrModal,
+    closeModal: App_closeModal
+  };
+
+  /* ============================== BOOT ============================== */
+  var auth = getAuth();
+  if (auth) navigate(auth.role === "admin" ? "admin" : "courses");
+  else navigate("login");
+})();
+</script>
+</body>
+</html>

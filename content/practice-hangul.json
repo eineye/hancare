@@ -1,0 +1,119 @@
+[
+  {
+    "id": "unit-1",
+    "category": "practice",
+    "titleKo": "간호조무 실습 한국어",
+    "titleEn": "Korean for nursing-assistant trainees",
+    "situations": [
+      {
+        "id": "situation-1",
+        "menuLabelKo": "혈압·체온 측정",
+        "menuLabelEn": "Vital signs",
+        "titleKo": "아침 회진 전, 환자의 혈압을 측정합니다.",
+        "titleEn": "Before morning rounds, you measure the patient's blood pressure.",
+        "descriptionKo": "환자에게 인사하고, 무엇을 할지 설명한 뒤 동의를 구하세요.",
+        "descriptionEn": "Greet the patient, explain what you'll do, then ask for consent.",
+        "placeTag": "병실 · Patient room",
+        "formalityTag": "존댓말 · Polite form",
+        "difficultyTag": "난이도 초급 2",
+        "terms": [
+          { "id": "term-bp", "hangul": "혈압", "romanization": "hyeol-ap", "glossEn": "blood pressure" },
+          { "id": "term-temp", "hangul": "체온", "romanization": "che-on", "glossEn": "body temperature" },
+          { "id": "term-pulse", "hangul": "맥박", "romanization": "maek-bak", "glossEn": "pulse" },
+          { "id": "term-injection", "hangul": "주사", "romanization": "ju-sa", "glossEn": "injection" }
+        ],
+        "sentences": [
+          {
+            "id": "sentence-1-1",
+            "textKo": "혈압 좀 재겠습니다.",
+            "textEn": "I'll take your blood pressure now.",
+            "romanization": "hyeol-ap jom jae-get-seum-ni-da",
+            "syllables": ["혈", "압", "좀", "재", "겠", "습", "니", "다"]
+          },
+          {
+            "id": "sentence-1-2",
+            "textKo": "팔을 조금만 올려 주세요.",
+            "textEn": "Please raise your arm a little.",
+            "romanization": "pal-eul jo-geum-man ol-lyeo ju-se-yo",
+            "syllables": ["팔", "을", "조", "금", "만", "올", "려", "주", "세", "요"]
+          },
+          {
+            "id": "sentence-1-3",
+            "textKo": "체온도 같이 확인하겠습니다.",
+            "textEn": "I'll also check your temperature.",
+            "romanization": "che-on-do gat-i hwak-in-ha-get-seum-ni-da",
+            "syllables": ["체", "온", "도", "같", "이", "확", "인", "하", "겠", "습", "니", "다"]
+          }
+        ]
+      },
+      {
+        "id": "situation-2",
+        "menuLabelKo": "투약 시간 안내",
+        "menuLabelEn": "Medication time",
+        "titleKo": "식후 투약 시간을 안내합니다.",
+        "titleEn": "You let the patient know it's time for their medicine after a meal.",
+        "descriptionKo": "약의 이름과 복용 방법을 설명하고, 부작용이 있는지 확인하세요.",
+        "descriptionEn": "Explain the medicine's name and how to take it, then check for side effects.",
+        "placeTag": "병실 · Patient room",
+        "formalityTag": "존댓말 · Polite form",
+        "difficultyTag": "난이도 초급 2",
+        "terms": [
+          { "id": "term-medicine", "hangul": "약", "romanization": "yak", "glossEn": "medicine" },
+          { "id": "term-pill", "hangul": "알약", "romanization": "al-yak", "glossEn": "pill" },
+          { "id": "term-prescription", "hangul": "처방전", "romanization": "cheo-bang-jeon", "glossEn": "prescription" },
+          { "id": "term-side-effect", "hangul": "부작용", "romanization": "bu-jag-yong", "glossEn": "side effect" }
+        ],
+        "sentences": [
+          {
+            "id": "sentence-2-1",
+            "textKo": "지금 약 드실 시간이에요.",
+            "textEn": "It's time to take your medicine now.",
+            "romanization": "ji-geum yak deu-sil si-gan-i-e-yo",
+            "syllables": ["지", "금", "약", "드", "실", "시", "간", "이", "에", "요"]
+          },
+          {
+            "id": "sentence-2-2",
+            "textKo": "물과 함께 드세요.",
+            "textEn": "Please take it with water.",
+            "romanization": "mul-gwa ham-kke deu-se-yo",
+            "syllables": ["물", "과", "함", "께", "드", "세", "요"]
+          }
+        ]
+      },
+      {
+        "id": "situation-3",
+        "menuLabelKo": "통증 호소 응대",
+        "menuLabelEn": "Patient in pain",
+        "titleKo": "환자가 통증을 호소합니다.",
+        "titleEn": "The patient reports feeling pain.",
+        "descriptionKo": "어디가 아픈지, 얼마나 아픈지 물어보고 담당 간호사에게 전달하세요.",
+        "descriptionEn": "Ask where it hurts and how much, then relay it to the nurse in charge.",
+        "placeTag": "병실 · Patient room",
+        "formalityTag": "존댓말 · Polite form",
+        "difficultyTag": "난이도 초급 1",
+        "terms": [
+          { "id": "term-pain", "hangul": "통증", "romanization": "tong-jeung", "glossEn": "pain" },
+          { "id": "term-hurt", "hangul": "아프다", "romanization": "a-peu-da", "glossEn": "to hurt" },
+          { "id": "term-dizzy", "hangul": "어지럽다", "romanization": "eo-ji-reop-da", "glossEn": "dizzy" },
+          { "id": "term-uncomfortable", "hangul": "불편하다", "romanization": "bul-pyeon-ha-da", "glossEn": "uncomfortable" }
+        ],
+        "sentences": [
+          {
+            "id": "sentence-3-1",
+            "textKo": "어디가 아프세요?",
+            "textEn": "Where does it hurt?",
+            "romanization": "eo-di-ga a-peu-se-yo",
+            "syllables": ["어", "디", "가", "아", "프", "세", "요"]
+          },
+          {
+            "id": "sentence-3-2",
+            "textKo": "간호사 선생님을 불러 드릴게요.",
+            "textEn": "I'll call the nurse for you.",
+            "romanization": "gan-ho-sa seon-saeng-nim-eul bul-leo deu-ril-ge-yo",
+            "syllables": ["간", "호", "사", "선", "생", "님", "을", "불", "러", "드", "릴", "게", "요"]
+          }
+        ]
+      }
+    ]
+  }
+]
