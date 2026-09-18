@@ -30,7 +30,7 @@ export default function AuthGuard({
       return;
     }
     if (role !== 'any' && account.role !== role) {
-      router.replace(account.role === 'admin' ? '/admin' : '/courses');
+      router.replace(account.role === 'admin' ? '/admin' : '/home');
     }
   }, [hydrated, account, role, router]);
 

@@ -83,15 +83,15 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
       title: `리포트 — ${m.titleKo}`,
       body: (
         <div>
-          <p className="mb-2 text-sm text-gray-500">
+          <p className="mb-2 text-sm text-muted">
             환자 {m.patientNameKo} · 완료 {completedIds.length}/{m.interactions.length}개 인터랙션
           </p>
           {m.interactions
             .filter((it) => completedIds.includes(it.id))
             .map((it) => (
-              <div key={it.id} className="border-t border-black/5 py-2">
+              <div key={it.id} className="border-t border-line py-2">
                 <p className="text-sm font-semibold text-brand-dark">{it.labelKo}</p>
-                <p className="mt-0.5 font-mono text-xs text-gray-500">{it.resultKo}</p>
+                <p className="mt-0.5 font-mono text-xs text-muted">{it.resultKo}</p>
               </div>
             ))}
         </div>
@@ -100,27 +100,20 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
   }
 
   return (
-    <div className="min-h-screen bg-surface pb-10">
-      <header className="sticky top-0 z-10 flex flex-wrap items-center gap-2.5 border-b border-black/5 bg-brand-dark px-4 py-3 text-white">
-        <Link
-          href="/xr"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-lg font-bold"
-          title="XR 모듈 목록으로"
-        >
-          한
-        </Link>
+    <div className="flex flex-col gap-[18px]">
+      <div className="flex flex-wrap items-center gap-2.5 rounded-2xl border border-line bg-white px-4 py-3">
         <div className="min-w-[120px] flex-1">
-          <p className="truncate text-sm font-semibold leading-tight">{m.titleKo}</p>
-          <p className="truncate text-xs text-white/60">환자 {m.patientNameKo}</p>
+          <p className="truncate text-sm font-bold text-brand-dark">{m.titleKo}</p>
+          <p className="truncate text-xs text-muted">환자 {m.patientNameKo}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-white/10 px-3 py-1 font-mono text-xs">
+        <span className="shrink-0 rounded-full bg-panel px-3 py-1 font-mono text-xs text-brand-dark">
           모듈 {progress.current} / {progress.total}
         </span>
         <button
           type="button"
           onClick={() => prevHref && router.push(prevHref)}
           disabled={!prevHref}
-          className="shrink-0 rounded-lg border border-white/20 px-2 py-1 text-sm disabled:opacity-30"
+          className="shrink-0 rounded-lg border border-line px-2 py-1 text-sm text-brand-dark disabled:opacity-30"
           aria-label="이전 모듈"
         >
           ←
@@ -129,17 +122,17 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
           type="button"
           onClick={() => nextHref && router.push(nextHref)}
           disabled={!nextHref}
-          className="shrink-0 rounded-lg border border-white/20 px-2 py-1 text-sm disabled:opacity-30"
+          className="shrink-0 rounded-lg border border-line px-2 py-1 text-sm text-brand-dark disabled:opacity-30"
           aria-label="다음 모듈"
         >
           →
         </button>
-        <Link href="/xr" className="shrink-0 rounded-lg border border-white/20 px-2.5 py-1 text-xs">
+        <Link href="/xr" className="shrink-0 rounded-lg border border-line px-2.5 py-1 text-xs text-brand-dark">
           ← 목록
         </Link>
-      </header>
+      </div>
 
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-4 p-4 lg:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_300px]">
         <XrViewportScene>
           <div className="absolute right-3.5 top-3.5 w-[min(60%,230px)] rounded-xl border border-emerald-800 bg-black/60 p-3 text-emerald-300 backdrop-blur-sm">
             <p className="mb-1 font-mono text-[10px] tracking-wider text-emerald-700">인터랙션 결과 모니터</p>
@@ -160,7 +153,7 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
               <div className="max-w-md rounded-xl bg-white/95 p-3.5 text-brand-dark shadow-sm">
                 <p className="text-sm font-bold">{m.patientNameKo}</p>
                 <p className="mt-1 text-sm leading-relaxed">{m.situationKo}</p>
-                <p className="mt-1 text-xs text-gray-500">{m.situationEn}</p>
+                <p className="mt-1 text-xs text-muted">{m.situationEn}</p>
                 <button
                   type="button"
                   onClick={() => setDialogueDismissed(true)}
@@ -184,7 +177,7 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
               setModal({
                 title: '환자정보',
                 body: (
-                  <p className="text-sm leading-relaxed text-gray-600">
+                  <p className="text-sm leading-relaxed text-muted">
                     <strong className="text-brand-dark">{m.patientNameKo}</strong>
                     <br />
                     실습 모듈: {m.titleKo}
@@ -196,7 +189,7 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
                 ),
               })
             }
-            className="rounded-xl border border-black/5 bg-white px-3.5 py-2.5 text-left text-sm font-medium shadow-sm"
+            className="rounded-xl border border-line bg-white px-3.5 py-2.5 text-left text-sm font-medium"
           >
             환자정보
           </button>
@@ -206,18 +199,18 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
               setModal({
                 title: '상황안내',
                 body: (
-                  <div className="space-y-2 text-sm text-gray-600">
+                  <div className="space-y-2 text-sm text-muted">
                     <p>(실제 서비스에서는 상황안내 영상이 재생됩니다. 프로토타입에서는 텍스트로 대체합니다.)</p>
                     <p>
                       &ldquo;{m.situationKo}&rdquo;
                       <br />
-                      <span className="text-gray-400">{m.situationEn}</span>
+                      <span className="text-faint">{m.situationEn}</span>
                     </p>
                   </div>
                 ),
               })
             }
-            className="rounded-xl border border-black/5 bg-white px-3.5 py-2.5 text-left text-sm font-medium shadow-sm"
+            className="rounded-xl border border-line bg-white px-3.5 py-2.5 text-left text-sm font-medium"
           >
             상황안내
           </button>
@@ -228,7 +221,7 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
             type="button"
             onClick={() => setStarted(true)}
             disabled={started}
-            className={`rounded-xl px-3.5 py-2.5 text-left text-sm font-bold shadow-sm ${
+            className={`rounded-xl px-3.5 py-2.5 text-left text-sm font-bold ${
               started ? 'bg-emerald-50 text-emerald-700' : 'bg-brand text-white hover:bg-brand/90'
             }`}
           >
@@ -243,7 +236,7 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
                 type="button"
                 onClick={() => handleInteraction(it)}
                 disabled={!started}
-                className="flex items-center justify-between rounded-xl border border-black/5 bg-white px-3.5 py-2.5 text-left text-sm font-semibold shadow-sm disabled:opacity-40"
+                className="flex items-center justify-between rounded-xl border border-line bg-white px-3.5 py-2.5 text-left text-sm font-semibold disabled:opacity-40"
               >
                 {it.labelKo}
                 {done && <span className="text-emerald-600">✓</span>}
@@ -259,7 +252,7 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
               setModal({
                 title: '도움말',
                 body: (
-                  <div className="space-y-2 text-sm text-gray-600">
+                  <div className="space-y-2 text-sm text-muted">
                     <p>
                       1. <strong>실습시작</strong>을 눌러 인터랙션 버튼을 활성화하세요.
                     </p>
@@ -271,7 +264,7 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
                 ),
               })
             }
-            className="rounded-xl border border-black/5 bg-white px-3.5 py-2.5 text-left text-sm font-medium shadow-sm"
+            className="rounded-xl border border-line bg-white px-3.5 py-2.5 text-left text-sm font-medium"
           >
             도움말
           </button>
@@ -279,20 +272,20 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
             type="button"
             onClick={handleSubmit}
             disabled={completedIds.length === 0}
-            className="rounded-xl bg-brand-dark px-3.5 py-2.5 text-left text-sm font-bold text-white shadow-sm disabled:bg-black/5 disabled:text-gray-400"
+            className="rounded-xl bg-brand-dark px-3.5 py-2.5 text-left text-sm font-bold text-white disabled:bg-black/5 disabled:text-faint"
           >
             리포트제출
           </button>
           {completedIds.length === 0 && (
-            <p className="px-1 text-xs text-gray-400">인터랙션을 1개 이상 완료하면 제출할 수 있어요.</p>
+            <p className="px-1 text-xs text-faint">인터랙션을 1개 이상 완료하면 제출할 수 있어요.</p>
           )}
 
-          <div className="mt-1 rounded-xl border border-black/5 bg-white p-3.5 text-xs text-gray-500 shadow-sm">
+          <div className="mt-1 rounded-xl border border-line bg-white p-3.5 text-xs text-muted">
             이번 세션 실습시간{' '}
             <span className="font-mono font-semibold text-brand-dark">{formatElapsed(elapsed)}</span>
           </div>
         </div>
-      </main>
+      </div>
 
       {modal && (
         <div

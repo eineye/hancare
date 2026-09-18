@@ -1,4 +1,3 @@
-import AuthGuard from '@/components/AuthGuard';
 import XrModuleGrid from '@/components/XrModuleGrid';
 import { getXrModules } from '@/lib/content';
 
@@ -7,9 +6,5 @@ export const dynamic = 'force-dynamic';
 
 export default async function XrListPage() {
   const modules = await getXrModules();
-  return (
-    <AuthGuard role="any">
-      <XrModuleGrid modules={modules} />
-    </AuthGuard>
-  );
+  return <XrModuleGrid modules={modules} />;
 }

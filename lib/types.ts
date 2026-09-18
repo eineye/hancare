@@ -103,7 +103,20 @@ export interface Learner {
   name: string;
   nationality: string;
   level: string;
+  department: string;
   wordsPracticed: number;
   avgAccuracy: number;
   lastActiveKo: string;
+  needsAttentionKo?: string;
+}
+
+/** 실습 일지(진도관리 > 실습일지) 한 건. 이 브라우저의 localStorage에 실제로
+ * 저장/조회된다 — 지도자 확인·의견은 실제 멘토 계정이 없어 예시 1건만 보여준다. */
+export interface JournalEntry {
+  id: string;
+  dateKo: string;
+  department: string;
+  notesKo: string;
+  tags: string[];
+  createdAt: number;
 }

@@ -1,4 +1,4 @@
-import { getUnitsByCategory, getXrModules } from './content';
+import { getUnits, getUnitsByCategory, getXrModules } from './content';
 import type { Unit } from './types';
 
 export type CourseItemStatus = 'available' | 'coming-soon';
@@ -92,4 +92,18 @@ export async function getCourseSections(): Promise<CourseSection[]> {
       items: xrItems,
     },
   ];
+}
+
+/**
+ * 아직 아무 상황도 방문한 적 없는 사용자를 위한 "이어서 학습" 기본 목적지.
+ * 실습한글의 첫 유닛·첫 상황을 우선하고, 없으면 기초한글로 대체한다. 사이드바/홈
+ * 화면은 이 값을 실제 방문 기록(lib/store.ts의 useProgressStore)이 있으면
+ * 그것으로 덮어써 보여준다.
+ */
+export async function getDefaultLearnHref(): Promise<string | undefined> {
+  const units = await getUnits();
+  const unit = units.find((u) => u.category === 'practice') ?? units[0];
+  const situation = unit?.situations[0];
+  if (!unit || !situation) return undefined;
+  return `/learn/${unit.id}/${situation.id}`;
 }

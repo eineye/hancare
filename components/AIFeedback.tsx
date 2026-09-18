@@ -15,20 +15,18 @@ export default function AIFeedback({
   const recordingState = useLessonStore((s) => s.recordingState);
 
   return (
-    <section className="rounded-2xl bg-white p-4 shadow-sm">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-brand">AI 피드백 FEEDBACK</p>
+    <section className="rounded-2xl border border-line bg-white p-5">
+      <p className="mb-3.5 text-[11px] font-bold tracking-wide text-brand">AI 피드백 FEEDBACK</p>
 
       {recordingState !== 'result' ? (
-        <p className="text-sm text-gray-400">따라 읽기를 완료하면 피드백이 표시됩니다.</p>
+        <p className="text-sm text-faint">따라 읽기를 완료하면 피드백이 표시됩니다.</p>
       ) : (
         <div className="space-y-2">
           {lastFeedback.map((item) => (
             <div
               key={item.id}
-              className={`rounded-lg border p-3 text-sm ${
-                item.tone === 'warning'
-                  ? 'border-amber-200 bg-amber-50 text-amber-900'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-900'
+              className={`rounded-xl border p-3.5 text-sm ${
+                item.tone === 'warning' ? 'border-warnBorder bg-warnBg text-warn' : 'border-chipBorder bg-chip text-brand'
               }`}
             >
               <p className="font-semibold">{item.titleKo}</p>
@@ -43,7 +41,7 @@ export default function AIFeedback({
           type="button"
           onClick={onFocusPractice}
           disabled={recordingState !== 'result'}
-          className="flex-1 rounded-lg bg-brand-dark px-3 py-2 text-sm font-semibold text-white disabled:opacity-30"
+          className="flex-1 rounded-[10px] bg-brand-dark px-3 py-2.5 text-sm font-semibold text-white disabled:opacity-30"
         >
           집중 연습
         </button>
@@ -51,7 +49,7 @@ export default function AIFeedback({
           type="button"
           onClick={onNextSentence}
           disabled={recordingState !== 'result' || !hasNextSentence}
-          className="flex-1 rounded-lg border border-brand-dark px-3 py-2 text-sm font-semibold text-brand-dark disabled:opacity-30"
+          className="flex-1 rounded-[10px] border border-brand-dark px-3 py-2.5 text-sm font-semibold text-brand-dark disabled:opacity-30"
         >
           다음 문장 →
         </button>

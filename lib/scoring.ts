@@ -134,11 +134,16 @@ function vowelHintFor(syllable: string): string | undefined {
 
 const POLITE_ENDINGS = ['습니다', '세요', 'ㅂ니다'];
 
-export function generateFeedback(sentence: Sentence, result: ScoreResult): FeedbackItem[] {
+export function generateFeedback(
+  sentence: Sentence,
+  result: ScoreResult,
+  strictness: 'beginner' | 'intermediate' = 'beginner',
+): FeedbackItem[] {
   const items: FeedbackItem[] = [];
+  const weakThreshold = strictness === 'intermediate' ? 85 : 75;
 
   const weakest = [...result.perSyllable].sort((a, b) => a.score - b.score)[0];
-  if (weakest && weakest.score < 75) {
+  if (weakest && weakest.score < weakThreshold) {
     const hint = vowelHintFor(weakest.syllable) ?? '조금 더 또박또박, 천천히 발음해보세요.';
     items.push({
       id: `warn-${weakest.syllable}`,

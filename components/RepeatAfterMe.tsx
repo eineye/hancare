@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useLessonStore, useStatsStore } from '@/lib/store';
+import { useLessonStore, useSettingsStore, useStatsStore } from '@/lib/store';
 import { generateFeedback, scoreSentence } from '@/lib/scoring';
 import { isSttSupported, speak, startRecognition } from '@/lib/speech';
 import type { Sentence } from '@/lib/types';
@@ -15,6 +15,8 @@ export default function RepeatAfterMe({ sentence }: { sentence: Sentence }) {
   const resetRecording = useLessonStore((s) => s.resetRecording);
   const setAvatarState = useLessonStore((s) => s.setAvatarState);
   const recordPractice = useStatsStore((s) => s.recordPractice);
+  const speechRate = useSettingsStore((s) => s.speechRate);
+  const scoringStrictness = useSettingsStore((s) => s.scoringStrictness);
 
   const stopFnRef = useRef<(() => void) | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -31,7 +33,7 @@ export default function RepeatAfterMe({ sentence }: { sentence: Sentence }) {
     // 실제 서비스라면 서버의 발음 채점 API 호출에 해당하는 지연을 흉내낸다.
     setTimeout(() => {
       const score = scoreSentence(sentence, recognizedText);
-      const feedback = generateFeedback(sentence, score);
+      const feedback = generateFeedback(sentence, score, scoringStrictness);
       setResult(score, feedback);
       recordPractice(score.overall);
       setAvatarState('idle');
@@ -67,10 +69,18 @@ export default function RepeatAfterMe({ sentence }: { sentence: Sentence }) {
       <div className="mb-2 flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand-light/80">따라 읽기 · REPEAT AFTER ME</p>
         <div className="flex gap-3 text-xs text-white/60">
-          <button type="button" className="hover:text-white" onClick={() => speak(sentence.textKo, { rate: 1 })}>
+          <button
+            type="button"
+            className="hover:text-white"
+            onClick={() => speak(sentence.textKo, { rate: speechRate })}
+          >
             ▶ 원어민 발음
           </button>
-          <button type="button" className="hover:text-white" onClick={() => speak(sentence.textKo, { rate: 0.6 })}>
+          <button
+            type="button"
+            className="hover:text-white"
+            onClick={() => speak(sentence.textKo, { rate: speechRate * 0.6 })}
+          >
             느리게
           </button>
         </div>
