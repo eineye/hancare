@@ -1,6 +1,21 @@
 import type { Metadata, Viewport } from 'next';
+import { Noto_Sans_KR, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import RegisterServiceWorker from '@/components/RegisterServiceWorker';
+
+const notoSansKr = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '500', '700', '900'],
+  variable: '--font-noto-sans-kr',
+  display: 'swap',
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-ibm-plex-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: '한글케어 HangulCare',
@@ -16,13 +31,13 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0f2e24',
+  themeColor: '#12241F',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
-      <body className="text-gray-900">
+    <html lang="ko" className={`${notoSansKr.variable} ${ibmPlexMono.variable}`}>
+      <body className="font-sans text-gray-900">
         {children}
         <RegisterServiceWorker />
       </body>

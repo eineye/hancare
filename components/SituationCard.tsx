@@ -3,27 +3,89 @@
 import { useLessonStore } from '@/lib/store';
 import type { Situation } from '@/lib/types';
 
-export default function SituationCard({ situation }: { situation: Situation }) {
+interface SituationCardProps {
+  situation: Situation;
+  current: number;
+  total: number;
+  onPrev: () => void;
+  onNext: () => void;
+  canPrev: boolean;
+  canNext: boolean;
+}
+
+export default function SituationCard({
+  situation,
+  current,
+  total,
+  onPrev,
+  onNext,
+  canPrev,
+  canNext,
+}: SituationCardProps) {
   const lang = useLessonStore((s) => s.lang);
+  const setLang = useLessonStore((s) => s.setLang);
 
   return (
-    <section className="rounded-2xl bg-white p-4 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand">상황 SITUATION</p>
-      <h1 className="mt-1 text-lg font-bold text-brand-dark sm:text-xl">
+    <section className="rounded-2xl border border-line bg-white p-5">
+      <div className="mb-3.5 flex items-center gap-2.5">
+        <span className="text-[11px] font-bold tracking-wide text-brand">상황 SITUATION</span>
+        <span className="h-px flex-1 bg-line" />
+        <span className="text-[11px] tabular-nums text-faint">
+          {String(current).padStart(2, '0')} / {String(total).padStart(2, '0')}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={onPrev}
+            disabled={!canPrev}
+            className="rounded-lg border border-line px-2 py-1 text-xs text-brand-dark disabled:opacity-30"
+            aria-label="이전 상황"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!canNext}
+            className="rounded-lg border border-line px-2 py-1 text-xs text-brand-dark disabled:opacity-30"
+            aria-label="다음 상황"
+          >
+            →
+          </button>
+        </div>
+        <div className="flex overflow-hidden rounded-lg border border-line text-[11px]">
+          <button
+            type="button"
+            onClick={() => setLang('ko')}
+            className={`px-2 py-1 ${lang === 'ko' ? 'bg-brand-dark text-white' : 'text-muted'}`}
+          >
+            한국어
+          </button>
+          <button
+            type="button"
+            onClick={() => setLang('en')}
+            className={`px-2 py-1 ${lang === 'en' ? 'bg-brand-dark text-white' : 'text-muted'}`}
+          >
+            EN
+          </button>
+        </div>
+      </div>
+
+      <h1 className="text-[22px] font-bold leading-[1.35] tracking-tight text-brand-dark sm:text-[25px]">
         {lang === 'ko' ? situation.titleKo : situation.titleEn}
       </h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-sm leading-relaxed text-muted">
         {lang === 'ko' ? situation.descriptionKo : situation.descriptionEn}
       </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {[situation.placeTag, situation.formalityTag, situation.difficultyTag].map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full bg-brand-light px-3 py-1 text-xs font-medium text-brand-dark"
-          >
+      <div className="mt-3.5 flex flex-wrap gap-2">
+        {[situation.placeTag, situation.formalityTag].map((tag) => (
+          <span key={tag} className="rounded-full border border-chipBorder bg-chip px-3 py-1.5 text-xs font-medium text-brand">
             {tag}
           </span>
         ))}
+        <span className="rounded-full border border-warnBorder bg-warnBg px-3 py-1.5 text-xs font-medium text-warn">
+          {situation.difficultyTag}
+        </span>
       </div>
     </section>
   );

@@ -14,7 +14,7 @@ export default function HomePage() {
     if (!account) {
       router.replace('/login');
     } else {
-      router.replace(account.role === 'admin' ? '/admin' : '/courses');
+      router.replace(account.role === 'admin' ? '/admin' : '/home');
     }
   }, [hydrated, account, router]);
 

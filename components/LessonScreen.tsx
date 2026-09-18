@@ -1,17 +1,16 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import LessonHeader from './LessonHeader';
 import SituationCard from './SituationCard';
 import KeyTermsGrid from './KeyTermsGrid';
 import RepeatAfterMe from './RepeatAfterMe';
 import AvatarTeacher from './AvatarTeacher';
-import UserStatsPanel from './UserStatsPanel';
 import PronunciationScore from './PronunciationScore';
 import AIFeedback from './AIFeedback';
 import ChatPanel, { type ChatPanelHandle } from './ChatPanel';
-import { useLessonStore } from '@/lib/store';
+import { useLessonStore, useProgressStore } from '@/lib/store';
 import type { Situation, Unit } from '@/lib/types';
 
 interface LessonScreenProps {
@@ -31,9 +30,11 @@ export default function LessonScreen({ unit, situation, prevHref, nextHref, prog
   const setSentenceIndex = useLessonStore((s) => s.setSentenceIndex);
   const resetRecording = useLessonStore((s) => s.resetRecording);
   const resetForSituation = useLessonStore((s) => s.resetForSituation);
+  const setLastSituation = useProgressStore((s) => s.setLastSituation);
 
   useEffect(() => {
     resetForSituation();
+    setLastSituation(unit.id, situation.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [situation.id]);
 
@@ -56,39 +57,44 @@ export default function LessonScreen({ unit, situation, prevHref, nextHref, prog
   }
 
   return (
-    <div className="min-h-screen bg-surface pb-8">
-      <LessonHeader
-        unitTitleKo={unit.titleKo}
-        unitTitleEn={unit.titleEn}
-        current={progress.current}
-        total={progress.total}
-        onPrev={() => goToSituation(-1)}
-        onNext={() => goToSituation(1)}
-        canPrev={!!prevHref}
-        canNext={!!nextHref}
-      />
+    <div className="flex flex-col gap-[18px]">
+      <Link href="/courses" className="inline-block w-fit text-xs font-medium text-brand hover:underline">
+        ← 커리큘럼으로
+      </Link>
 
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-4 p-4 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-4">
-          <SituationCard situation={situation} />
+      <div className="flex flex-wrap items-start gap-[18px]">
+        <div className="min-w-0 flex-[1_1_520px] space-y-4">
+          <SituationCard
+            situation={situation}
+            current={progress.current}
+            total={progress.total}
+            onPrev={() => goToSituation(-1)}
+            onNext={() => goToSituation(1)}
+            canPrev={!!prevHref}
+            canNext={!!nextHref}
+          />
           <KeyTermsGrid terms={situation.terms} />
           <RepeatAfterMe sentence={sentence} />
-        </div>
-        <div className="space-y-4">
-          <AvatarTeacher sentence={sentence} onStartConversation={handleStartConversation} />
-          <UserStatsPanel />
-        </div>
-      </main>
 
-      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 lg:grid-cols-3">
-        <PronunciationScore />
-        <AIFeedback
-          onFocusPractice={resetRecording}
-          onNextSentence={handleNextSentence}
-          hasNextSentence={sentenceIndex + 1 < situation.sentences.length}
-        />
-        <ChatPanel ref={chatRef} situationTitleKo={situation.titleKo} terms={situation.terms} />
-      </section>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <PronunciationScore />
+            <AIFeedback
+              onFocusPractice={resetRecording}
+              onNextSentence={handleNextSentence}
+              hasNextSentence={sentenceIndex + 1 < situation.sentences.length}
+            />
+          </div>
+        </div>
+
+        <div className="min-w-0 flex-[1_1_320px] max-w-[400px] space-y-4">
+          <AvatarTeacher
+            sentence={sentence}
+            onStartConversation={handleStartConversation}
+            roleplayHref={`/roleplay/${unit.id}/${situation.id}`}
+          />
+          <ChatPanel ref={chatRef} situationTitleKo={situation.titleKo} terms={situation.terms} />
+        </div>
+      </div>
     </div>
   );
 }

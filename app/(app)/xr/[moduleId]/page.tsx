@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import AuthGuard from '@/components/AuthGuard';
 import XrPracticeScreen from '@/components/XrPracticeScreen';
 import { getXrModules } from '@/lib/content';
 
@@ -20,13 +19,11 @@ export default async function XrModulePage({
   const next = index < modules.length - 1 ? modules[index + 1] : undefined;
 
   return (
-    <AuthGuard role="any">
-      <XrPracticeScreen
-        module={module_}
-        prevHref={prev ? `/xr/${prev.id}` : undefined}
-        nextHref={next ? `/xr/${next.id}` : undefined}
-        progress={{ current: index + 1, total: modules.length }}
-      />
-    </AuthGuard>
+    <XrPracticeScreen
+      module={module_}
+      prevHref={prev ? `/xr/${prev.id}` : undefined}
+      nextHref={next ? `/xr/${next.id}` : undefined}
+      progress={{ current: index + 1, total: modules.length }}
+    />
   );
 }

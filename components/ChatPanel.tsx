@@ -73,19 +73,19 @@ const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(({ situationTitleK
   }));
 
   return (
-    <section id="chat-panel" className="flex h-full min-h-[320px] flex-col rounded-2xl bg-white p-4 shadow-sm">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand">AI 대화 CHAT</p>
-      <p className="mb-2 text-[11px] text-gray-400">질문은 모국어로 해도 됩니다</p>
+    <section id="chat-panel" className="flex h-full min-h-[320px] flex-col rounded-2xl border border-line bg-white p-5">
+      <p className="mb-1.5 text-[11px] font-bold tracking-wide text-brand">AI 대화 CHAT</p>
+      <p className="mb-2 text-[11px] text-faint">질문은 모국어로 해도 됩니다</p>
 
       <div className="flex-1 space-y-2 overflow-y-auto pr-1">
         {chatMessages.length === 0 && (
-          <p className="text-sm text-gray-400">궁금한 표현을 물어보거나, 역할극으로 대화를 연습해보세요.</p>
+          <p className="text-sm text-faint">궁금한 표현을 물어보거나, 역할극으로 대화를 연습해보세요.</p>
         )}
         {chatMessages.map((m) => (
           <div
             key={m.id}
             className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
-              m.role === 'user' ? 'ml-auto bg-brand text-white' : 'bg-surface text-gray-800'
+              m.role === 'user' ? 'ml-auto bg-brand-dark text-white' : 'bg-panel text-brand-dark'
             }`}
           >
             {m.content || (isChatStreaming ? '…' : '')}
@@ -97,14 +97,14 @@ const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(({ situationTitleK
         <button
           type="button"
           onClick={() => send('이 상황에서 쓸 수 있는 다른 예문을 알려주세요.')}
-          className="rounded-full border border-brand-dark/20 px-2.5 py-1 text-brand-dark hover:bg-brand-light"
+          className="rounded-full border border-brand-dark/20 px-2.5 py-1 text-brand-dark hover:bg-chip"
         >
           예문 더 보기
         </button>
         <button
           type="button"
           onClick={() => send('환자 역할을 맡아서 저와 대화를 시작해 주세요.')}
-          className="rounded-full border border-brand-dark/20 px-2.5 py-1 text-brand-dark hover:bg-brand-light"
+          className="rounded-full border border-brand-dark/20 px-2.5 py-1 text-brand-dark hover:bg-chip"
         >
           역할극 시작
         </button>
@@ -121,7 +121,7 @@ const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(({ situationTitleK
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="메시지를 입력하세요…"
-          className="flex-1 rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand"
+          className="flex-1 rounded-[10px] border border-line px-3 py-2 text-sm outline-none focus:border-brand"
         />
         <button
           type="submit"
