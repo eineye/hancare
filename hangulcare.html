@@ -1600,9 +1600,10 @@
   };
 
   /* ============================== BOOT ============================== */
-  var auth = getAuth();
-  if (auth) navigate(auth.role === "admin" ? "admin" : "home");
-  else navigate("login");
+  // 이 파일을 새로 열 때는(이전 로그인 정보가 localStorage에 남아 있어도)
+  // 항상 로그인 화면부터 보여준다. 데모 계정 자체는 여전히 유효하므로
+  // "학습자로 시작" 등을 누르면 바로 들어갈 수 있다.
+  navigate("login");
 })();
 </script>
 </body>
