@@ -1,11 +1,12 @@
 'use client';
 
 import { speak } from '@/lib/speech';
-import { usePracticedTermsStore } from '@/lib/store';
+import { usePracticedTermsStore, useSettingsStore } from '@/lib/store';
 import type { Term } from '@/lib/types';
 
 function TermCard({ term }: { term: Term }) {
   const markPracticed = usePracticedTermsStore((s) => s.markPracticed);
+  const displayLang = useSettingsStore((s) => s.displayLang);
 
   function handlePlay() {
     speak(term.hangul);
@@ -17,7 +18,7 @@ function TermCard({ term }: { term: Term }) {
       <div>
         <p className="font-semibold text-brand-dark">{term.hangul}</p>
         <p className="text-xs text-muted">
-          [{term.romanization}] · {term.glossEn}
+          [{term.romanization}]{displayLang !== 'ko' && ` · ${term.glossEn}`}
         </p>
       </div>
       <button

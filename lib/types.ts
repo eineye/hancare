@@ -69,8 +69,6 @@ export interface ChatMessage {
   content: string;
 }
 
-export type Lang = 'ko' | 'en';
-
 /** XR실습(HnaCare XR) 모듈 내 하나의 3D 인터랙션. 실제 3D/물리 연산 결과 대신
  * 목데이터 결과 문구를 보여주는 프로토타입 단계 스키마다. */
 export interface XrInteraction {

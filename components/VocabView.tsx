@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { speak } from '@/lib/speech';
-import { usePracticedTermsStore } from '@/lib/store';
+import { usePracticedTermsStore, useSettingsStore } from '@/lib/store';
 import type { VocabCard } from '@/lib/vocab';
 
 type Tab = '전체' | '학습함' | '아직';
@@ -11,6 +11,7 @@ type Tab = '전체' | '학습함' | '아직';
 export default function VocabView({ cards }: { cards: VocabCard[] }) {
   const practicedTermIds = usePracticedTermsStore((s) => s.practicedTermIds);
   const markPracticed = usePracticedTermsStore((s) => s.markPracticed);
+  const displayLang = useSettingsStore((s) => s.displayLang);
   const [tab, setTab] = useState<Tab>('전체');
   const [query, setQuery] = useState('');
 
@@ -77,7 +78,7 @@ export default function VocabView({ cards }: { cards: VocabCard[] }) {
                   <div className="min-w-0">
                     <p className="text-lg font-bold text-brand-dark">{c.hangul}</p>
                     <p className="mt-1 font-mono text-xs text-muted">
-                      [{c.romanization}] · {c.glossEn}
+                      [{c.romanization}]{displayLang !== 'ko' && ` · ${c.glossEn}`}
                     </p>
                   </div>
                   <button

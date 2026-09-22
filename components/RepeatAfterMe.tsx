@@ -17,6 +17,7 @@ export default function RepeatAfterMe({ sentence }: { sentence: Sentence }) {
   const recordPractice = useStatsStore((s) => s.recordPractice);
   const speechRate = useSettingsStore((s) => s.speechRate);
   const scoringStrictness = useSettingsStore((s) => s.scoringStrictness);
+  const displayLang = useSettingsStore((s) => s.displayLang);
 
   const stopFnRef = useRef<(() => void) | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -104,7 +105,7 @@ export default function RepeatAfterMe({ sentence }: { sentence: Sentence }) {
         })}
       </div>
       <p className="mt-1 text-sm text-white/60">
-        [{sentence.romanization}] — {sentence.textEn}
+        [{sentence.romanization}]{displayLang !== 'ko' && ` — ${sentence.textEn}`}
       </p>
 
       <div className="mt-4 flex items-center gap-3">
