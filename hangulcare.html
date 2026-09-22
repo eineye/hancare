@@ -1477,11 +1477,13 @@
         '<div class="top"><span class="order">' + String(m.order).padStart(2, "0") + '</span><span style="margin-left:auto;font-size:.72rem;color:var(--faint);" class="mono">법정 ' + m.legalHours + "시간</span></div>" +
         "<h3 style=\"font-size:.92rem;color:var(--brand-dark);\">" + esc(m.titleKo) + "</h3><p style=\"font-size:.72rem;color:var(--faint);\">" + esc(m.titleEn) + "</p>" +
         '<p style="font-size:.76rem;color:var(--muted);">환자: ' + esc(m.patientNameKo) + "</p>" +
-        '<div style="display:flex;gap:6px;margin-top:auto;"><span class="pill" style="background:var(--panel);color:var(--muted);">테스트 가능</span>' + (done ? '<span class="pill" style="background:var(--chip);color:var(--brand);">완료 ✓</span>' : "") + "</div></a>";
+        '<div style="display:flex;gap:6px;margin-top:auto;flex-wrap:wrap;">' +
+          (m.id === "xr-vital-signs" ? '<span class="pill" style="background:var(--brand);color:#fff;">3D 실습 가능</span>' : '<span class="pill" style="background:var(--panel);color:var(--muted);">테스트 가능</span>') +
+          (done ? '<span class="pill" style="background:var(--chip);color:var(--brand);">완료 ✓</span>' : "") + "</div></a>";
     }).join("");
     var mainHtml =
       '<p class="eyebrow">XR실습 XR PRACTICE</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">HnaCare XR 5대 모듈</h1>' +
-      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);line-height:1.6;">docs/XR_MODULE_DESIGN.md의 Phase 1(화면 흐름·상호작용 셸)입니다. 실제 3D 뷰어·물리 엔진은 아직 없고, 인터랙션 버튼 결과는 미리 정의된 텍스트로 대체되어 있습니다.</p>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);line-height:1.6;">docs/XR_MODULE_DESIGN.md의 Phase 1(화면 흐름·상호작용 셸)입니다. "01. 활력징후 및 기초사정"은 실제 Three.js 3D 뷰포트가 동작하는 심화 프로토타입(§7.1)으로 대체되어 있고, 나머지 모듈은 인터랙션 버튼 결과가 미리 정의된 텍스트로 대체되어 있습니다.</p>' +
       '<div class="modGrid">' + cards + "</div>";
     el.innerHTML = shell(mainHtml, "xr-list");
   }
@@ -1509,34 +1511,51 @@
         '<a class="btn btn-ghost" style="text-decoration:none;" href="#" onclick="App.navItem(\'xr-list\');return false;">← 목록</a>' +
       '</div>';
 
-    var mainHtml = headerHtml +
-      '<div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px;">' +
-        '<div class="viewport">' +
-          '<span class="vpLabel">3D VIEWPORT · WIREFRAME PREVIEW</span>' +
-          '<svg viewBox="0 0 400 230" fill="none" stroke="#7cffb2" stroke-width="1.4" opacity=".85">' +
-            '<rect x="26" y="150" width="230" height="46" rx="6"></rect><line x1="26" y1="168" x2="256" y2="168"></line>' +
-            '<rect x="14" y="112" width="16" height="88" rx="3"></rect><rect x="252" y="128" width="14" height="72" rx="3"></rect>' +
-            '<line x1="40" y1="196" x2="40" y2="212"></line><line x1="242" y1="196" x2="242" y2="212"></line>' +
-            '<ellipse cx="150" cy="150" rx="78" ry="17"></ellipse><rect x="70" y="128" width="46" height="24" rx="10"></rect><circle cx="92" cy="132" r="15"></circle>' +
-            '<line x1="320" y1="40" x2="320" y2="150" stroke-dasharray="2 4"></line><circle cx="320" cy="36" r="7"></circle>' +
-            '<rect x="340" y="70" width="46" height="34" rx="4"></rect><polyline points="344,90 352,90 356,78 362,100 368,84 372,90 382,90"></polyline>' +
-          "</svg>" +
-          '<div class="monitorPanel"><div class="lbl">인터랙션 결과 모니터</div><div class="reading">' + esc(X.reading) + '</div>' +
-            (logHtml ? '<div class="log">' + logHtml + "</div>" : "") + "</div>" +
-          (!X.dialogueDismissed
-            ? '<div class="dialogueBubble"><div class="who">' + esc(m.patientNameKo) + '</div><div class="say">' + esc(m.situationKo) + '</div><div class="sayEn">' + esc(m.situationEn) + '</div><button class="btn btn-primary" style="margin-top:8px;padding:6px 12px;font-size:.78rem;" onclick="App.xrDismissDialogue()">다음</button></div>'
-            : '<span class="hint">▶ 오른쪽에서 실습시작을 눌러 진행하세요</span>') +
-        "</div>" +
-        '<div class="rail">' +
-          '<button class="railBtn" onclick="App.xrModal(\'환자정보\')">환자정보</button>' +
-          '<button class="railBtn" onclick="App.xrModal(\'상황안내\')">상황안내</button>' +
-          '<button class="railBtn ' + (X.started ? "started" : "start") + '" ' + (X.started ? "disabled" : "") + ' onclick="App.xrStart()">' + (X.started ? "실습 진행 중" : "실습시작") + "</button>" +
-          interactionBtns +
-          '<button class="railBtn" onclick="App.xrModal(\'도움말\')">도움말</button>' +
-          '<button class="railBtn submit" ' + (X.completed.length === 0 ? "disabled" : "") + ' onclick="App.xrSubmit()">리포트제출</button>' +
-          (X.completed.length === 0 ? '<p style="font-size:.7rem;color:var(--faint);padding:0 2px;">인터랙션을 1개 이상 완료하면 제출할 수 있어요.</p>' : "") +
-        "</div>" +
-      "</div>";
+    var xrEmbedSrc = "public/xr/vital-signs.html";
+    var bodyHtml;
+    if (m.id === "xr-vital-signs") {
+      bodyHtml =
+        '<div class="card" style="margin-top:14px;padding:0;overflow:hidden;">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line);">' +
+            '<p style="font-size:.78rem;color:var(--muted);">3D 인터랙티브 실습 — 환자확인·손위생·체온·맥박호흡·혈압·SpO₂·기초사정·기록보고 8단계</p>' +
+            '<a class="btn btn-ghost" style="text-decoration:none;" href="' + xrEmbedSrc + '" target="_blank" rel="noopener">↗ 새 탭 전체화면으로 열기</a>' +
+          "</div>" +
+          '<div style="position:relative;width:100%;padding-top:64%;background:#07140f;">' +
+            '<iframe src="' + xrEmbedSrc + '" title="' + esc(m.titleKo) + '" loading="lazy" allow="fullscreen; autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>' +
+          "</div>" +
+        "</div>";
+    } else {
+      bodyHtml =
+        '<div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px;">' +
+          '<div class="viewport">' +
+            '<span class="vpLabel">3D VIEWPORT · WIREFRAME PREVIEW</span>' +
+            '<svg viewBox="0 0 400 230" fill="none" stroke="#7cffb2" stroke-width="1.4" opacity=".85">' +
+              '<rect x="26" y="150" width="230" height="46" rx="6"></rect><line x1="26" y1="168" x2="256" y2="168"></line>' +
+              '<rect x="14" y="112" width="16" height="88" rx="3"></rect><rect x="252" y="128" width="14" height="72" rx="3"></rect>' +
+              '<line x1="40" y1="196" x2="40" y2="212"></line><line x1="242" y1="196" x2="242" y2="212"></line>' +
+              '<ellipse cx="150" cy="150" rx="78" ry="17"></ellipse><rect x="70" y="128" width="46" height="24" rx="10"></rect><circle cx="92" cy="132" r="15"></circle>' +
+              '<line x1="320" y1="40" x2="320" y2="150" stroke-dasharray="2 4"></line><circle cx="320" cy="36" r="7"></circle>' +
+              '<rect x="340" y="70" width="46" height="34" rx="4"></rect><polyline points="344,90 352,90 356,78 362,100 368,84 372,90 382,90"></polyline>' +
+            "</svg>" +
+            '<div class="monitorPanel"><div class="lbl">인터랙션 결과 모니터</div><div class="reading">' + esc(X.reading) + '</div>' +
+              (logHtml ? '<div class="log">' + logHtml + "</div>" : "") + "</div>" +
+            (!X.dialogueDismissed
+              ? '<div class="dialogueBubble"><div class="who">' + esc(m.patientNameKo) + '</div><div class="say">' + esc(m.situationKo) + '</div><div class="sayEn">' + esc(m.situationEn) + '</div><button class="btn btn-primary" style="margin-top:8px;padding:6px 12px;font-size:.78rem;" onclick="App.xrDismissDialogue()">다음</button></div>'
+              : '<span class="hint">▶ 오른쪽에서 실습시작을 눌러 진행하세요</span>') +
+          "</div>" +
+          '<div class="rail">' +
+            '<button class="railBtn" onclick="App.xrModal(\'환자정보\')">환자정보</button>' +
+            '<button class="railBtn" onclick="App.xrModal(\'상황안내\')">상황안내</button>' +
+            '<button class="railBtn ' + (X.started ? "started" : "start") + '" ' + (X.started ? "disabled" : "") + ' onclick="App.xrStart()">' + (X.started ? "실습 진행 중" : "실습시작") + "</button>" +
+            interactionBtns +
+            '<button class="railBtn" onclick="App.xrModal(\'도움말\')">도움말</button>' +
+            '<button class="railBtn submit" ' + (X.completed.length === 0 ? "disabled" : "") + ' onclick="App.xrSubmit()">리포트제출</button>' +
+            (X.completed.length === 0 ? '<p style="font-size:.7rem;color:var(--faint);padding:0 2px;">인터랙션을 1개 이상 완료하면 제출할 수 있어요.</p>' : "") +
+          "</div>" +
+        "</div>";
+    }
+
+    var mainHtml = headerHtml + bodyHtml;
 
     el.innerHTML = shell(mainHtml, "xr-list");
   }
