@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/auth';
-import { useJournalStore, usePracticedTermsStore, useProgressStore, useStatsStore } from '@/lib/store';
+import { useJournalStore, usePracticedTermsStore, useProgressStore, useSettingsStore, useStatsStore } from '@/lib/store';
 import type { VocabCard } from '@/lib/vocab';
 
 interface SituationRef {
@@ -32,6 +32,7 @@ export default function HomeContent({
   const lastSituationId = useProgressStore((s) => s.lastSituationId);
   const practicedTermIds = usePracticedTermsStore((s) => s.practicedTermIds);
   const journalEntries = useJournalStore((s) => s.entries);
+  const displayLang = useSettingsStore((s) => s.displayLang);
 
   const avgAccuracy = accuracyCount > 0 ? Math.round(accuracySum / accuracyCount) : 0;
 
@@ -128,7 +129,7 @@ export default function HomeContent({
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-[15px] font-bold text-brand-dark">{c.hangul}</p>
-                    <p className="mt-0.5 text-[11.5px] text-muted">{c.glossEn}</p>
+                    {displayLang !== 'ko' && <p className="mt-0.5 text-[11.5px] text-muted">{c.glossEn}</p>}
                   </div>
                   <span className="text-xs text-brand">듣기 →</span>
                 </Link>

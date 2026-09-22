@@ -626,7 +626,7 @@
     if (view === "learn") {
       var found = findSituation(state.params.unitId, state.params.situationId);
       state.lesson = {
-        unitId: found.unit.id, situationId: found.situation.id, lang: "ko",
+        unitId: found.unit.id, situationId: found.situation.id,
         sentenceIndex: 0, recordingState: "idle",
         lastScore: null, lastFeedback: [], chatMessages: [], recErr: null
       };
@@ -817,6 +817,7 @@
 
   /* ============================== HOME ============================== */
   function renderHome() {
+    var bilingual = getSettings().displayLang !== "ko";
     var stats = getStats();
     var avgAcc = stats.accuracyCount ? Math.round(stats.accuracySum / stats.accuracyCount) : 0;
     var practiced = getPracticedTerms();
@@ -852,7 +853,7 @@
       ? '<p style="font-size:.84rem;color:var(--muted);">' + (allTerms.length === 0 ? "아직 등록된 용어가 없습니다." : "등록된 용어를 모두 들어봤습니다 👏") + '</p>'
       : review.map(function (t) {
           return '<a href="#" onclick="App.openLesson(\'' + t.unitId + "','" + t.situationId + '\');return false;" style="display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--panel);border-radius:12px;padding:10px 14px;text-decoration:none;color:inherit;">' +
-            '<span><b style="display:block;font-size:.9rem;color:var(--brand-dark);">' + esc(t.hangul) + '</b><small style="color:var(--muted);font-size:.72rem;">' + esc(t.glossEn) + '</small></span>' +
+            '<span><b style="display:block;font-size:.9rem;color:var(--brand-dark);">' + esc(t.hangul) + '</b>' + (bilingual ? '<small style="color:var(--muted);font-size:.72rem;">' + esc(t.glossEn) + '</small>' : "") + '</span>' +
             '<span style="font-size:.72rem;color:var(--brand);">듣기 →</span></a>';
         }).join("");
 
@@ -956,12 +957,11 @@
     var next = adjacentSituation(L.unitId, L.situationId, 1);
     var idx = unit.situations.findIndex(function (s) { return s.id === L.situationId; });
 
-    var lang = L.lang;
-    var title = lang === "ko" ? situation.titleKo : situation.titleEn;
-    var desc = lang === "ko" ? situation.descriptionKo : situation.descriptionEn;
+    var displayLang = getSettings().displayLang;
+    var bilingual = displayLang !== "ko";
 
     var termsHtml = situation.terms.map(function (t) {
-      return '<div class="termCard"><div><div class="word">' + esc(t.hangul) + '</div><div class="rom">[' + esc(t.romanization) + "] · " + esc(t.glossEn) + "</div></div>" +
+      return '<div class="termCard"><div><div class="word">' + esc(t.hangul) + '</div><div class="rom">[' + esc(t.romanization) + (bilingual ? " · " + esc(t.glossEn) : "") + "</div></div>" +
         '<button class="playBtn" onclick="App.speakText(\'' + t.id + "','" + esc(t.hangul).replace(/'/g, "\\'") + "')\">▶</button></div>";
     }).join("");
 
@@ -1012,25 +1012,23 @@
         '<span style="font-size:.72rem;color:var(--faint);">' + String(idx + 1).padStart(2, "0") + " / " + String(unit.situations.length).padStart(2, "0") + '</span>' +
         '<button style="border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--brand-dark);padding:5px 9px;font-size:.82rem;" ' + (prev ? "" : "disabled") + ' onclick="App.gotoSituation(-1)">←</button>' +
         '<button style="border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--brand-dark);padding:5px 9px;font-size:.82rem;" ' + (next ? "" : "disabled") + ' onclick="App.gotoSituation(1)">→</button>' +
-        '<div style="display:flex;overflow:hidden;border-radius:8px;border:1px solid var(--line);">' +
-          '<button style="padding:6px 11px;font-size:.72rem;border:none;background:' + (lang === "ko" ? "var(--brand-dark)" : "var(--card)") + ';color:' + (lang === "ko" ? "#fff" : "var(--muted)") + ';" onclick="App.setLang(\'ko\')">한국어</button>' +
-          '<button style="padding:6px 11px;font-size:.72rem;border:none;background:' + (lang === "en" ? "var(--brand-dark)" : "var(--card)") + ';color:' + (lang === "en" ? "#fff" : "var(--muted)") + ';" onclick="App.setLang(\'en\')">EN</button>' +
-        '</div>' +
       '</div>' +
-      '<div class="card" style="padding:18px;"><h2 style="font-size:1.15rem;color:var(--brand-dark);">' + esc(title) + "</h2>" +
-        '<p style="font-size:.86rem;color:var(--muted);margin-top:8px;line-height:1.6;">' + esc(desc) + "</p>" +
+      '<div class="card" style="padding:18px;"><h2 style="font-size:1.15rem;color:var(--brand-dark);">' + esc(situation.titleKo) + "</h2>" +
+        (bilingual ? '<p style="font-size:.82rem;color:var(--muted);margin-top:4px;">' + esc(situation.titleEn) + "</p>" : "") +
+        '<p style="font-size:.86rem;color:var(--muted);margin-top:8px;line-height:1.6;">' + esc(situation.descriptionKo) + "</p>" +
+        (bilingual ? '<p style="font-size:.76rem;color:var(--faint);margin-top:4px;line-height:1.6;">' + esc(situation.descriptionEn) + "</p>" : "") +
         '<div class="tagRow"><span class="tag">' + esc(situation.placeTag) + '</span><span class="tag">' + esc(situation.formalityTag) + '</span><span class="tag warn">' + esc(situation.difficultyTag) + "</span></div></div>";
 
     var avatarHtml =
       '<div class="avatarCard"><div style="display:flex;justify-content:space-between;"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 아바타 선생님</p><span class="pill" style="background:rgba(255,255,255,.15);">' + (state.avatar.state === "speaking" ? "● 말하는 중" : state.avatar.state === "listening" ? "● 듣는 중" : "대기 중") + "</span></div>" +
         '<div class="avatarFace" id="avatarFaceBox" style="margin-top:10px;">' + avatarFaceSvg() + "</div>" +
         '<p style="margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.5);">* 실제 발음 분석이 아닌, 말하는 동안 일정한 리듬으로 음소 그룹별 입모양 중 하나를 무작위로 보여주는 근사치입니다.</p>' +
-        '<div style="margin-top:12px;background:rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:.84rem;">' + esc(sentence.textKo) + '<div style="font-size:.72rem;opacity:.75;margin-top:2px;">' + esc(sentence.textEn) + "</div></div>" +
+        '<div style="margin-top:12px;background:rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:.84rem;">' + esc(sentence.textKo) + (bilingual ? '<div style="font-size:.72rem;opacity:.75;margin-top:2px;">' + esc(sentence.textEn) + "</div>" : "") + "</div>" +
         '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">' +
           '<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(1,true)">🔁 다시 듣기</button>' +
           '<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(0.5,true)">👄 입모양 보기</button>' +
           '<button class="btn" style="background:#fff;color:var(--brand);" onclick="App.openRoleplay(\'' + unit.id + "','" + situation.id + '\')">💬 역할극</button>' +
-          '<button class="btn" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="App.startRoleplay()">이 화면에서 대화</button>' +
+          '<button class="btn" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="App.startRoleplay()">' + (bilingual ? "Chat here" : "이 화면에서 대화") + '</button>' +
         '</div>' +
       '</div>';
 
@@ -1052,7 +1050,7 @@
             '<div style="display:flex;gap:10px;font-size:.74rem;opacity:.8;"><button onclick="App.speakSentence(1)" style="background:none;border:none;color:#fff;">▶ 원어민 발음</button><button onclick="App.speakSentence(0.6)" style="background:none;border:none;color:#fff;">느리게</button></div>' +
           "</div>" +
           '<div class="syllables" style="margin-top:10px;">' + syllablesHtml + "</div>" +
-          '<p style="margin-top:8px;font-size:.78rem;color:rgba(255,255,255,.65);">[' + esc(sentence.romanization) + "] — " + esc(sentence.textEn) + "</p>" +
+          '<p style="margin-top:8px;font-size:.78rem;color:rgba(255,255,255,.65);">[' + esc(sentence.romanization) + "]" + (bilingual ? " — " + esc(sentence.textEn) : "") + "</p>" +
           '<button class="recordBtn ' + recBtnCls + '" ' + (L.recordingState === "scoring" ? "disabled" : "") + ' onclick="App.toggleRecording()">' + recBtnLabel + "</button>" +
           (L.recErr ? '<p style="margin-top:8px;font-size:.76rem;color:#fca5a5;">' + esc(L.recErr) + "</p>" : "") +
           (!isSttSupported() ? '<p style="margin-top:8px;font-size:.76rem;color:#fcd34d;">이 브라우저는 음성 인식을 지원하지 않습니다.</p>' : "") +
@@ -1071,7 +1069,6 @@
     ensureAvatarBlinkTimer();
   }
 
-  var App_setLang = function (l) { state.lesson.lang = l; renderLesson(); };
   var App_gotoSituation = function (dir) {
     var target = adjacentSituation(state.lesson.unitId, state.lesson.situationId, dir);
     if (target) navigate("learn", target);
@@ -1140,6 +1137,7 @@
 
   /* ============================== ROLEPLAY ============================== */
   function renderRoleplay() {
+    var bilingual = getSettings().displayLang !== "ko";
     var R = state.roleplay;
     var found = findSituation(R.unitId, R.situationId);
     var situation = found.situation;
@@ -1150,7 +1148,7 @@
     var termsBlock = situation.terms.length
       ? '<div class="card" style="padding:18px;"><p class="eyebrow">이 상황의 용어</p><div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">' +
           situation.terms.map(function (t) {
-            return '<div style="background:var(--panel);border-radius:10px;padding:9px 12px;"><b style="font-size:.84rem;color:var(--brand-dark);">' + esc(t.hangul) + '</b><div style="font-size:.7rem;color:var(--muted);">' + esc(t.glossEn) + '</div></div>';
+            return '<div style="background:var(--panel);border-radius:10px;padding:9px 12px;"><b style="font-size:.84rem;color:var(--brand-dark);">' + esc(t.hangul) + '</b>' + (bilingual ? '<div style="font-size:.7rem;color:var(--muted);">' + esc(t.glossEn) + '</div>' : "") + '</div>';
           }).join("") + '</div></div>'
       : "";
 
@@ -1219,6 +1217,7 @@
 
   /* ============================== VOCAB ============================== */
   function renderVocab() {
+    var bilingual = getSettings().displayLang !== "ko";
     var V = state.vocab;
     var all = getAllTerms();
     var practiced = getPracticedTerms();
@@ -1234,7 +1233,7 @@
       : '<div class="itemGrid" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr));">' + shown.map(function (t) {
           var learned = practiced.indexOf(t.id) !== -1;
           return '<div class="vocabCard"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
-            '<div><p style="font-size:1.05rem;font-weight:700;color:var(--brand-dark);">' + esc(t.hangul) + '</p><p class="mono" style="font-size:.7rem;color:var(--muted);margin-top:3px;">[' + esc(t.romanization) + '] · ' + esc(t.glossEn) + '</p></div>' +
+            '<div><p style="font-size:1.05rem;font-weight:700;color:var(--brand-dark);">' + esc(t.hangul) + '</p><p class="mono" style="font-size:.7rem;color:var(--muted);margin-top:3px;">[' + esc(t.romanization) + ']' + (bilingual ? " · " + esc(t.glossEn) : "") + '</p></div>' +
             '<button class="playBtn" onclick="App.vocabPlay(\'' + t.id + "','" + t.hangul.replace(/'/g, "\\'") + '\')">▶</button>' +
             '</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;"><span style="font-size:.68rem;color:' + (learned ? "var(--brand)" : "var(--faint)") + ';">' + (learned ? "학습함" : "아직") + '</span><a href="#" onclick="App.openLesson(\'' + t.unitId + "','" + t.situationId + '\');return false;" style="font-size:.7rem;color:var(--brand);text-decoration:none;">' + esc(t.situationLabelKo) + ' →</a></div></div>';
         }).join("") + '</div>';
@@ -1585,7 +1584,7 @@
   window.App = {
     login: App_login, quickLogin: App_quickLogin, logout: App_logout, navItem: App_navItem,
     openLesson: App_openLesson, openXr: App_openXr, openRoleplay: App_openRoleplay,
-    setLang: App_setLang, gotoSituation: App_gotoSituation, speakText: App_speakText, speakSentence: App_speakSentence,
+    gotoSituation: App_gotoSituation, speakText: App_speakText, speakSentence: App_speakSentence,
     toggleRecording: App_toggleRecording, focusPractice: App_focusPractice, nextSentence: App_nextSentence,
     sendChat: App_sendChat, submitChat: App_submitChat, startRoleplay: App_startRoleplay,
     xrGoto: App_xrGoto, xrDismissDialogue: App_xrDismissDialogue, xrStart: App_xrStart, xrInteract: App_xrInteract, xrSubmit: App_xrSubmit, xrModal: App_xrModal,

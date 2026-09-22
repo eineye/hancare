@@ -24,7 +24,7 @@ export default function AvatarTeacher({
 }) {
   const avatarState = useLessonStore((s) => s.avatarState);
   const setAvatarState = useLessonStore((s) => s.setAvatarState);
-  const lang = useLessonStore((s) => s.lang);
+  const displayLang = useSettingsStore((s) => s.displayLang);
   const speechRate = useSettingsStore((s) => s.speechRate);
   const [closeup, setCloseup] = useState(false);
 
@@ -65,7 +65,7 @@ export default function AvatarTeacher({
 
       <div className="mt-3.5 rounded-xl bg-white/10 p-3.5 text-sm">
         <p className="font-medium">{sentence.textKo}</p>
-        <p className="text-xs text-white/70">{sentence.textEn}</p>
+        {displayLang !== 'ko' && <p className="text-xs text-white/70">{sentence.textEn}</p>}
       </div>
 
       <div className="mt-3.5 flex flex-wrap gap-2 text-xs">
@@ -86,7 +86,7 @@ export default function AvatarTeacher({
           onClick={onStartConversation}
           className="rounded-[10px] border border-white/25 px-3.5 py-2 hover:bg-white/10"
         >
-          {lang === 'ko' ? '이 화면에서 대화' : 'Chat here'}
+          {displayLang === 'ko' ? '이 화면에서 대화' : 'Chat here'}
         </button>
       </div>
     </section>

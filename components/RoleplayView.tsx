@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Avatar2D from './Avatar2D';
 import { isSttSupported, startRecognition } from '@/lib/speech';
-import type { AvatarState } from '@/lib/store';
+import { useSettingsStore, type AvatarState } from '@/lib/store';
 import type { ChatMessage, Term } from '@/lib/types';
 
 let idCounter = 0;
@@ -34,6 +34,7 @@ export default function RoleplayView({
   const [sttSupported, setSttSupported] = useState(false);
   const stopFnRef = useRef<(() => void) | undefined>(undefined);
   const startedRef = useRef(false);
+  const displayLang = useSettingsStore((s) => s.displayLang);
 
   useEffect(() => {
     setSttSupported(isSttSupported());
@@ -193,7 +194,7 @@ export default function RoleplayView({
                 {terms.map((t) => (
                   <div key={t.id} className="rounded-xl bg-panel px-3.5 py-2.5">
                     <p className="text-sm font-medium text-brand-dark">{t.hangul}</p>
-                    <p className="mt-0.5 text-[11.5px] text-muted">{t.glossEn}</p>
+                    {displayLang !== 'ko' && <p className="mt-0.5 text-[11.5px] text-muted">{t.glossEn}</p>}
                   </div>
                 ))}
               </div>
