@@ -1,0 +1,1370 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="한글케어 XR실습 — 활력징후(V/S) 및 기초사정 3D 인터랙티브 실습. 환자확인부터 손위생, 체온·맥박·호흡·혈압·SpO2 측정, 기초사정, 기록·보고까지 8단계 표준 임상 워크플로우를 브라우저에서 실습합니다.">
+<title>HanCare XR · 활력징후 및 기초사정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --bg:#E9E5DC; --card:#ffffff; --card-border:#D9D3C7; --line:#D9D3C7;
+  --text:#12241F; --muted:#6B7A75; --faint:#94A19C;
+  --brand:#0E7C66; --brand-dark:#12241F; --brand-light:#7FBFAD; --brand-soft:#F1F6F3;
+  --chip:#F1F6F3; --chip-border:#DCE8E2; --panel:#F4F1EA;
+  --warn-bg:#FBF1EC; --warn-text:#B4552F; --warn-border:#F0DDD2; --warn-accent:#E07B45;
+  --good-bg:#F1F6F3; --good-text:#0E7C66;
+  --monitor-bg:#07140f; --monitor-grid:rgba(124,255,178,.12); --monitor-fg:#7cffb2; --monitor-dim:#3d8a63;
+  --font-body:'Noto Sans KR',-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;
+  --font-mono:'IBM Plex Mono','JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);}
+h1,h2,h3,h4{text-wrap:balance;margin:0;}
+p{margin:0;}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:none;}
+select,input,textarea{font:inherit;color:inherit;}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px;}
+[hidden]{display:none !important;}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+img{max-width:100%;display:block;}
+
+/* ---------- buttons / chips ---------- */
+.btn{border-radius:10px;padding:9px 14px;font-weight:600;font-size:.83rem;border:1px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background .15s,border-color .15s,opacity .15s;}
+.btn-primary{background:var(--brand);color:#fff;}
+.btn-primary:hover{background:#0a5c4c;}
+.btn-primary:disabled{background:#B9CCC5;cursor:not-allowed;}
+.btn-ghost{background:#fff;border-color:var(--card-border);color:var(--brand-dark);}
+.btn-ghost:hover{border-color:var(--brand);}
+.btn-ghost.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+.btn-soft{background:var(--brand-soft);color:var(--brand-dark);}
+.btn-soft:hover{background:#e3ede8;}
+.btn-sm{padding:6px 10px;font-size:.74rem;border-radius:8px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.icon-btn{width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid var(--card-border);font-size:1rem;}
+.icon-btn:hover{border-color:var(--brand);}
+.icon-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+.pill{border-radius:999px;padding:3px 10px;font-size:.68rem;font-weight:700;letter-spacing:.02em;}
+.pill-locked{background:#EFEBE2;color:var(--faint);}
+.pill-active{background:var(--brand);color:#fff;}
+.pill-done{background:var(--good-bg);color:var(--good-text);}
+
+/* ---------- term tooltip ---------- */
+.term{border-bottom:1px dashed var(--brand-light);cursor:help;position:relative;}
+.term[data-tooltip]:hover::after,.term[data-tooltip]:focus::after{
+  content:attr(data-tooltip);position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);
+  background:var(--brand-dark);color:#fff;font-size:.72rem;font-weight:500;line-height:1.4;
+  padding:6px 10px;border-radius:8px;white-space:nowrap;box-shadow:0 8px 20px rgba(18,36,31,.25);z-index:80;
+}
+.term[data-tooltip]:hover::before{
+  content:'';position:absolute;left:50%;bottom:calc(100% + 3px);transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:var(--brand-dark);z-index:80;
+}
+
+/* ---------- header ---------- */
+.top{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid var(--line);padding:10px 18px;flex-wrap:wrap;}
+.top .brandMark{display:flex;align-items:center;gap:9px;font-weight:800;font-size:.95rem;color:var(--brand-dark);}
+.top .brandMark .dot{width:9px;height:9px;border-radius:50%;background:var(--brand);}
+.top .moduleName{font-size:.76rem;color:var(--muted);font-weight:500;}
+.top .spacer{flex:1;}
+.top .group{display:flex;align-items:center;gap:6px;}
+.top select.langSelect{border:1px solid var(--card-border);border-radius:8px;padding:6px 8px;font-size:.74rem;background:#fff;}
+
+/* ---------- layout ---------- */
+.xrRoot{min-height:100%;background:var(--bg);}
+.xrRoot:fullscreen{background:var(--bg);overflow:auto;}
+.wrap{max-width:1440px;margin:0 auto;padding:16px;}
+.mainGrid{display:grid;grid-template-columns:236px minmax(0,1fr) 348px;gap:14px;align-items:start;}
+@media(max-width:1100px){.mainGrid{grid-template-columns:1fr;}}
+
+.card{background:#fff;border:1px solid var(--card-border);border-radius:16px;padding:14px;}
+.cardTitle{font-size:.72rem;font-weight:800;letter-spacing:.03em;color:var(--brand);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+
+/* ---------- stepper ---------- */
+.stepper{display:flex;flex-direction:column;gap:2px;}
+.stepItem{display:flex;align-items:flex-start;gap:10px;padding:9px 8px;border-radius:10px;text-align:left;width:100%;position:relative;}
+.stepItem:not(:last-child)::before{content:'';position:absolute;left:22px;top:36px;width:2px;height:calc(100% - 4px);background:var(--line);}
+.stepItem.done:not(:last-child)::before{background:var(--brand-light);}
+.stepBadge{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;background:#EFEBE2;color:var(--faint);z-index:1;}
+.stepItem.active .stepBadge{background:var(--brand);color:#fff;}
+.stepItem.done .stepBadge{background:var(--brand-light);color:#fff;}
+.stepItem .stepTxt{padding-top:2px;}
+.stepItem .stepTxt .t{font-size:.82rem;font-weight:700;color:var(--brand-dark);}
+.stepItem.locked .stepTxt .t{color:var(--faint);}
+.stepItem .stepTxt .s{font-size:.68rem;color:var(--faint);margin-top:1px;}
+.stepItem:hover:not(.locked){background:var(--panel);}
+.stepItem.active{background:var(--brand-soft);}
+
+/* ---------- viewport ---------- */
+.viewportCard{padding:0;overflow:hidden;}
+.viewportHead{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);}
+.viewportHead .camChips{display:flex;gap:6px;flex-wrap:wrap;}
+.viewport{position:relative;aspect-ratio:16/10;background:radial-gradient(120% 130% at 50% 0%,#16302a 0%,var(--monitor-bg) 70%);}
+.viewport canvas{display:block;width:100%;height:100%;}
+.viewportOverlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:14px;}
+.overlayTop{pointer-events:auto;max-width:420px;background:rgba(7,20,15,.72);backdrop-filter:blur(3px);border:1px solid rgba(124,255,178,.18);border-radius:14px;padding:12px 14px;color:#eafff2;}
+.overlayTop .stepEyebrow{font-size:.68rem;font-weight:700;color:var(--monitor-fg);letter-spacing:.04em;}
+.overlayTop h3{font-size:1rem;margin-top:2px;color:#fff;}
+.overlayTop p{font-size:.78rem;line-height:1.55;color:#cfe9db;margin-top:6px;}
+.overlayTop .term{border-bottom-color:rgba(124,255,178,.5);}
+.overlayTop .term[data-tooltip]:hover::after{background:#fff;color:var(--brand-dark);}
+.overlayTop .term[data-tooltip]:hover::before{border-top-color:#fff;}
+.overlayBottom{pointer-events:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.overlayActions{display:flex;gap:8px;flex-wrap:wrap;background:rgba(7,20,15,.72);border:1px solid rgba(124,255,178,.18);border-radius:14px;padding:10px;backdrop-filter:blur(3px);}
+.overlayActions .btn-soft{background:rgba(255,255,255,.9);}
+.overlayActions .btn-primary{box-shadow:0 6px 18px rgba(14,124,102,.4);}
+.readout{background:rgba(7,20,15,.72);border:1px solid rgba(124,255,178,.18);border-radius:14px;padding:10px 12px;color:var(--monitor-fg);min-width:130px;}
+.readout .rv{font-family:var(--font-mono);font-size:1.3rem;font-weight:600;}
+.readout .rl{font-size:.64rem;color:#9fd8bb;letter-spacing:.03em;}
+.timerBar{height:6px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:6px;width:100%;}
+.timerBar > i{display:block;height:100%;background:var(--monitor-fg);width:0%;transition:width .2s linear;}
+.hygieneGrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;}
+.hygieneStep{aspect-ratio:1;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(124,255,178,.15);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#7c968a;}
+.hygieneStep.done{background:rgba(124,255,178,.18);color:var(--monitor-fg);border-color:var(--monitor-fg);}
+.hygieneStep.now{outline:2px solid var(--monitor-fg);}
+
+/* toast / warning */
+.toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:var(--warn-text);color:#fff;padding:10px 16px;border-radius:12px;font-size:.8rem;font-weight:600;box-shadow:0 10px 24px rgba(0,0,0,.25);z-index:60;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(4px);}
+
+/* ---------- AI preceptor ---------- */
+.aiCard{background:var(--brand-dark);color:#fff;}
+.aiCard .cardTitle{color:rgba(255,255,255,.75);}
+.aiRow{display:flex;gap:10px;align-items:flex-start;}
+.aiAvatar{flex:none;width:52px;height:52px;border-radius:50%;background:linear-gradient(160deg,var(--brand-light),var(--brand));display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:2px solid rgba(255,255,255,.25);}
+.aiName{font-size:.82rem;font-weight:800;}
+.aiRole{font-size:.66rem;color:rgba(255,255,255,.55);}
+.aiBubble{margin-top:9px;background:rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;font-size:.82rem;line-height:1.6;}
+.aiPhrase{margin-top:8px;background:rgba(255,255,255,.08);border-radius:10px;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.aiPhrase span{font-size:.84rem;font-weight:600;}
+.aiActions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.aiActions .btn{background:rgba(255,255,255,.14);color:#fff;}
+.aiActions .btn:hover{background:rgba(255,255,255,.24);}
+.aiActions .btn-primary{background:#fff;color:var(--brand-dark);}
+.aiActions .btn-primary:hover{background:#eee;}
+
+/* ---------- right lower card w/ tabs ---------- */
+.rightLower .tabs{display:flex;gap:4px;background:var(--panel);border-radius:10px;padding:3px;margin-bottom:10px;}
+.rightLower .tabBtn{flex:1;text-align:center;padding:7px 0;border-radius:8px;font-size:.76rem;font-weight:700;color:var(--muted);}
+.rightLower .tabBtn.active{background:#fff;color:var(--brand-dark);box-shadow:0 2px 6px rgba(18,36,31,.08);}
+
+.monitor{background:var(--monitor-bg);border-radius:12px;padding:10px;}
+.monitor canvas{width:100%;height:78px;display:block;border-radius:8px;}
+.vGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.vTile{background:rgba(255,255,255,.05);border-radius:8px;padding:7px 9px;}
+.vTile .vl{font-size:.62rem;color:#9fd8bb;letter-spacing:.03em;}
+.vTile .vv{font-family:var(--font-mono);font-size:1.05rem;color:var(--monitor-fg);font-weight:600;}
+.vTile .vv .u{font-size:.62rem;color:#7c968a;margin-left:2px;}
+
+.emrTable{width:100%;border-collapse:collapse;font-size:.78rem;}
+.emrTable th{text-align:left;font-size:.66rem;color:var(--muted);font-weight:700;padding:4px 6px;border-bottom:1px solid var(--line);}
+.emrTable td{padding:4px 6px;border-bottom:1px solid var(--line);}
+.emrTable input{width:100%;border:1px solid var(--card-border);border-radius:6px;padding:5px 6px;font-size:.78rem;font-family:var(--font-mono);}
+.emrTable input:focus{border-color:var(--brand);}
+
+/* ---------- modal ---------- */
+.modalWrap{position:fixed;inset:0;background:rgba(18,36,31,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:100;}
+.modal{background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:20px;}
+.modal h3{font-size:1.05rem;color:var(--brand-dark);}
+.modal .close{position:absolute;}
+.modalHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.modalBody{margin-top:10px;font-size:.85rem;line-height:1.65;color:var(--text);}
+.codeBox{background:var(--brand-dark);color:#d7f5e8;border-radius:10px;padding:12px;font-family:var(--font-mono);font-size:.72rem;line-height:1.6;white-space:pre-wrap;word-break:break-all;margin-top:10px;}
+.faqList{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.faqBtn{text-align:left;background:var(--panel);border-radius:10px;padding:9px 11px;font-size:.8rem;font-weight:600;color:var(--brand-dark);}
+.faqBtn:hover{background:var(--chip-border);}
+.qnaAnswer{margin-top:10px;background:var(--good-bg);border-radius:10px;padding:10px 12px;font-size:.82rem;line-height:1.6;color:var(--brand-dark);}
+.qnaInputRow{display:flex;gap:8px;margin-top:12px;}
+.qnaInputRow input{flex:1;border:1px solid var(--card-border);border-radius:10px;padding:9px 11px;font-size:.82rem;}
+
+/* ---------- report ---------- */
+.scoreBig{font-size:2.4rem;font-weight:900;color:var(--brand);font-family:var(--font-mono);}
+.scoreRows{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.scoreRow .lbl{display:flex;justify-content:space-between;font-size:.78rem;font-weight:700;color:var(--brand-dark);margin-bottom:3px;}
+.scoreBarBg{height:8px;border-radius:999px;background:var(--panel);overflow:hidden;}
+.scoreBarFg{height:100%;background:var(--brand);border-radius:999px;}
+.feedbackList{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+.feedbackItem{font-size:.78rem;line-height:1.55;background:var(--panel);border-radius:10px;padding:8px 10px;}
+
+.notice{background:var(--warn-bg);color:var(--warn-text);border-radius:12px;padding:10px 14px;font-size:.78rem;line-height:1.55;}
+.footNote{font-size:.7rem;color:var(--faint);margin-top:14px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="xrRoot" id="xrRoot">
+
+  <header class="top">
+    <div class="brandMark"><span class="dot"></span>한글케어 <span style="font-weight:500;color:var(--faint)">HanCare</span></div>
+    <div class="moduleName">XR실습 · 활력징후(V/S) 및 기초사정</div>
+    <div class="spacer"></div>
+    <div class="group">
+      <select id="tooltipLangSelect" class="langSelect" title="용어 툴팁 언어" onchange="XR.setTooltipLang(this.value)">
+        <option value="ko">용어 툴팁: 한국어</option>
+        <option value="en">Tooltip: English</option>
+        <option value="vi">Chú thích: Tiếng Việt</option>
+        <option value="tl">Tooltip: Tagalog</option>
+      </select>
+      <button class="icon-btn active" id="soundBtn" title="효과음 ON/OFF" onclick="XR.toggleSound()">🔊</button>
+      <button class="icon-btn" id="fsBtn" title="전체화면" onclick="XR.toggleFullscreen()">⛶</button>
+      <button class="icon-btn" title="실습 초기화" onclick="XR.resetPractice()">↺</button>
+      <button class="btn btn-ghost btn-sm" onclick="XR.openEmbed()">🔗 임베드 코드</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="mainGrid">
+
+      <!-- LEFT: stepper -->
+      <div class="card">
+        <div class="cardTitle">8단계 실습 흐름</div>
+        <div class="stepper" id="stepperList"></div>
+      </div>
+
+      <!-- CENTER: 3D viewport -->
+      <div class="card viewportCard">
+        <div class="viewportHead">
+          <strong style="font-size:.82rem;color:var(--brand-dark)">3D 병실 &amp; 환자 시뮬레이터</strong>
+          <div class="camChips" id="camChips"></div>
+        </div>
+        <div class="viewport" id="viewport">
+          <div id="toast" class="toast"></div>
+          <div class="viewportOverlay" id="viewportOverlay"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card aiCard">
+          <div class="cardTitle">AI 지도교사</div>
+          <div class="aiRow">
+            <div class="aiAvatar" id="aiAvatarFace">🙂</div>
+            <div>
+              <div class="aiName">김수련 프리셉터</div>
+              <div class="aiRole">Preceptor · 실시간 임상 코칭</div>
+            </div>
+          </div>
+          <div class="aiBubble" id="aiTipBox"></div>
+          <div class="aiPhrase" id="aiPhraseBox"></div>
+          <div class="aiActions">
+            <button class="btn btn-primary btn-sm" onclick="XR.speakCurrentPhrase()">🔊 표준 발음 듣기</button>
+            <button class="btn btn-sm" onclick="XR.openQna()">💬 무엇이든 물어보기</button>
+          </div>
+        </div>
+
+        <div class="card rightLower">
+          <div class="tabs">
+            <button class="tabBtn active" id="tabMonitorBtn" onclick="XR.showTab('monitor')">실시간 모니터</button>
+            <button class="tabBtn" id="tabEmrBtn" onclick="XR.showTab('emr')">EMR 기록지</button>
+          </div>
+
+          <div id="panelMonitor">
+            <div class="monitor">
+              <canvas id="ecgCanvas" width="600" height="140"></canvas>
+              <div class="vGrid" id="vitalsGrid"></div>
+            </div>
+          </div>
+
+          <div id="panelEmr" hidden>
+            <table class="emrTable">
+              <thead><tr><th>항목</th><th>측정값</th></tr></thead>
+              <tbody id="emrRows"></tbody>
+            </table>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="btn btn-soft btn-sm" onclick="XR.emrAutofill()">⬇ 자동 불러오기</button>
+              <button class="btn btn-ghost btn-sm" onclick="XR.emrClear()">지우기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="footNote">본 콘텐츠의 수치·절차는 실습용 예시이며 실제 임상 지침과 다를 수 있습니다. 실제 환자에게 적용하는 의료행위가 아닌 교육용 시뮬레이션입니다.</p>
+  </div>
+
+</div>
+
+<div id="modalLayer"></div>
+
+<script>
+/* ============================================================
+   HanCare XR · 활력징후 및 기초사정 — 독립 실행형 인터랙티브 프로토타입
+   추후 한글케어 Next.js 앱의 /xr/xr-vital-signs 모듈로 이식 예정.
+   ============================================================ */
+(function(){
+'use strict';
+
+/* ---------------------------------------------------------- glossary / tooltip */
+var GLOSSARY = {
+  idband:{ko:'환자 등록 팔찌(ID Band)',en:'Patient ID band',vi:'Vòng đeo tay nhận diện bệnh nhân',tl:'ID band ng pasyente'},
+  sanitizer:{ko:'알코올 손소독제',en:'Alcohol hand sanitizer',vi:'Nước rửa tay khô có cồn',tl:'Alcohol hand sanitizer'},
+  thermometer:{ko:'고막 체온계',en:'Tympanic (ear) thermometer',vi:'Nhiệt kế đo tai',tl:'Thermometer sa tainga'},
+  probecover:{ko:'일회용 프로브 커버',en:'Disposable probe cover',vi:'Nắp đầu dò dùng một lần',tl:'Disposable na takip ng probe'},
+  radial:{ko:'요골동맥',en:'Radial artery',vi:'Động mạch quay',tl:'Radial artery'},
+  cuff:{ko:'혈압계 커프',en:'Blood pressure cuff',vi:'Vòng bít đo huyết áp',tl:'Cuff ng presyon ng dugo'},
+  oximeter:{ko:'펄스 옥시미터',en:'Pulse oximeter',vi:'Máy đo SpO2 kẹp ngón tay',tl:'Pulse oximeter'},
+  nrs:{ko:'숫자통증척도(NRS)',en:'Numeric Rating Scale (pain)',vi:'Thang đo mức độ đau (NRS)',tl:'Numeric Rating Scale ng sakit'},
+  emr:{ko:'전자간호기록지(EMR Flowsheet)',en:'Electronic nursing flowsheet',vi:'Phiếu theo dõi điều dưỡng điện tử',tl:'Elektronikong flowsheet ng nursing'},
+  elbowcrease:{ko:'팔오금(팔꿈치 안쪽 주름)',en:'Elbow crease (antecubital fossa)',vi:'Nếp khuỷu tay',tl:'Likod ng siko'}
+};
+var tooltipLang = 'ko';
+function setTooltipLang(l){
+  tooltipLang = l;
+  document.querySelectorAll('.term[data-term]').forEach(function(el){
+    var g = GLOSSARY[el.getAttribute('data-term')];
+    if(g) el.setAttribute('data-tooltip', g[tooltipLang] || g.ko);
+  });
+}
+function term(key,label){
+  return '<span class="term" data-term="'+key+'" data-tooltip="'+(GLOSSARY[key]?GLOSSARY[key][tooltipLang]:'')+'">'+label+'</span>';
+}
+
+/* ---------------------------------------------------------- sound + speech */
+var soundOn = true;
+var audioCtx = null;
+function beep(freq,dur,type){
+  if(!soundOn) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type||'sine'; o.frequency.value = freq||880;
+    g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.16,audioCtx.currentTime+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+(dur||0.12));
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime+(dur||0.12)+0.02);
+  }catch(e){}
+}
+function chime(kind){
+  if(kind==='success'){ beep(880,.09); setTimeout(function(){beep(1180,.14);},90); }
+  else if(kind==='warn'){ beep(220,.16,'square'); setTimeout(function(){beep(180,.18,'square');},130); }
+  else if(kind==='click'){ beep(520,.05); }
+  else if(kind==='pump'){ beep(340,.07); }
+  else if(kind==='shutter'){ beep(700,.03); }
+}
+function isTtsSupported(){ return typeof window!=='undefined' && 'speechSynthesis' in window; }
+var cachedKoVoice;
+function pickKoVoice(){
+  if(cachedKoVoice) return cachedKoVoice;
+  var voices = window.speechSynthesis.getVoices();
+  cachedKoVoice = voices.find(function(v){return v.lang && v.lang.indexOf('ko')===0;});
+  return cachedKoVoice;
+}
+function speak(text,opts){
+  opts = opts||{};
+  if(!soundOn || !isTtsSupported()){ opts.onEnd && opts.onEnd(); return; }
+  try{
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ko-KR'; u.rate = opts.rate||0.98; u.pitch = opts.pitch||1;
+    var v = pickKoVoice(); if(v) u.voice = v;
+    u.onstart = function(){ opts.onStart && opts.onStart(); };
+    u.onend = function(){ opts.onEnd && opts.onEnd(); };
+    u.onerror = function(){ opts.onEnd && opts.onEnd(); };
+    window.speechSynthesis.speak(u);
+  }catch(e){ opts.onEnd && opts.onEnd(); }
+}
+if(isTtsSupported()){ window.speechSynthesis.onvoiceschanged = function(){ cachedKoVoice = undefined; }; }
+
+/* ---------------------------------------------------------- state */
+var STEPS = [
+  {key:'confirm', titleKo:'① 환자 확인',
+    tipKo:'개방형 질문으로 이름·생년월일을 환자가 직접 말하게 하세요. "김진수님 맞으시죠?"처럼 유도 질문은 오류를 놓칠 수 있어 피해야 해요.',
+    phraseKo:'안녕하세요. 성함과 생년월일이 어떻게 되세요?'},
+  {key:'hygiene', titleKo:'② 손위생',
+    tipKo:'손 소독제는 손바닥 가득 펌핑하고, 손바닥→손등→손깍지→손가락 등→엄지→손톱 끝 순서 6단계를 15~20초간 지켜야 해요.',
+    phraseKo:'손 위생을 먼저 하겠습니다.'},
+  {key:'temp', titleKo:'③ 체온 측정',
+    tipKo:'프로브 커버는 환자마다 새 것으로 교체해 감염을 예방해요. 고막 쪽으로 귓바퀴를 살짝 당기며 삽입하면 정확도가 올라가요.',
+    phraseKo:'체온을 측정하겠습니다. 잠시만 기다려 주세요.'},
+  {key:'pulseResp', titleKo:'④ 맥박·호흡',
+    tipKo:'환자가 호흡을 의식하면 속도가 달라질 수 있어요. 맥박을 재는 동안 자연스럽게 흉곽 움직임도 함께 관찰하세요.',
+    phraseKo:'맥박을 확인하겠습니다. 편하게 계세요.'},
+  {key:'bp', titleKo:'⑤ 혈압 측정',
+    tipKo:'커프는 팔오금 위 2~3cm 지점에 감아야 정확해요. 손목에 감는 건 외국인 실습생이 흔히 하는 실수예요.',
+    phraseKo:'혈압을 측정하겠습니다. 팔에 힘을 빼 주세요.'},
+  {key:'spo2', titleKo:'⑥ SpO₂ 측정',
+    tipKo:'매니큐어나 차가운 손끝은 측정값에 영향을 줄 수 있어요. 집게가 손톱 위로 오도록 검지에 장착하세요.',
+    phraseKo:'산소포화도를 측정하겠습니다.'},
+  {key:'assess', titleKo:'⑦ 기초사정',
+    tipKo:'의식·호흡·피부색·통증은 문진과 관찰을 함께 사용해요. 정해진 순서를 지키면 놓치는 항목이 줄어들어요.',
+    phraseKo:'환자의 상태를 관찰하겠습니다.'},
+  {key:'report', titleKo:'⑧ 기록 및 보고',
+    tipKo:'구두 보고는 체온-맥박-호흡-혈압-산소포화도(T-P-R-BP-SpO2) 순서로, 숫자는 또박또박 말하는 연습을 해보세요.',
+    phraseKo:'활력징후 측정 결과를 보고하겠습니다.'}
+];
+
+var VITALS_TARGET = { temp:36.7, pulse:76, resp:16, bpSys:118, bpDia:76, spo2:98 };
+
+var S = {
+  step: 0, // index into STEPS
+  done: [false,false,false,false,false,false,false,false],
+  warnings: 0,
+  cam: 'full',
+  patientVoiceHeard: false,
+  idBandChecked: false,
+  greetingHeard: false,
+  hygienePumped: false,
+  hygieneIdx: 0,
+  hygieneRunning: false,
+  hygieneDone: false,
+  thermo: { power:false, cover:false, inserted:false, measured:false },
+  pr: { placed:false, running:false, done:false },
+  bp: { wristAttempt:0, positioned:false, inflating:false, done:false },
+  spo2: { clipped:false, done:false },
+  assess: { consciousness:'', breathing:'', skin:'', pain:'', aiAnswer:'' },
+  vitals: { temp:null, pulse:null, resp:null, bpSys:null, bpDia:null, spo2:null },
+  emr: { temp:'', pulse:'', resp:'', bp:'', spo2:'' },
+  reportListened:false, reportSpoken:false,
+  scoreReport: null
+};
+
+function currentStep(){ return STEPS[S.step]; }
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  chime('warn');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+function markDone(i){
+  if(!S.done[i]){ S.done[i]=true; chime('success'); }
+  renderStepper();
+  if(i < STEPS.length-1){
+    setTimeout(function(){ if(S.step===i && S.done[i]) goStep(i+1); }, 900);
+  }
+}
+function goStep(i){
+  if(i>S.step && !S.done[S.step]){ toast('먼저 "'+STEPS[S.step].titleKo+'" 단계를 완료해 주세요.'); S.warnings++; return; }
+  S.step = i;
+  renderStepper(); renderOverlay(); renderAiPanel();
+  if(STEPS[i].key==='temp') setCamera('head');
+  else if(STEPS[i].key==='pulseResp' || STEPS[i].key==='bp' || STEPS[i].key==='spo2') setCamera('arm');
+  else if(STEPS[i].key==='hygiene') setCamera('cart');
+  else setCamera('full');
+}
+function nextStep(){
+  if(!S.done[S.step]){ toast('현재 단계를 완료해야 다음으로 진행할 수 있어요.'); S.warnings++; return; }
+  if(S.step < STEPS.length-1) goStep(S.step+1);
+}
+
+/* ---------------------------------------------------------- stepper render */
+function renderStepper(){
+  var el = document.getElementById('stepperList');
+  el.innerHTML = STEPS.map(function(st,i){
+    var cls = 'stepItem'+(i===S.step?' active':'')+(S.done[i]?' done':'')+(i>S.step && !S.done[i-1<0?0:i-1] && i>0 && !S.done[i-1] ? ' locked':'');
+    var locked = i>0 && !S.done[i-1] && !S.done[i];
+    if(locked) cls += ' locked';
+    var badge = S.done[i] ? '✓' : (i+1);
+    return '<button type="button" class="'+cls+'" onclick="XR.goStep('+i+')">'+
+      '<span class="stepBadge">'+badge+'</span>'+
+      '<span class="stepTxt"><span class="t">'+st.titleKo+'</span>'+
+      '<span class="s">'+(S.done[i]?'완료':(i===S.step?'진행 중':(locked?'잠김':'대기')))+'</span></span>'+
+      '</button>';
+  }).join('');
+}
+
+/* ---------------------------------------------------------- AI panel */
+function renderAiPanel(){
+  var st = currentStep();
+  document.getElementById('aiTipBox').innerHTML = '<strong>Tip.</strong> '+st.tipKo;
+  document.getElementById('aiPhraseBox').innerHTML =
+    '<span>“'+st.phraseKo+'”</span><button class="btn btn-sm btn-ghost" style="background:rgba(255,255,255,.16);color:#fff;border-color:transparent;" onclick="XR.speakCurrentPhrase()">▶</button>';
+  var face = document.getElementById('aiAvatarFace');
+  face.textContent = '🙂';
+}
+function speakCurrentPhrase(){
+  var face = document.getElementById('aiAvatarFace');
+  face.textContent = '💬';
+  speak(currentStep().phraseKo,{ onEnd:function(){ face.textContent='🙂'; } });
+}
+
+/* ---------------------------------------------------------- monitor (ECG) */
+var ecgCtx, ecgPhase = 0;
+function initMonitor(){
+  var c = document.getElementById('ecgCanvas');
+  ecgCtx = c.getContext('2d');
+}
+function ecgWave(x, bpm){
+  // x in [0,1) within one beat cycle -> waveform value [-1,1]
+  var t = x;
+  if(t<0.08) return Math.sin(t/0.08*Math.PI)*0.12;
+  if(t<0.12) return -0.08;
+  if(t<0.16) return ((t-0.12)/0.04)*1.0-0.08;
+  if(t<0.2) return (1-(t-0.16)/0.04)*1.0-0.08*(1-(t-0.16)/0.04);
+  if(t<0.26) return -0.25*(1-(t-0.2)/0.06);
+  if(t<0.5) return 0;
+  if(t<0.62) return Math.sin((t-0.5)/0.12*Math.PI)*0.22;
+  return 0;
+}
+function drawEcg(){
+  if(!ecgCtx) return;
+  var c = ecgCtx.canvas;
+  var w = c.width, h = c.height;
+  ecgCtx.fillStyle = '#07140f'; ecgCtx.fillRect(0,0,w,h);
+  ecgCtx.strokeStyle = 'rgba(124,255,178,.10)'; ecgCtx.lineWidth = 1;
+  for(var gx=0; gx<w; gx+=20){ ecgCtx.beginPath(); ecgCtx.moveTo(gx,0); ecgCtx.lineTo(gx,h); ecgCtx.stroke(); }
+  for(var gy=0; gy<h; gy+=20){ ecgCtx.beginPath(); ecgCtx.moveTo(0,gy); ecgCtx.lineTo(w,gy); ecgCtx.stroke(); }
+  var bpm = S.vitals.pulse || 78;
+  var cyclesOnScreen = (w/220) * (bpm/72);
+  ecgCtx.strokeStyle = '#7cffb2'; ecgCtx.lineWidth = 2; ecgCtx.beginPath();
+  for(var px=0; px<w; px++){
+    var xx = ((px/w)*cyclesOnScreen + ecgPhase) % 1;
+    var v = ecgWave(xx,bpm);
+    var y = h/2 - v*h*0.42;
+    if(px===0) ecgCtx.moveTo(px,y); else ecgCtx.lineTo(px,y);
+  }
+  ecgCtx.stroke();
+}
+function tickMonitor(dt){
+  var bpm = S.vitals.pulse || 78;
+  ecgPhase = (ecgPhase + dt*(bpm/60)) % 1;
+  drawEcg();
+}
+function renderVitalsGrid(){
+  var v = S.vitals;
+  var rows = [
+    ['HR', v.pulse!=null? v.pulse : '--', '회/분'],
+    ['SpO₂', v.spo2!=null? v.spo2 : '--', '%'],
+    ['NIBP', (v.bpSys!=null? v.bpSys+'/'+v.bpDia : '--/--'), 'mmHg'],
+    ['BT', v.temp!=null? v.temp.toFixed(1) : '--', '℃'],
+    ['RR', v.resp!=null? v.resp : '--', '회/분']
+  ];
+  document.getElementById('vitalsGrid').innerHTML = rows.map(function(r){
+    return '<div class="vTile"><div class="vl">'+r[0]+'</div><div class="vv">'+r[1]+'<span class="u">'+r[2]+'</span></div></div>';
+  }).join('');
+}
+
+/* ---------------------------------------------------------- EMR */
+function renderEmr(){
+  var rows = [
+    ['temp','체온 (℃)'], ['pulse','맥박 (회/분)'], ['resp','호흡 (회/분)'],
+    ['bp','혈압 (mmHg)'], ['spo2','SpO₂ (%)']
+  ];
+  document.getElementById('emrRows').innerHTML = rows.map(function(r){
+    return '<tr><th style="font-weight:600;color:var(--text);font-size:.78rem;">'+r[1]+'</th>'+
+      '<td><input type="text" value="'+(S.emr[r[0]]||'')+'" oninput="XR.emrEdit(\''+r[0]+'\',this.value)"></td></tr>';
+  }).join('');
+}
+function emrEdit(k,v){ S.emr[k]=v; }
+function emrAutofill(){
+  var v = S.vitals;
+  if(v.temp==null){ toast('아직 측정되지 않은 항목이 있어요. 먼저 활력징후를 측정하세요.'); return; }
+  S.emr.temp = v.temp.toFixed(1);
+  S.emr.pulse = String(v.pulse);
+  S.emr.resp = String(v.resp);
+  S.emr.bp = v.bpSys+'/'+v.bpDia;
+  S.emr.spo2 = String(v.spo2);
+  renderEmr(); chime('success');
+}
+function emrClear(){ S.emr = {temp:'',pulse:'',resp:'',bp:'',spo2:''}; renderEmr(); }
+function showTab(t){
+  document.getElementById('panelMonitor').hidden = t!=='monitor';
+  document.getElementById('panelEmr').hidden = t!=='emr';
+  document.getElementById('tabMonitorBtn').classList.toggle('active', t==='monitor');
+  document.getElementById('tabEmrBtn').classList.toggle('active', t==='emr');
+}
+
+/* ---------------------------------------------------------- camera chips */
+var CAM_PRESETS = [ ['full','전체 조망'], ['head','환자 두부'], ['arm','오른팔(V/S)'], ['cart','장비 카트'] ];
+function renderCamChips(){
+  document.getElementById('camChips').innerHTML = CAM_PRESETS.map(function(p){
+    return '<button class="btn btn-ghost btn-sm'+(S.cam===p[0]?' active':'')+'" onclick="XR.setCamera(\''+p[0]+'\')">'+p[1]+'</button>';
+  }).join('');
+}
+function setCamera(p){ S.cam = p; renderCamChips(); Scene.moveCamera(p); }
+
+/* ---------------------------------------------------------- overlay per step */
+function overlayShell(bodyHtml){
+  return '<div class="overlayTop"><div class="stepEyebrow">STEP '+(S.step+1)+' / '+STEPS.length+'</div>'+bodyHtml+'</div>';
+}
+function actionsShell(innerHtml, readoutHtml){
+  return '<div class="overlayBottom"><div class="overlayActions">'+innerHtml+'</div>'+(readoutHtml||'')+'</div>';
+}
+function renderOverlay(){
+  var el = document.getElementById('viewportOverlay');
+  var st = currentStep();
+  var top='', bottom='';
+
+  if(st.key==='confirm'){
+    top = overlayShell(
+      '<h3>환자 확인</h3><p>환자에게 인사하고 성함·생년월일을 직접 말하게 한 뒤, '+term('idband','등록 팔찌')+'와 대조하세요.</p>');
+    bottom = actionsShell(
+      '<button class="btn btn-soft" onclick="XR.greetPatient()">👋 환자에게 인사하기</button>'+
+      '<button class="btn btn-soft" '+(S.greetingHeard?'':'disabled')+' onclick="XR.hearPatientVoice()">🎤 환자 응답 듣기</button>'+
+      '<button class="btn btn-soft" '+(S.patientVoiceHeard?'':'disabled')+' onclick="XR.checkIdBand()">🪪 ID밴드 대조</button>'+
+      '<button class="btn btn-primary" '+(S.idBandChecked?'':'disabled')+' onclick="XR.confirmPatient()">✔ 환자 확인 완료</button>'
+    );
+  }
+
+  else if(st.key==='hygiene'){
+    var hg = ['손바닥','손등','손깍지','손가락 등','엄지','손톱 끝'];
+    top = overlayShell('<h3>손위생</h3><p>'+term('sanitizer','알코올 손소독제')+'를 펌핑한 뒤 6단계 손비비기를 순서대로 수행하세요.</p>'+
+      '<div class="hygieneGrid">'+hg.map(function(label,i){
+        var cls='hygieneStep'+(i<S.hygieneIdx?' done':'')+(i===S.hygieneIdx && S.hygieneRunning?' now':'');
+        return '<div class="'+cls+'" title="'+label+'">'+(i<S.hygieneIdx?'✓':(i+1))+'</div>';
+      }).join('')+'</div>'+
+      (S.hygieneRunning? '<div class="timerBar"><i id="hygieneBar" style="width:0%"></i></div>' : ''));
+    bottom = actionsShell(
+      '<button class="btn btn-soft" '+(S.hygienePumped?'disabled':'')+' onclick="XR.pumpSanitizer()">🧴 손소독제 펌핑</button>'+
+      '<button class="btn btn-soft" '+(S.hygienePumped && !S.hygieneRunning && !S.hygieneDone?'':'disabled')+' onclick="XR.startHygiene()">▶ 6단계 손비비기 시작</button>'+
+      '<button class="btn btn-primary" '+(S.hygieneDone?'':'disabled')+' onclick="XR.finishHygiene()">✔ 손위생 완료</button>'
+    );
+  }
+
+  else if(st.key==='temp'){
+    top = overlayShell('<h3>체온 측정</h3><p>'+term('thermometer','고막 체온계')+'를 선택해 전원을 켜고 '+term('probecover','프로브 커버')+'를 장착한 뒤 고막에 삽입하세요.</p>');
+    var readout = S.thermo.measured ? '<div class="readout"><div class="rv">'+S.vitals.temp.toFixed(1)+'℃</div><div class="rl">정상범위 36.0–37.2℃</div></div>' : '';
+    bottom = actionsShell(
+      '<button class="btn btn-soft" '+(S.thermo.power?'disabled':'')+' onclick="XR.thermoPower()">⏻ 전원 ON</button>'+
+      '<button class="btn btn-soft" '+(S.thermo.power && !S.thermo.cover?'':'disabled')+' onclick="XR.thermoCover()">🧷 프로브 커버 장착</button>'+
+      '<button class="btn btn-soft" '+(S.thermo.cover && !S.thermo.inserted?'':'disabled')+' onclick="XR.thermoInsert()">👂 고막 삽입 &amp; 측정</button>'+
+      '<button class="btn btn-primary" '+(S.thermo.measured?'':'disabled')+' onclick="XR.recordTemp()">📋 기록</button>', readout
+    );
+  }
+
+  else if(st.key==='pulseResp'){
+    top = overlayShell('<h3>맥박 · 호흡 측정</h3><p>환자 손목의 '+term('radial','요골동맥')+' 위치를 짚고 30초간 측정하며 흉곽 호흡도 함께 관찰하세요.</p>'+
+      (S.pr.running? '<div class="timerBar"><i id="prBar" style="width:0%"></i></div>' : ''));
+    var readout = S.pr.done ? '<div class="readout"><div class="rv">'+S.vitals.pulse+'/'+S.vitals.resp+'</div><div class="rl">맥박(회/분) · 호흡(회/분)</div></div>' : '';
+    bottom = actionsShell(
+      '<button class="btn btn-soft" '+(S.pr.placed?'disabled':'')+' onclick="XR.placeFingers()">✋ 손목에 손가락 위치</button>'+
+      '<button class="btn btn-soft" '+(S.pr.placed && !S.pr.running && !S.pr.done?'':'disabled')+' onclick="XR.startPulseResp()">▶ 30초 측정 시작</button>'+
+      '<button class="btn btn-primary" '+(S.pr.done?'':'disabled')+' onclick="XR.recordPulseResp()">📋 기록</button>', readout
+    );
+  }
+
+  else if(st.key==='bp'){
+    top = overlayShell('<h3>혈압 측정</h3><p>'+term('cuff','커프')+'를 '+term('elbowcrease','팔오금')+' 위 2~3cm 지점에 감아야 해요. 손목에 감으면 오류가 발생합니다.</p>'+
+      (S.bp.inflating? '<div class="timerBar"><i id="bpBar" style="width:0%"></i></div>' : ''));
+    var readout = S.bp.done ? '<div class="readout"><div class="rv">'+S.vitals.bpSys+'/'+S.vitals.bpDia+'</div><div class="rl">수축기/이완기 mmHg</div></div>' : '';
+    bottom = actionsShell(
+      '<button class="btn btn-soft" onclick="XR.tryCuffWrist()">🙅 손목에 착용해보기</button>'+
+      '<button class="btn btn-soft" '+(S.bp.positioned?'disabled':'')+' onclick="XR.cuffCorrect()">💪 팔오금 위 올바른 위치</button>'+
+      '<button class="btn btn-soft" '+(S.bp.positioned && !S.bp.inflating && !S.bp.done?'':'disabled')+' onclick="XR.startBp()">▶ 가압 측정 시작</button>'+
+      '<button class="btn btn-primary" '+(S.bp.done?'':'disabled')+' onclick="XR.recordBp()">📋 기록</button>', readout
+    );
+  }
+
+  else if(st.key==='spo2'){
+    top = overlayShell('<h3>SpO₂ 측정</h3><p>검지 손가락에 '+term('oximeter','펄스 옥시미터')+' 클립을 장착하세요. 적외선 LED가 점멸하며 측정합니다.</p>');
+    var readout = S.spo2.done ? '<div class="readout"><div class="rv">'+S.vitals.spo2+'%</div><div class="rl">SpO₂ · 맥박 '+S.vitals.pulse+'회/분</div></div>' : '';
+    bottom = actionsShell(
+      '<button class="btn btn-soft" '+(S.spo2.clipped?'disabled':'')+' onclick="XR.clipOximeter()">🖇 검지에 클립 장착</button>'+
+      '<button class="btn btn-primary" '+(S.spo2.done?'':'disabled')+' onclick="XR.recordSpo2()">📋 기록</button>', readout
+    );
+  }
+
+  else if(st.key==='assess'){
+    var opts = {
+      consciousness:['Alert','Drowsy','Confused'],
+      breathing:['Normal','Labored','Shallow'],
+      skin:['Normal Pink','Pale','Cyanotic'],
+      pain:['NRS 0','NRS 3','NRS 7']
+    };
+    var labels = {consciousness:'의식 상태', breathing:'호흡 양상', skin:'피부색', pain:term('nrs','통증(NRS)')};
+    top = overlayShell('<h3>기초사정</h3><p>의식·호흡·피부색·통증을 순서대로 관찰해 정상 소견을 선택하세요.</p>'+
+      Object.keys(opts).map(function(k){
+        return '<div style="margin-top:8px;"><div style="font-size:.72rem;color:#9fd8bb;margin-bottom:4px;">'+labels[k]+'</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+opts[k].map(function(o){
+          var sel = S.assess[k]===o;
+          return '<button class="btn btn-sm" style="background:'+(sel?'#fff':'rgba(255,255,255,.1)')+';color:'+(sel?'var(--brand-dark)':'#eafff2')+';" onclick="XR.pickAssess(\''+k+'\',\''+o+'\')">'+o+'</button>';
+        }).join('')+'</div></div>';
+      }).join('')+
+      '<div style="margin-top:10px;font-size:.78rem;color:#cfe9db;"><strong>AI 질문 —</strong> 환자의 호흡 상태를 어떻게 설명하시겠습니까?</div>'+
+      '<input id="aiAnswerInput" type="text" placeholder="예: 호흡이 규칙적이고 편안합니다" value="'+(S.assess.aiAnswer||'')+'" oninput="XR.setAiAnswer(this.value)" style="margin-top:6px;width:100%;border-radius:8px;border:1px solid rgba(124,255,178,.3);background:rgba(255,255,255,.08);color:#fff;padding:7px 9px;font-size:.8rem;">'
+    );
+    var allPicked = S.assess.consciousness && S.assess.breathing && S.assess.skin && S.assess.pain && S.assess.aiAnswer;
+    bottom = actionsShell('<button class="btn btn-primary" '+(allPicked?'':'disabled')+' onclick="XR.finishAssess()">✔ 기초사정 완료</button>');
+  }
+
+  else if(st.key==='report'){
+    var v = S.vitals;
+    var script = v.temp? '활력징후 측정 결과를 보고하겠습니다. 체온 '+v.temp.toFixed(1)+'도, 맥박 '+v.pulse+'회, 호흡 '+v.resp+'회, 혈압 '+v.bpSys+'에 '+v.bpDia+', 산소포화도 '+v.spo2+'퍼센트입니다.' : '먼저 활력징후를 모두 측정해 주세요.';
+    top = overlayShell('<h3>기록 및 보고</h3><p>오른쪽 EMR 기록지에 측정값을 입력한 뒤, 선임 간호사에게 구두로 보고하는 연습을 하세요.</p>'+
+      '<div style="margin-top:8px;background:rgba(255,255,255,.08);border-radius:10px;padding:9px;font-size:.78rem;line-height:1.6;">'+script+'</div>');
+    bottom = actionsShell(
+      '<button class="btn btn-soft" '+(v.temp?'':'disabled')+' onclick="XR.listenReport()">🔊 보고문 듣기</button>'+
+      '<button class="btn btn-soft" '+(v.temp?'':'disabled')+' onclick="XR.speakReport()">🎤 말해보기</button>'+
+      '<button class="btn btn-primary" onclick="XR.openReport()">🏁 AI 종합 평가</button>'
+    );
+  }
+
+  el.innerHTML = top + bottom;
+  setTooltipLang(tooltipLang);
+}
+
+/* ---------------------------------------------------------- step 1: 환자확인 */
+function greetPatient(){
+  var face=document.getElementById('aiAvatarFace'); face.textContent='💬';
+  speak(currentStep().phraseKo,{ onEnd:function(){ face.textContent='🙂'; } });
+  S.greetingHeard = true; chime('click'); renderOverlay();
+}
+function hearPatientVoice(){
+  speak('김진수입니다. 1980년 3월 5일생이에요.',{pitch:1.25,rate:0.95});
+  S.patientVoiceHeard = true; chime('click'); renderOverlay();
+}
+function checkIdBand(){
+  S.idBandChecked = true; chime('success'); renderOverlay();
+  toast('등록 팔찌 대조 완료 — 성함·생년월일 일치');
+}
+function confirmPatient(){
+  if(!(S.greetingHeard && S.patientVoiceHeard && S.idBandChecked)){
+    toast('환자 확인 절차를 모두 수행해야 합니다.'); S.warnings++; return;
+  }
+  markDone(0); renderOverlay();
+}
+
+/* ---------------------------------------------------------- step 2: 손위생 */
+function pumpSanitizer(){
+  S.hygienePumped = true; chime('pump'); Scene.pumpSanitizer(); renderOverlay();
+}
+function startHygiene(){
+  if(S.hygieneRunning) return;
+  S.hygieneRunning = true; S.hygieneIdx = 0; renderOverlay();
+  var stepDur = 2600;
+  function stepTick(){
+    var bar = document.getElementById('hygieneBar');
+    var t0 = Date.now();
+    (function frame(){
+      var p = Math.min(1,(Date.now()-t0)/stepDur);
+      if(bar) bar.style.width = (p*100)+'%';
+      if(p<1 && S.hygieneRunning){ requestAnimationFrame(frame); }
+      else if(S.hygieneRunning){
+        chime('click'); S.hygieneIdx++;
+        if(S.hygieneIdx>=6){ S.hygieneRunning=false; S.hygieneDone=true; chime('success'); renderOverlay(); }
+        else { renderOverlay(); stepTick(); }
+      }
+    })();
+  }
+  stepTick();
+}
+function finishHygiene(){ markDone(1); renderOverlay(); }
+
+/* ---------------------------------------------------------- step 3: 체온 */
+function thermoPower(){ S.thermo.power=true; chime('click'); Scene.thermoPower(true); renderOverlay(); }
+function thermoCover(){ S.thermo.cover=true; chime('click'); Scene.thermoCover(true); renderOverlay(); }
+function thermoInsert(){
+  S.thermo.inserted = true; renderOverlay();
+  Scene.thermoToEar(function(){
+    beep(1200,.08); setTimeout(function(){beep(1200,.08);},160); setTimeout(function(){beep(1200,.14);},320);
+    setTimeout(function(){
+      S.thermo.measured = true;
+      S.vitals.temp = VITALS_TARGET.temp;
+      chime('success'); renderOverlay(); renderVitalsGrid();
+    },520);
+  });
+}
+function recordTemp(){ markDone(2); renderOverlay(); }
+
+/* ---------------------------------------------------------- step 4: 맥박호흡 */
+function placeFingers(){ S.pr.placed=true; chime('click'); Scene.showPulseRing(true); renderOverlay(); }
+function startPulseResp(){
+  if(S.pr.running) return;
+  S.pr.running = true; renderOverlay();
+  var dur = 6000; var t0 = Date.now();
+  var bpm = VITALS_TARGET.pulse;
+  var beepTimer = setInterval(function(){ if(S.pr.running) beep(1000,.05); }, 60000/bpm);
+  (function frame(){
+    var p = Math.min(1,(Date.now()-t0)/dur);
+    var bar = document.getElementById('prBar'); if(bar) bar.style.width=(p*100)+'%';
+    if(p<1 && S.pr.running) requestAnimationFrame(frame);
+    else {
+      clearInterval(beepTimer);
+      S.pr.running=false; S.pr.done=true;
+      S.vitals.pulse = VITALS_TARGET.pulse; S.vitals.resp = VITALS_TARGET.resp;
+      chime('success'); renderOverlay(); renderVitalsGrid();
+    }
+  })();
+}
+function recordPulseResp(){ markDone(3); renderOverlay(); }
+
+/* ---------------------------------------------------------- step 5: 혈압 */
+function tryCuffWrist(){
+  S.bp.wristAttempt++;
+  Scene.cuffTo('wrist');
+  toast('손목 착용 오류 — 상완(팔오금 위 2~3cm)에 착용해야 합니다.');
+  S.warnings++;
+  renderOverlay();
+}
+function cuffCorrect(){ S.bp.positioned=true; chime('success'); Scene.cuffTo('arm'); renderOverlay(); }
+function startBp(){
+  if(S.bp.inflating) return;
+  S.bp.inflating = true; renderOverlay();
+  var dur = 4200, t0 = Date.now();
+  (function frame(){
+    var p = Math.min(1,(Date.now()-t0)/dur);
+    var bar = document.getElementById('bpBar'); if(bar) bar.style.width=(p*100)+'%';
+    var gauge = p<0.5 ? (p/0.5)*160 : 160-((p-0.5)/0.5)*(160-70);
+    Scene.setGauge(gauge);
+    if(p>0.5 && Math.random()<0.15) beep(500,.03);
+    if(p<1 && S.bp.inflating) requestAnimationFrame(frame);
+    else{
+      S.bp.inflating=false; S.bp.done=true;
+      S.vitals.bpSys = VITALS_TARGET.bpSys; S.vitals.bpDia = VITALS_TARGET.bpDia;
+      chime('success'); renderOverlay(); renderVitalsGrid();
+    }
+  })();
+}
+function recordBp(){ markDone(4); renderOverlay(); }
+
+/* ---------------------------------------------------------- step 6: SpO2 */
+function clipOximeter(){
+  S.spo2.clipped = true; chime('click'); Scene.clipOximeter(true);
+  renderOverlay();
+  setTimeout(function(){
+    S.spo2.done = true;
+    S.vitals.spo2 = VITALS_TARGET.spo2;
+    if(S.vitals.pulse==null) S.vitals.pulse = VITALS_TARGET.pulse;
+    chime('success'); renderOverlay(); renderVitalsGrid();
+  },1400);
+}
+function recordSpo2(){ markDone(5); renderOverlay(); }
+
+/* ---------------------------------------------------------- step 7: 기초사정 */
+function pickAssess(k,v){ S.assess[k]=v; chime('click'); renderOverlay(); }
+function setAiAnswer(v){
+  S.assess.aiAnswer=v;
+  var btn = document.querySelector('button[onclick="XR.finishAssess()"]');
+  if(btn) btn.disabled = !(S.assess.consciousness && S.assess.breathing && S.assess.skin && S.assess.pain && S.assess.aiAnswer);
+}
+function finishAssess(){ markDone(6); renderOverlay(); }
+
+/* ---------------------------------------------------------- step 8: 기록·보고 */
+function listenReport(){
+  var v=S.vitals;
+  S.reportListened = true;
+  speak('활력징후 측정 결과를 보고하겠습니다. 체온 '+v.temp.toFixed(1)+'도, 맥박 '+v.pulse+'회, 호흡 '+v.resp+'회, 혈압 '+v.bpSys+'에 '+v.bpDia+', 산소포화도 '+v.spo2+'퍼센트입니다.');
+}
+function speakReport(){
+  S.reportSpoken = true;
+  toast('발화 연습이 기록되었습니다. 잘 하셨어요!');
+}
+function speakCurrentPhraseWrap(){ speakCurrentPhrase(); }
+
+/* ---------------------------------------------------------- final report / scoring */
+function computeScore(){
+  var proc = 30;
+  proc -= Math.min(15, S.warnings*3);
+  if(!S.hygieneDone) proc -= 5;
+  proc = Math.max(0,proc);
+
+  var op = 20;
+  if(!S.thermo.cover) op -= 6;
+  if(S.bp.wristAttempt>0) op -= Math.min(8, S.bp.wristAttempt*4);
+  if(!S.spo2.clipped) op -= 6;
+  op = Math.max(0,op);
+
+  var result = 20;
+  var match = S.emr.temp===S.vitals.temp.toFixed(1) && S.emr.pulse===String(S.vitals.pulse) &&
+    S.emr.resp===String(S.vitals.resp) && S.emr.bp===(S.vitals.bpSys+'/'+S.vitals.bpDia) && S.emr.spo2===String(S.vitals.spo2);
+  if(!match) result -= 10;
+  result = Math.max(0,result);
+
+  var obs = 15;
+  var expected = {consciousness:'Alert',breathing:'Normal',skin:'Normal Pink',pain:'NRS 0'};
+  Object.keys(expected).forEach(function(k){ if(S.assess[k]!==expected[k]) obs -= 3; });
+  if(!S.assess.aiAnswer) obs -= 3;
+  obs = Math.max(0,obs);
+
+  var lang = 15;
+  if(!S.greetingHeard) lang -= 4;
+  if(!S.patientVoiceHeard) lang -= 3;
+  if(!S.reportListened) lang -= 4;
+  if(!S.reportSpoken) lang -= 4;
+  lang = Math.max(0,lang);
+
+  var total = proc+op+result+obs+lang;
+  return { total:total, proc:proc, op:op, result:result, obs:obs, lang:lang, match:match };
+}
+function feedbackLines(sc){
+  var f = [];
+  f.push(sc.proc>=25 ? '절차 준수가 우수합니다. 환자 확인과 손위생을 규정대로 수행했어요.' : '절차 중 경고가 발생했어요. 단계를 건너뛰지 않도록 다시 연습해 보세요.');
+  f.push(sc.op>=16 ? '장비 조작이 정확했어요 — 프로브 커버, SpO₂ 클립 장착을 잘 수행했습니다.' : '장비 조작에서 감점이 있었어요. 커프 위치, 프로브 커버 순서를 다시 확인하세요.');
+  f.push(sc.result>=18 ? 'EMR 기록값이 측정값과 정확히 일치합니다.' : 'EMR 기록값이 실제 측정값과 달라요. "자동 불러오기"로 정확히 옮겨 적는 연습을 해보세요.');
+  f.push(sc.obs>=12 ? '기초사정 관찰이 정확했습니다.' : '기초사정 항목 중 일부가 예상 소견과 달라요. 의식·호흡·피부색·통증 관찰을 다시 확인하세요.');
+  f.push(sc.lang>=12 ? '한국어 의사소통 연습을 충실히 수행했어요.' : '발음 듣기·환자 응답 듣기·구두 보고 연습을 빠짐없이 수행해 보세요.');
+  return f;
+}
+function openReport(){
+  var v = S.vitals;
+  if(v.temp==null || v.pulse==null || v.bpSys==null || v.spo2==null){
+    toast('모든 활력징후 측정을 먼저 완료해 주세요.'); return;
+  }
+  var sc = computeScore();
+  S.scoreReport = sc;
+  markDone(7);
+  var rows = [ ['절차 준수','proc',30], ['조작 정확도','op',20], ['결과 판독·기록','result',20], ['기초사정 관찰','obs',15], ['한국어 의사소통','lang',15] ];
+  var html =
+    '<div class="modalWrap" onclick="if(event.target===this) XR.closeModal()">'+
+    '<div class="modal">'+
+      '<div class="modalHead"><h3>🏁 AI 종합 평가 리포트</h3><button class="icon-btn" onclick="XR.closeModal()">✕</button></div>'+
+      '<div class="modalBody">'+
+        '<div style="text-align:center;padding:10px 0;"><div class="scoreBig">'+sc.total+'<span style="font-size:1rem;color:var(--faint);">/100</span></div>'+
+        '<p style="color:var(--muted);font-size:.8rem;margin-top:4px;">활력징후 및 기초사정 실습 수행 점수</p></div>'+
+        '<div class="scoreRows">'+rows.map(function(r){
+          var val = sc[r[1]];
+          return '<div class="scoreRow"><div class="lbl"><span>'+r[0]+'</span><span>'+val+' / '+r[2]+'</span></div><div class="scoreBarBg"><div class="scoreBarFg" style="width:'+(val/r[2]*100)+'%"></div></div></div>';
+        }).join('')+'</div>'+
+        '<div class="feedbackList">'+feedbackLines(sc).map(function(t){ return '<div class="feedbackItem">'+t+'</div>'; }).join('')+'</div>'+
+        '<div style="display:flex;gap:8px;margin-top:16px;">'+
+          '<button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="XR.resetPractice()">↺ 재실습</button>'+
+          '<button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="XR.closeModal()">닫기</button>'+
+        '</div>'+
+      '</div>'+
+    '</div></div>';
+  document.getElementById('modalLayer').innerHTML = html;
+  chime('success');
+}
+
+/* ---------------------------------------------------------- embed modal */
+function openEmbed(){
+  var url = window.location.href.split('#')[0];
+  var code = '<!-- HanCare XR 실습 임베드 -->\n'+
+'<div style="position:relative;width:100%;padding-top:62.5%;">\n'+
+'  <iframe src="'+url+'"\n'+
+'    style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:12px;"\n'+
+'    allow="fullscreen; autoplay" loading="lazy" title="HanCare XR 활력징후 실습"></iframe>\n'+
+'</div>';
+  var html =
+    '<div class="modalWrap" onclick="if(event.target===this) XR.closeModal()">'+
+    '<div class="modal">'+
+      '<div class="modalHead"><h3>🔗 임베드 코드</h3><button class="icon-btn" onclick="XR.closeModal()">✕</button></div>'+
+      '<div class="modalBody">'+
+        '<p>노션, 워드프레스, 병원 교육 포털 등 다른 웹사이트에 이 실습 화면을 그대로 삽입할 수 있는 반응형 iframe 코드입니다.</p>'+
+        '<div class="codeBox" id="embedCode">'+code.replace(/</g,'&lt;')+'</div>'+
+        '<button class="btn btn-primary" style="margin-top:10px;width:100%;justify-content:center;" onclick="XR.copyEmbed()">📋 코드 복사</button>'+
+      '</div>'+
+    '</div></div>';
+  document.getElementById('modalLayer').innerHTML = html;
+  window._embedCodeRaw = code;
+}
+function copyEmbed(){
+  try{
+    navigator.clipboard.writeText(window._embedCodeRaw).then(function(){ toastOk('임베드 코드를 복사했어요.'); });
+  }catch(e){ toastOk('복사에 실패했어요. 직접 선택해 복사해 주세요.'); }
+}
+function toastOk(msg){
+  var t = document.getElementById('toast');
+  t.style.background = 'var(--brand)';
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ t.classList.remove('show'); t.style.background=''; }, 2200);
+}
+
+/* ---------------------------------------------------------- QnA modal */
+var FAQ = [
+  {q:'왜 손위생을 환자 확인 다음에 하나요?', a:'환자와 접촉하기 직전에 손위생을 수행해야 그 사이 다른 오염원과 접촉할 위험이 줄어들기 때문이에요. WHO 손위생 5가지 시점 중 "환자 접촉 전"에 해당합니다.'},
+  {q:'혈압계 커프는 어디에 착용하나요?', a:'상완(위팔) — 팔오금(팔꿈치 안쪽 주름) 위 2~3cm 지점에 감아야 정확해요. 손목이나 팔뚝 아래쪽에 감으면 수치가 부정확해질 수 있어요.'},
+  {q:'체온 정상 범위가 어떻게 되나요?', a:'고막 체온 기준 대략 36.0~37.2℃를 정상으로 보고, 37.3℃ 이상이면 미열, 38℃ 이상이면 발열로 분류하는 경우가 많아요. 기관 지침에 따라 기준이 다를 수 있습니다.'},
+  {q:'SpO2 정상 수치는 몇 %인가요?', a:'일반적으로 95% 이상을 정상으로 봅니다. 90% 미만이면 저산소증 의심으로 즉시 보고해야 해요.'},
+  {q:'구두 보고는 어떤 순서로 하나요?', a:'보통 체온(T) → 맥박(P) → 호흡(R) → 혈압(BP) → 산소포화도(SpO2) 순서(T-P-R-BP-SpO2)로 보고합니다. "~측정 결과를 보고하겠습니다"로 시작하면 자연스러워요.'}
+];
+function openQna(){
+  var html =
+    '<div class="modalWrap" onclick="if(event.target===this) XR.closeModal()">'+
+    '<div class="modal">'+
+      '<div class="modalHead"><h3>💬 김수련 프리셉터에게 물어보기</h3><button class="icon-btn" onclick="XR.closeModal()">✕</button></div>'+
+      '<div class="modalBody">'+
+        '<p>자주 묻는 질문을 선택하거나, 직접 궁금한 점을 입력해 보세요.</p>'+
+        '<div class="faqList">'+FAQ.map(function(f,i){ return '<button class="faqBtn" onclick="XR.askFaq('+i+')">'+f.q+'</button>'; }).join('')+'</div>'+
+        '<div id="qnaAnswerWrap"></div>'+
+        '<div class="qnaInputRow"><input id="qnaFreeInput" type="text" placeholder="예: 손위생은 몇 초 동안 해야 해요?" onkeydown="if(event.key===\'Enter\') XR.askFree()">'+
+        '<button class="btn btn-primary" onclick="XR.askFree()">전송</button></div>'+
+      '</div>'+
+    '</div></div>';
+  document.getElementById('modalLayer').innerHTML = html;
+}
+function showQnaAnswer(text){
+  var el = document.getElementById('qnaAnswerWrap');
+  if(el) el.innerHTML = '<div class="qnaAnswer">'+text+' <button class="btn btn-sm btn-ghost" style="margin-left:6px;" onclick="XR.speak2(\''+text.replace(/'/g,"\\'")+'\')">🔊</button></div>';
+}
+function askFaq(i){ showQnaAnswer(FAQ[i].a); }
+function speak2(t){ speak(t); }
+function askFree(){
+  var input = document.getElementById('qnaFreeInput');
+  var q = (input.value||'').trim();
+  if(!q) return;
+  var lower = q;
+  var ans = '죄송해요, 아직 답변을 준비하지 못한 질문이에요. 담당 지도교사나 선임 간호사에게 직접 문의해 주세요.';
+  if(lower.indexOf('손위생')>-1 || lower.indexOf('소독')>-1) ans = FAQ[0].a + ' 손비비기는 보통 15~20초 정도 수행합니다.';
+  else if(lower.indexOf('혈압')>-1 || lower.indexOf('커프')>-1) ans = FAQ[1].a;
+  else if(lower.indexOf('체온')>-1) ans = FAQ[2].a;
+  else if(lower.indexOf('산소')>-1 || lower.toLowerCase().indexOf('spo2')>-1) ans = FAQ[3].a;
+  else if(lower.indexOf('보고')>-1) ans = FAQ[4].a;
+  else if(lower.indexOf('맥박')>-1 || lower.indexOf('호흡')>-1) ans = '맥박은 보통 60~100회/분, 호흡은 12~20회/분을 정상 범위로 봅니다. 30초간 측정 후 2를 곱해 분당 횟수로 환산해요.';
+  showQnaAnswer(ans); input.value='';
+}
+
+/* ---------------------------------------------------------- header controls */
+function toggleSound(){
+  soundOn = !soundOn;
+  var b = document.getElementById('soundBtn');
+  b.textContent = soundOn ? '🔊' : '🔇';
+  b.classList.toggle('active', soundOn);
+}
+function toggleFullscreen(){
+  var root = document.getElementById('xrRoot');
+  try{
+    if(!document.fullscreenElement){ root.requestFullscreen && root.requestFullscreen(); document.getElementById('fsBtn').classList.add('active'); }
+    else { document.exitFullscreen && document.exitFullscreen(); document.getElementById('fsBtn').classList.remove('active'); }
+  }catch(e){}
+}
+function resetPractice(){
+  if(!window.confirm('실습을 처음부터 다시 시작할까요? 지금까지의 진행 상황이 초기화됩니다.')) return;
+  closeModal();
+  S = {
+    step:0, done:[false,false,false,false,false,false,false,false], warnings:0, cam:'full',
+    patientVoiceHeard:false, idBandChecked:false, greetingHeard:false,
+    hygienePumped:false, hygieneIdx:0, hygieneRunning:false, hygieneDone:false,
+    thermo:{power:false,cover:false,inserted:false,measured:false},
+    pr:{placed:false,running:false,done:false},
+    bp:{wristAttempt:0,positioned:false,inflating:false,done:false},
+    spo2:{clipped:false,done:false},
+    assess:{consciousness:'',breathing:'',skin:'',pain:'',aiAnswer:''},
+    vitals:{temp:null,pulse:null,resp:null,bpSys:null,bpDia:null,spo2:null},
+    emr:{temp:'',pulse:'',resp:'',bp:'',spo2:''},
+    reportListened:false, reportSpoken:false, scoreReport:null
+  };
+  Scene.resetProps();
+  renderAll();
+}
+function closeModal(){ document.getElementById('modalLayer').innerHTML=''; }
+
+/* ---------------------------------------------------------- 3D scene (Three.js) */
+var Scene = (function(){
+  var scene, camera, renderer, clock;
+  var patient = {}, cart = {}, ready=false;
+  var camTargets = {
+    full: { pos:new (window.THREE?THREE.Vector3:Object)(0,2.6,5.4), look:new (window.THREE?THREE.Vector3:Object)(0,0.9,0) },
+  };
+  var curPos, curLook, goalPos, goalLook, camT=1, camDur=800, camStart=0;
+
+  function init(){
+    if(!window.THREE) return;
+    var el = document.getElementById('viewport');
+    scene = new THREE.Scene();
+    scene.background = null;
+    camera = new THREE.PerspectiveCamera(38, el.clientWidth/el.clientHeight, 0.1, 100);
+    renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+    renderer.setSize(el.clientWidth, el.clientHeight);
+    el.insertBefore(renderer.domElement, el.firstChild);
+
+    scene.add(new THREE.HemisphereLight(0xbfe8d8, 0x0a1712, 0.9));
+    var key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(3,5,4); scene.add(key);
+    var rim = new THREE.PointLight(0x7cffb2, 0.35, 12); rim.position.set(-3,2,-2); scene.add(rim);
+
+    var floor = new THREE.Mesh(new THREE.PlaneGeometry(14,14), new THREE.MeshStandardMaterial({color:0x0d241d, roughness:0.9}));
+    floor.rotation.x = -Math.PI/2; floor.position.y=-1.05; scene.add(floor);
+    var back = new THREE.Mesh(new THREE.PlaneGeometry(14,7), new THREE.MeshStandardMaterial({color:0x102a22, roughness:1}));
+    back.position.set(0,2.4,-3.2); scene.add(back);
+
+    buildBed();
+    buildPatient();
+    buildCart();
+
+    camTargets.full = { pos:new THREE.Vector3(0,2.5,5.2), look:new THREE.Vector3(0,0.8,0) };
+    camTargets.head = { pos:new THREE.Vector3(-1.4,1.9,1.6), look:new THREE.Vector3(-1.0,1.35,0) };
+    camTargets.arm  = { pos:new THREE.Vector3(1.6,1.7,1.9), look:new THREE.Vector3(0.9,0.95,0.1) };
+    camTargets.cart = { pos:new THREE.Vector3(2.6,1.7,1.4), look:new THREE.Vector3(2.2,0.9,0) };
+
+    curPos = camTargets.full.pos.clone(); curLook = camTargets.full.look.clone();
+    camera.position.copy(curPos); camera.lookAt(curLook);
+
+    clock = new THREE.Clock();
+    ready = true;
+    window.addEventListener('resize', onResize);
+    animate();
+  }
+
+  function buildBed(){
+    var frameMat = new THREE.MeshStandardMaterial({color:0xdfe7e2, metalness:0.3, roughness:0.5});
+    var frame = new THREE.Mesh(new THREE.BoxGeometry(2.2,0.12,3.4), frameMat);
+    frame.position.set(-0.2,-0.42,0); scene.add(frame);
+    var legMat = new THREE.MeshStandardMaterial({color:0x8f9a95, metalness:0.5, roughness:0.4});
+    [[-0.9,-1.5],[0.9,-1.5],[-0.9,1.5],[0.9,1.5]].forEach(function(p){
+      var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.62,8), legMat);
+      leg.position.set(-0.2+p[0]*0.55,-0.72,p[1]*0.5); scene.add(leg);
+    });
+    var mattress = new THREE.Mesh(new THREE.BoxGeometry(2.0,0.22,3.2), new THREE.MeshStandardMaterial({color:0xf4f1ea, roughness:0.9}));
+    mattress.position.set(-0.2,-0.22,0); scene.add(mattress);
+    var blanketMat = new THREE.MeshStandardMaterial({color:0x0e7c66, roughness:0.8});
+    var blanket = new THREE.Mesh(new THREE.BoxGeometry(1.9,0.16,1.9), blanketMat);
+    blanket.position.set(-0.2,-0.06,0.55); scene.add(blanket);
+  }
+
+  function buildPatient(){
+    var skin = new THREE.MeshStandardMaterial({color:0xe7bd9d, roughness:0.7});
+    var gown = new THREE.MeshStandardMaterial({color:0xdfe9e4, roughness:0.85});
+    var group = new THREE.Group(); group.position.set(-0.2,0,-0.15); scene.add(group);
+
+    var torso = new THREE.Mesh(new THREE.BoxGeometry(0.62,0.32,1.05), gown);
+    torso.position.set(0,0.02,-0.35); group.add(torso);
+
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.24,20,16), skin);
+    head.position.set(0,0.12,-1.05); group.add(head);
+    var hair = new THREE.Mesh(new THREE.SphereGeometry(0.245,20,16,0,Math.PI*2,0,Math.PI*0.55), new THREE.MeshStandardMaterial({color:0x2b241c}));
+    hair.position.copy(head.position).add(new THREE.Vector3(0,0.06,0)); group.add(hair);
+
+    var eyeGeo = new THREE.SphereGeometry(0.022,8,8);
+    var eyeMat = new THREE.MeshStandardMaterial({color:0x1c1a17});
+    var eyeL = new THREE.Mesh(eyeGeo,eyeMat); eyeL.position.set(-0.08,0.14,-0.85); group.add(eyeL);
+    var eyeR = new THREE.Mesh(eyeGeo,eyeMat); eyeR.position.set(0.08,0.14,-0.85); group.add(eyeR);
+
+    var earSocket = new THREE.Object3D(); earSocket.position.set(-0.23,0.11,-1.02); group.add(earSocket);
+
+    var armMat = gown;
+    var armR = new THREE.Mesh(new THREE.CylinderGeometry(0.075,0.07,0.75,10), armMat);
+    armR.rotation.z = Math.PI/2*0.15; armR.position.set(0.42,-0.02,-0.15); group.add(armR);
+    var handR = new THREE.Mesh(new THREE.SphereGeometry(0.085,12,10), skin);
+    handR.position.set(0.68,-0.14,0.22); group.add(handR);
+    var indexTip = new THREE.Object3D(); indexTip.position.set(0.74,-0.15,0.34); group.add(indexTip);
+    var wristPoint = new THREE.Object3D(); wristPoint.position.set(0.62,-0.1,0.1); group.add(wristPoint);
+    var upperArmPos = new THREE.Object3D(); upperArmPos.position.set(0.46,0.0,-0.32); upperArmPos.rotation.z = armR.rotation.z; group.add(upperArmPos);
+    var wristCuffPos = new THREE.Object3D(); wristCuffPos.position.set(0.62,-0.11,0.14); group.add(wristCuffPos);
+
+    var pulseRing = new THREE.Mesh(new THREE.TorusGeometry(0.045,0.008,8,20), new THREE.MeshStandardMaterial({color:0xff6b6b, emissive:0xff2222, emissiveIntensity:0.6, transparent:true, opacity:0}));
+    pulseRing.position.copy(wristPoint.position); pulseRing.rotation.x = Math.PI/2; group.add(pulseRing);
+
+    var armL = new THREE.Mesh(new THREE.CylinderGeometry(0.075,0.07,0.75,10), armMat);
+    armL.rotation.z = -Math.PI/2*0.15; armL.position.set(-0.42,-0.02,-0.15); group.add(armL);
+
+    var legs = new THREE.Mesh(new THREE.BoxGeometry(0.5,0.2,1.1), new THREE.MeshStandardMaterial({color:0x0e7c66,roughness:0.85}));
+    legs.position.set(0,-0.06,0.55); group.add(legs);
+
+    patient = { group:group, torso:torso, head:head, eyeL:eyeL, eyeR:eyeR, earSocket:earSocket,
+      indexTip:indexTip, wristPoint:wristPoint, upperArmPos:upperArmPos, wristCuffPos:wristCuffPos, pulseRing:pulseRing };
+  }
+
+  function buildCart(){
+    var group = new THREE.Group(); group.position.set(2.3,-0.3,-0.2); scene.add(group);
+    var top = new THREE.Mesh(new THREE.BoxGeometry(0.9,0.06,0.5), new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.5}));
+    top.position.set(0,0.55,0); group.add(top);
+    var shelf = top.clone(); shelf.position.set(0,0.1,0); group.add(shelf);
+    var legMat = new THREE.MeshStandardMaterial({color:0x9aa39d, metalness:0.6, roughness:0.35});
+    [[-0.4,-0.22],[0.4,-0.22],[-0.4,0.22],[0.4,0.22]].forEach(function(p){
+      var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.02,0.62,8), legMat);
+      leg.position.set(p[0],0.24,p[1]); group.add(leg);
+    });
+
+    // hand sanitizer dispenser
+    var saniBase = new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.07,0.22,10), new THREE.MeshStandardMaterial({color:0x0e7c66}));
+    saniBase.position.set(-0.28,0.7,0); group.add(saniBase);
+    var saniLever = new THREE.Mesh(new THREE.BoxGeometry(0.14,0.03,0.05), new THREE.MeshStandardMaterial({color:0xffffff}));
+    saniLever.position.set(-0.28,0.82,0.04); group.add(saniLever);
+
+    // thermometer
+    var thermo = new THREE.Group();
+    var thermoBody = new THREE.Mesh(new THREE.CylinderGeometry(0.02,0.025,0.16,10), new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.4}));
+    thermoBody.rotation.z = Math.PI/2.2;
+    thermo.add(thermoBody);
+    var thermoScreen = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.03,0.005), new THREE.MeshStandardMaterial({color:0x111111, emissive:0x000000}));
+    thermoScreen.position.set(0,0.02,0.02); thermo.add(thermoScreen);
+    var probeCover = new THREE.Mesh(new THREE.ConeGeometry(0.018,0.05,10), new THREE.MeshStandardMaterial({color:0x5fb8ff}));
+    probeCover.position.set(0.09,-0.03,0); probeCover.rotation.z = Math.PI/2.4; probeCover.visible=false;
+    thermo.add(probeCover);
+    thermo.position.set(0.05,0.68,0.12);
+    group.add(thermo);
+    var thermoHome = thermo.position.clone();
+
+    // BP cuff (arc)
+    var cuff = new THREE.Mesh(new THREE.TorusGeometry(0.11,0.035,10,24,Math.PI*1.5), new THREE.MeshStandardMaterial({color:0x2b3a35}));
+    cuff.position.set(0.25,0.68,-0.1); cuff.rotation.x = Math.PI/2;
+    group.add(cuff);
+    var cuffHome = cuff.position.clone();
+
+    // SpO2 clip
+    var clip = new THREE.Group();
+    var clipTop = new THREE.Mesh(new THREE.BoxGeometry(0.05,0.012,0.03), new THREE.MeshStandardMaterial({color:0x1c1c1c}));
+    clipTop.position.set(0,0.01,0); clip.add(clipTop);
+    var clipBot = clipTop.clone(); clipBot.position.set(0,-0.01,0); clip.add(clipBot);
+    var led = new THREE.Mesh(new THREE.SphereGeometry(0.006,8,8), new THREE.MeshStandardMaterial({color:0xff3333, emissive:0xff0000, emissiveIntensity:0}));
+    led.position.set(0.02,0,0.016); clip.add(led);
+    clip.position.set(-0.05,0.68,-0.15);
+    group.add(clip);
+    var clipHome = clip.position.clone();
+
+    cart = { group:group, saniLever:saniLever, thermo:thermo, thermoScreen:thermoScreen, probeCover:probeCover, thermoHome:thermoHome,
+      cuff:cuff, cuffHome:cuffHome, clip:clip, led:led, clipHome:clipHome };
+  }
+
+  function lerpV(a,b,t){ return a.clone().lerp(b,t); }
+  function ease(t){ return t<0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  function moveCamera(preset){
+    if(!ready) return;
+    var tgt = camTargets[preset] || camTargets.full;
+    goalPos = tgt.pos.clone(); goalLook = tgt.look.clone();
+    camStart = performance.now(); camT = 0;
+  }
+
+  var t0 = performance.now();
+  function animate(){
+    requestAnimationFrame(animate);
+    if(!ready) return;
+    var now = performance.now();
+    var dt = clock.getDelta();
+    var elapsed = (now - t0)/1000;
+
+    if(patient.torso){
+      var breath = 1 + Math.sin(elapsed*1.6)*0.03;
+      patient.torso.scale.set(1,breath,1);
+    }
+    if(patient.eyeL){
+      var blink = (Math.sin(elapsed*0.7)>0.982) ? 0.15 : 1;
+      patient.eyeL.scale.y = blink; patient.eyeR.scale.y = blink;
+    }
+    if(patient.pulseRing && patient.pulseRing.material.opacity>0){
+      var bpm = (S.vitals.pulse||76)/60;
+      var ph = (elapsed*bpm)%1;
+      var sc = 1+ph*1.6;
+      patient.pulseRing.scale.set(sc,sc,sc);
+      patient.pulseRing.material.opacity = (1-ph)*0.8;
+    }
+    if(cart.led && cart.led.material.emissiveIntensity>0){
+      cart.led.material.emissiveIntensity = (Math.sin(elapsed*10)*0.5+0.5)*1.4;
+    }
+
+    if(goalPos){
+      var dur = 0.8;
+      camT = Math.min(1,(now-camStart)/1000/dur);
+      var e = ease(camT);
+      camera.position.lerpVectors(curPos, goalPos, e);
+      var look = lerpV(curLook, goalLook, e);
+      camera.lookAt(look);
+      if(camT>=1){ curPos = goalPos.clone(); curLook = goalLook.clone(); goalPos=null; }
+    } else if(S.cam==='full'){
+      camera.position.x = curPos.x + Math.sin(elapsed*0.12)*0.15;
+      camera.lookAt(curLook);
+    }
+
+    renderer.render(scene,camera);
+    tickMonitor(dt);
+  }
+
+  function onResize(){
+    var el = document.getElementById('viewport');
+    if(!el || !renderer) return;
+    camera.aspect = el.clientWidth/el.clientHeight; camera.updateProjectionMatrix();
+    renderer.setSize(el.clientWidth, el.clientHeight);
+  }
+
+  function pumpSanitizer(){
+    if(!cart.saniLever) return;
+    var t0 = performance.now();
+    (function frame(){
+      var p = Math.min(1,(performance.now()-t0)/260);
+      cart.saniLever.rotation.x = Math.sin(p*Math.PI)*0.5;
+      if(p<1) requestAnimationFrame(frame);
+    })();
+  }
+  function thermoPower(on){
+    if(cart.thermoScreen) cart.thermoScreen.material.emissive.setHex(on?0x33ffaa:0x000000);
+  }
+  function thermoCover(on){ if(cart.probeCover) cart.probeCover.visible = on; }
+  function thermoToEar(cb){
+    if(!cart.thermo || !patient.earSocket) { cb&&cb(); return; }
+    var start = cart.thermo.position.clone();
+    var end = new THREE.Vector3(); patient.earSocket.getWorldPosition(end);
+    cart.group.worldToLocal(end);
+    var t0 = performance.now(), dur=500;
+    (function frame(){
+      var p = Math.min(1,(performance.now()-t0)/dur);
+      cart.thermo.position.lerpVectors(start,end,ease(p));
+      if(p<1) requestAnimationFrame(frame);
+      else { cb && cb();
+        setTimeout(function(){
+          var t1 = performance.now();
+          (function back(){
+            var p2 = Math.min(1,(performance.now()-t1)/dur);
+            cart.thermo.position.lerpVectors(end,cart.thermoHome,ease(p2));
+            if(p2<1) requestAnimationFrame(back);
+          })();
+        },900);
+      }
+    })();
+  }
+  function cuffTo(where){
+    if(!cart.cuff) return;
+    var start = cart.cuff.position.clone();
+    var targetObj = where==='arm' ? patient.upperArmPos : patient.wristCuffPos;
+    if(!targetObj){ return; }
+    var end = new THREE.Vector3(); targetObj.getWorldPosition(end);
+    cart.group.worldToLocal(end);
+    var t0=performance.now(), dur=500;
+    (function frame(){
+      var p=Math.min(1,(performance.now()-t0)/dur);
+      cart.cuff.position.lerpVectors(start,end,ease(p));
+      if(p<1) requestAnimationFrame(frame);
+    })();
+  }
+  function setGauge(v){ /* gauge value drives no extra 3D element currently, reserved for future HUD */ }
+  function clipOximeter(on){
+    if(!cart.clip || !patient.indexTip) return;
+    if(on){
+      var start = cart.clip.position.clone();
+      var end = new THREE.Vector3(); patient.indexTip.getWorldPosition(end);
+      cart.group.worldToLocal(end);
+      var t0=performance.now(), dur=500;
+      (function frame(){
+        var p=Math.min(1,(performance.now()-t0)/dur);
+        cart.clip.position.lerpVectors(start,end,ease(p));
+        if(p<1) requestAnimationFrame(frame);
+        else { cart.led.material.emissiveIntensity = 1; }
+      })();
+    }
+  }
+  function showPulseRing(on){ if(patient.pulseRing) patient.pulseRing.material.opacity = on?0.8:0; }
+  function resetProps(){
+    if(!ready) return;
+    if(cart.thermoScreen) cart.thermoScreen.material.emissive.setHex(0x000000);
+    if(cart.probeCover) cart.probeCover.visible = false;
+    if(cart.thermo && cart.thermoHome) cart.thermo.position.copy(cart.thermoHome);
+    if(cart.cuff && cart.cuffHome) cart.cuff.position.copy(cart.cuffHome);
+    if(cart.clip && cart.clipHome) cart.clip.position.copy(cart.clipHome);
+    if(cart.led) cart.led.material.emissiveIntensity = 0;
+    if(patient.pulseRing) patient.pulseRing.material.opacity = 0;
+    moveCamera('full');
+  }
+
+  return { init:init, moveCamera:moveCamera, pumpSanitizer:pumpSanitizer, thermoPower:thermoPower, thermoCover:thermoCover,
+    thermoToEar:thermoToEar, cuffTo:cuffTo, setGauge:setGauge, clipOximeter:clipOximeter, showPulseRing:showPulseRing, resetProps:resetProps };
+})();
+
+/* ---------------------------------------------------------- boot */
+function renderAll(){
+  renderStepper(); renderCamChips(); renderOverlay(); renderAiPanel(); renderVitalsGrid(); renderEmr(); setTooltipLang(tooltipLang);
+}
+function init(){
+  initMonitor();
+  Scene.init();
+  renderAll();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+/* ---------------------------------------------------------- expose */
+window.XR = {
+  goStep:goStep, nextStep:nextStep, setCamera:setCamera, setTooltipLang:setTooltipLang,
+  toggleSound:toggleSound, toggleFullscreen:toggleFullscreen, resetPractice:resetPractice,
+  openEmbed:openEmbed, copyEmbed:copyEmbed, closeModal:closeModal,
+  speakCurrentPhrase:speakCurrentPhrase, openQna:openQna, askFaq:askFaq, askFree:askFree, speak2:speak2,
+  greetPatient:greetPatient, hearPatientVoice:hearPatientVoice, checkIdBand:checkIdBand, confirmPatient:confirmPatient,
+  pumpSanitizer:pumpSanitizer, startHygiene:startHygiene, finishHygiene:finishHygiene,
+  thermoPower:thermoPower, thermoCover:thermoCover, thermoInsert:thermoInsert, recordTemp:recordTemp,
+  placeFingers:placeFingers, startPulseResp:startPulseResp, recordPulseResp:recordPulseResp,
+  tryCuffWrist:tryCuffWrist, cuffCorrect:cuffCorrect, startBp:startBp, recordBp:recordBp,
+  clipOximeter:clipOximeter, recordSpo2:recordSpo2,
+  pickAssess:pickAssess, setAiAnswer:setAiAnswer, finishAssess:finishAssess,
+  listenReport:listenReport, speakReport:speakReport, openReport:openReport,
+  showTab:showTab, emrEdit:emrEdit, emrAutofill:emrAutofill, emrClear:emrClear
+};
+
+})();
+</script>
+</body>
+</html>
