@@ -9,7 +9,7 @@ const learners = learnersData as Learner[];
 
 function StatTile({ value, label, hint, warn }: { value: string; label: string; hint?: string; warn?: boolean }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5">
+    <div className="rounded-2xl border border-line bg-white p-4">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-2 text-[28px] font-black text-brand-dark">{value}</p>
       {hint && <p className={`mt-1.5 text-xs ${warn ? 'text-warn' : 'text-muted'}`}>{hint}</p>}
@@ -24,7 +24,7 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
   const attentionNeeded = learners.filter((l) => l.needsAttentionKo);
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
           <p className="text-[11.5px] font-bold tracking-wide text-brand">기관 관리자 ADMIN</p>
@@ -50,8 +50,8 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
         <StatTile value={String(attentionNeeded.length)} label="주의가 필요한 실습생" warn hint="확인 필요" />
       </div>
 
-      <div className="flex flex-wrap items-start gap-[18px]">
-        <div className="min-w-0 flex-[1_1_520px] overflow-x-auto rounded-2xl border border-line bg-white p-5">
+      <div className="flex flex-wrap items-start gap-3.5">
+        <div className="min-w-0 flex-[1_1_520px] overflow-x-auto rounded-2xl border border-line bg-white p-4">
           <p className="mb-4 text-xs font-bold uppercase tracking-wide text-brand">실습생 현황</p>
           <table className="w-full min-w-[520px] text-left text-sm">
             <thead>
@@ -85,7 +85,7 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
         </div>
 
         <div className="flex min-w-0 flex-[1_1_300px] max-w-[360px] flex-col gap-4">
-          <div className="rounded-2xl bg-brand-dark p-5 text-white">
+          <div className="rounded-2xl bg-brand-dark p-4 text-white">
             <p className="text-[11px] font-bold tracking-wide text-brand-light">주의가 필요한 실습생</p>
             <div className="mt-4 flex flex-col gap-3">
               {attentionNeeded.length === 0 && <p className="text-[12.5px] text-white/70">현재 없습니다.</p>}
@@ -104,7 +104,7 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-line bg-white p-5">
+          <div className="rounded-2xl border border-line bg-white p-4">
             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-brand">코스 구성</p>
             <div className="flex flex-col gap-2.5">
               {sections.map((section) => (

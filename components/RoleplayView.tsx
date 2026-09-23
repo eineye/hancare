@@ -112,12 +112,12 @@ export default function RoleplayView({
   }
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <Link href={learnHref} className="inline-block w-fit text-xs font-medium text-brand hover:underline">
         ← 학습 화면으로
       </Link>
 
-      <div className="flex flex-wrap items-start gap-[18px]">
+      <div className="flex flex-wrap items-start gap-3.5">
         <div className="min-w-0 flex-[1_1_520px] rounded-[18px] bg-brand-dark p-6 text-white">
           <div className="flex flex-wrap items-center justify-between gap-2.5">
             <div>
@@ -176,7 +176,7 @@ export default function RoleplayView({
         </div>
 
         <div className="min-w-0 flex-[1_1_300px] max-w-[400px] space-y-4">
-          <div className="rounded-2xl bg-brand p-5 text-white">
+          <div className="rounded-2xl bg-brand p-4 text-white">
             <p className="mb-3.5 text-[11px] font-bold tracking-wide text-white/80">AI 환자 아바타</p>
             <div className="aspect-[4/3] overflow-hidden rounded-xl bg-brand-dark/40">
               <Avatar2D state={avatarState} closeup={false} />
@@ -188,7 +188,7 @@ export default function RoleplayView({
           </div>
 
           {terms.length > 0 && (
-            <div className="rounded-2xl border border-line bg-white p-5">
+            <div className="rounded-2xl border border-line bg-white p-4">
               <p className="mb-3.5 text-[11.5px] font-bold tracking-wide text-brand">이 상황의 용어</p>
               <div className="flex flex-col gap-2">
                 {terms.map((t) => (

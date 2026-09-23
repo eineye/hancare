@@ -15,7 +15,7 @@ export default function AIFeedback({
   const recordingState = useLessonStore((s) => s.recordingState);
 
   return (
-    <section className="rounded-2xl border border-line bg-white p-5">
+    <section className="rounded-2xl border border-line bg-white p-4">
       <p className="mb-3.5 text-[11px] font-bold tracking-wide text-brand">AI 피드백 FEEDBACK</p>
 
       {recordingState !== 'result' ? (

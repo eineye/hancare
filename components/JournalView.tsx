@@ -32,7 +32,7 @@ export default function JournalView() {
   }
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div>
         <p className="text-[11.5px] font-bold tracking-wide text-brand">실습 일지 JOURNAL</p>
         <h1 className="mt-2.5 text-[28px] font-black tracking-tight text-brand-dark sm:text-[30px]">
@@ -44,7 +44,7 @@ export default function JournalView() {
         </p>
       </div>
 
-      <div className="flex flex-wrap items-start gap-[18px]">
+      <div className="flex flex-wrap items-start gap-3.5">
         <div className="min-w-0 flex-[1_1_440px] space-y-3.5">
           {entries.length === 0 ? (
             <div className="rounded-2xl border border-line bg-white p-8 text-center text-sm text-muted">
@@ -52,7 +52,7 @@ export default function JournalView() {
             </div>
           ) : (
             entries.map((entry) => (
-              <div key={entry.id} className="rounded-2xl border border-line bg-white p-5">
+              <div key={entry.id} className="rounded-2xl border border-line bg-white p-4">
                 <p className="text-base font-bold text-brand-dark">
                   {entry.dateKo} · {entry.department}
                 </p>
@@ -71,7 +71,7 @@ export default function JournalView() {
           )}
         </div>
 
-        <div className="min-w-0 flex-[1_1_300px] max-w-[360px] rounded-2xl bg-brand-dark p-5 text-white">
+        <div className="min-w-0 flex-[1_1_300px] max-w-[360px] rounded-2xl bg-brand-dark p-4 text-white">
           <p className="text-[11px] font-bold tracking-wide text-brand-light">새 일지 작성</p>
           <div className="mt-4 flex flex-col gap-3">
             <div>

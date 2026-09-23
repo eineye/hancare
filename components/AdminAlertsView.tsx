@@ -6,7 +6,7 @@ import { ADMIN_OVERVIEW, PENDING_JOURNAL_REVIEWS, RECENT_NOTICES_SENT, UPCOMING_
 
 function StatTile({ value, label, hint }: { value: string; label: string; hint?: string }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5">
+    <div className="rounded-2xl border border-line bg-white p-4">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-2 text-2xl font-black text-brand-dark">{value}</p>
       {hint && <p className="mt-1.5 text-xs text-muted">{hint}</p>}
@@ -18,7 +18,7 @@ export default function AdminAlertsView() {
   const [sent, setSent] = useState(false);
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
           <p className="text-[11.5px] font-bold tracking-wide text-brand">알림 및 면담 ALERTS &amp; MEETINGS</p>
@@ -45,9 +45,9 @@ export default function AdminAlertsView() {
         <StatTile value={String(ADMIN_OVERVIEW.unreachedLearners)} label="미접속 3일 이상" hint="자동 알림 예약됨" />
       </div>
 
-      <div className="flex flex-wrap items-start gap-[18px]">
+      <div className="flex flex-wrap items-start gap-3.5">
         <div className="min-w-0 flex-[1_1_520px] space-y-4">
-          <div className="rounded-2xl border border-line bg-white p-5">
+          <div className="rounded-2xl border border-line bg-white p-4">
             <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">면담 일정</p>
             <div className="flex flex-col gap-2.5">
               {UPCOMING_MEETINGS.map((meeting) => (
@@ -63,7 +63,7 @@ export default function AdminAlertsView() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-line bg-white p-5">
+          <div className="rounded-2xl border border-line bg-white p-4">
             <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">확인 대기 일지</p>
             <table className="w-full text-left text-sm">
               <thead>
@@ -89,7 +89,7 @@ export default function AdminAlertsView() {
         </div>
 
         <div className="min-w-0 flex-[1_1_300px] max-w-[360px] space-y-4">
-          <div className="rounded-2xl bg-brand-dark p-5 text-white">
+          <div className="rounded-2xl bg-brand-dark p-4 text-white">
             <p className="text-[11px] font-bold tracking-wide text-brand-light">알림 보내기</p>
             <p className="mt-3.5 text-xs leading-relaxed text-white/70">
               미접속 실습생 {ADMIN_OVERVIEW.unreachedLearners}명에게 학습 독려 알림을 보냅니다. (실제 발송 서버는
@@ -104,7 +104,7 @@ export default function AdminAlertsView() {
             </button>
           </div>
 
-          <div className="rounded-2xl border border-line bg-white p-5">
+          <div className="rounded-2xl border border-line bg-white p-4">
             <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">최근 발송 이력</p>
             <div className="flex flex-col gap-3.5">
               {RECENT_NOTICES_SENT.map((n) => (

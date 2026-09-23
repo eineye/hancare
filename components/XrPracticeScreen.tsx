@@ -100,7 +100,7 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
   }
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-center gap-2.5 rounded-2xl border border-line bg-white px-4 py-3">
         <div className="min-w-[120px] flex-1">
           <p className="truncate text-sm font-bold text-brand-dark">{m.titleKo}</p>
@@ -289,11 +289,11 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
 
       {modal && (
         <div
-          className="fixed inset-0 z-20 flex items-center justify-center bg-black/50 p-5"
+          className="fixed inset-0 z-20 flex items-center justify-center bg-black/50 p-4"
           onClick={() => setModal(null)}
         >
           <div
-            className="max-h-[84vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-5 shadow-lg"
+            className="max-h-[84vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-4 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="mb-3 text-base font-bold text-brand-dark">{modal.title}</h3>

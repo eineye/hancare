@@ -49,7 +49,7 @@ export default function AvatarTeacher({
   }
 
   return (
-    <section className="rounded-2xl bg-brand p-5 text-white">
+    <section className="rounded-2xl bg-brand p-4 text-white">
       <div className="mb-3.5 flex items-center justify-between">
         <p className="text-[11px] font-bold tracking-wide text-white/80">AI 아바타 선생님</p>
         <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs">{STATE_LABEL[avatarState]}</span>
