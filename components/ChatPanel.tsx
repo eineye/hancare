@@ -73,7 +73,7 @@ const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(({ situationTitleK
   }));
 
   return (
-    <section id="chat-panel" className="flex h-full min-h-[320px] flex-col rounded-2xl border border-line bg-white p-5">
+    <section id="chat-panel" className="flex h-full min-h-[320px] flex-col rounded-2xl border border-line bg-white p-4">
       <p className="mb-1.5 text-[11px] font-bold tracking-wide text-brand">AI 대화 CHAT</p>
       <p className="mb-2 text-[11px] text-faint">질문은 모국어로 해도 됩니다</p>
 

@@ -30,7 +30,7 @@ export default function VocabView({ cards }: { cards: VocabCard[] }) {
   }, [cards, practicedTermIds, tab, query]);
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
           <p className="text-[11.5px] font-bold tracking-wide text-brand">단어장 VOCABULARY</p>
@@ -69,7 +69,7 @@ export default function VocabView({ cards }: { cards: VocabCard[] }) {
           조건에 맞는 용어가 없습니다.
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {shown.map((c) => {
             const learned = practicedTermIds.includes(c.id);
             return (

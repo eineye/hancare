@@ -36,7 +36,7 @@ function TermCard({ term }: { term: Term }) {
 
 export default function KeyTermsGrid({ terms }: { terms: Term[] }) {
   return (
-    <section className="rounded-2xl border border-line bg-white p-5">
+    <section className="rounded-2xl border border-line bg-white p-4">
       <div className="mb-3.5 flex items-center justify-between">
         <p className="text-[11px] font-bold tracking-wide text-brand">오늘의 의료 용어 KEY TERMS</p>
         <p className="text-xs text-faint">발음 듣기 · 따라 읽기</p>

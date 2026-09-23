@@ -54,7 +54,7 @@ export default function XrModuleGrid({ modules }: { modules: XrModule[] }) {
   const doneCount = modules.filter((m) => getModuleProgress(progress, m.id).submitted).length;
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div>
         <p className="text-[11.5px] font-bold tracking-wide text-brand">XR실습 XR PRACTICE</p>
         <h1 className="mt-2.5 text-[28px] font-black tracking-tight text-brand-dark sm:text-[30px]">

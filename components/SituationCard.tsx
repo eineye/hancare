@@ -26,7 +26,7 @@ export default function SituationCard({
   const bilingual = displayLang !== 'ko';
 
   return (
-    <section className="rounded-2xl border border-line bg-white p-5">
+    <section className="rounded-2xl border border-line bg-white p-4">
       <div className="mb-3.5 flex items-center gap-2.5">
         <span className="text-[11px] font-bold tracking-wide text-brand">상황 SITUATION</span>
         <span className="h-px flex-1 bg-line" />

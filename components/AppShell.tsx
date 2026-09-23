@@ -201,7 +201,7 @@ export default function AppShell({
         </nav>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[1440px] flex-1 items-start gap-5 p-4 lg:p-5">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-1 items-start gap-5 p-4">
         <aside className="sticky top-[76px] hidden w-56 flex-none flex-col gap-5 lg:flex">
           <div className="flex flex-col gap-0.5">
             {nav.map((item) => (

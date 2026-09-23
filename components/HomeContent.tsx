@@ -45,7 +45,7 @@ export default function HomeContent({
   const recentJournal = journalEntries.slice(0, 2);
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-center gap-7 rounded-[18px] bg-brand-dark p-7 text-white sm:p-8">
         <div className="min-w-[260px] flex-1">
           {current && (
@@ -92,8 +92,8 @@ export default function HomeContent({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-line bg-white p-5">
+      <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-2xl border border-line bg-white p-4">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-[11.5px] font-bold tracking-wide text-brand">주간 발음 추이 (예시)</p>
           </div>
@@ -113,7 +113,7 @@ export default function HomeContent({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-line bg-white p-5">
+        <div className="rounded-2xl border border-line bg-white p-4">
           <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">복습이 필요한 용어</p>
           {reviewCards.length === 0 ? (
             <p className="text-sm text-muted">
@@ -141,7 +141,7 @@ export default function HomeContent({
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-line bg-white p-5">
+        <div className="rounded-2xl border border-line bg-white p-4">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-[11.5px] font-bold tracking-wide text-brand">최근 실습 일지</p>
             <Link href="/journal" className="text-xs text-brand">
