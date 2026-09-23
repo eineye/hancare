@@ -77,33 +77,35 @@ img{max-width:100%;display:block;}
 /* ---------- layout ---------- */
 .xrRoot{min-height:100%;background:var(--bg);}
 .xrRoot:fullscreen{background:var(--bg);overflow:auto;}
-.wrap{max-width:1440px;margin:0 auto;padding:16px;}
-.mainGrid{display:grid;grid-template-columns:236px minmax(0,1fr) 348px;gap:14px;align-items:start;}
+.wrap{max-width:1600px;margin:0 auto;padding:16px;}
+.mainGrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start;}
 @media(max-width:1100px){.mainGrid{grid-template-columns:1fr;}}
 
 .card{background:#fff;border:1px solid var(--card-border);border-radius:16px;padding:14px;}
 .cardTitle{font-size:.72rem;font-weight:800;letter-spacing:.03em;color:var(--brand);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
 
-/* ---------- stepper ---------- */
-.stepper{display:flex;flex-direction:column;gap:2px;}
-.stepItem{display:flex;align-items:flex-start;gap:10px;padding:9px 8px;border-radius:10px;text-align:left;width:100%;position:relative;}
-.stepItem:not(:last-child)::before{content:'';position:absolute;left:22px;top:36px;width:2px;height:calc(100% - 4px);background:var(--line);}
-.stepItem.done:not(:last-child)::before{background:var(--brand-light);}
-.stepBadge{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;background:#EFEBE2;color:var(--faint);z-index:1;}
-.stepItem.active .stepBadge{background:var(--brand);color:#fff;}
-.stepItem.done .stepBadge{background:var(--brand-light);color:#fff;}
-.stepItem .stepTxt{padding-top:2px;}
-.stepItem .stepTxt .t{font-size:.82rem;font-weight:700;color:var(--brand-dark);}
-.stepItem.locked .stepTxt .t{color:var(--faint);}
-.stepItem .stepTxt .s{font-size:.68rem;color:var(--faint);margin-top:1px;}
-.stepItem:hover:not(.locked){background:var(--panel);}
-.stepItem.active{background:var(--brand-soft);}
+/* ---------- step strip (attached under the 3D viewport, same surface) ---------- */
+.stepStrip{position:relative;display:flex;align-items:flex-start;gap:2px;overflow-x:auto;padding:14px 18px 12px;background:var(--monitor-bg);}
+.stepStrip::-webkit-scrollbar{height:5px;}
+.stepStrip::-webkit-scrollbar-thumb{background:rgba(124,255,178,.25);border-radius:99px;}
+.stepLine{position:absolute;left:44px;right:44px;top:27px;height:2px;background:rgba(124,255,178,.14);z-index:0;}
+.stepChip{position:relative;z-index:1;flex:1;min-width:82px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:5px 2px 6px;border-radius:10px;text-align:center;}
+.stepChip:not(.locked){cursor:pointer;}
+.stepChip:hover:not(.locked){background:rgba(255,255,255,.06);}
+.stepChip.active{background:rgba(124,255,178,.09);}
+.stepChip .stepBadge{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;background:#0f261e;border:2px solid var(--monitor-bg);color:#6f8c81;}
+.stepChip.active .stepBadge{background:var(--monitor-fg);color:#07140f;}
+.stepChip.done .stepBadge{background:rgba(124,255,178,.3);color:var(--monitor-fg);}
+.stepChip .lbl{font-size:.64rem;font-weight:700;color:#cfe9db;white-space:nowrap;}
+.stepChip.locked .lbl{color:#5f7b70;}
+.stepChip.active .lbl{color:#fff;}
+.stepChip .sub{font-size:.6rem;color:#6f8c81;}
 
 /* ---------- viewport ---------- */
 .viewportCard{padding:0;overflow:hidden;}
 .viewportHead{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);}
 .viewportHead .camChips{display:flex;gap:6px;flex-wrap:wrap;}
-.viewport{position:relative;aspect-ratio:16/10;background:radial-gradient(120% 130% at 50% 0%,#16302a 0%,var(--monitor-bg) 70%);}
+.viewport{position:relative;aspect-ratio:3/2;background:radial-gradient(120% 130% at 50% 0%,#16302a 0%,var(--monitor-bg) 70%);}
 .viewport canvas{display:block;width:100%;height:100%;}
 .viewportOverlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:14px;}
 .overlayTop{pointer-events:auto;max-width:420px;background:rgba(7,20,15,.72);backdrop-filter:blur(3px);border:1px solid rgba(124,255,178,.18);border-radius:14px;padding:12px 14px;color:#eafff2;}
@@ -218,13 +220,7 @@ img{max-width:100%;display:block;}
   <div class="wrap">
     <div class="mainGrid">
 
-      <!-- LEFT: stepper -->
-      <div class="card">
-        <div class="cardTitle">8단계 실습 흐름</div>
-        <div class="stepper" id="stepperList"></div>
-      </div>
-
-      <!-- CENTER: 3D viewport -->
+      <!-- MAIN: 3D viewport + step strip, one continuous simulator surface -->
       <div class="card viewportCard">
         <div class="viewportHead">
           <strong style="font-size:.82rem;color:var(--brand-dark)">3D 병실 &amp; 환자 시뮬레이터</strong>
@@ -234,6 +230,7 @@ img{max-width:100%;display:block;}
           <div id="toast" class="toast"></div>
           <div class="viewportOverlay" id="viewportOverlay"></div>
         </div>
+        <div class="stepStrip" id="stepperList"></div>
       </div>
 
       <!-- RIGHT -->
@@ -372,28 +369,28 @@ if(isTtsSupported()){ window.speechSynthesis.onvoiceschanged = function(){ cache
 
 /* ---------------------------------------------------------- state */
 var STEPS = [
-  {key:'confirm', titleKo:'① 환자 확인',
+  {key:'confirm', titleKo:'① 환자 확인', shortKo:'환자 확인',
     tipKo:'개방형 질문으로 이름·생년월일을 환자가 직접 말하게 하세요. "김진수님 맞으시죠?"처럼 유도 질문은 오류를 놓칠 수 있어 피해야 해요.',
     phraseKo:'안녕하세요. 성함과 생년월일이 어떻게 되세요?'},
-  {key:'hygiene', titleKo:'② 손위생',
+  {key:'hygiene', titleKo:'② 손위생', shortKo:'손위생',
     tipKo:'손 소독제는 손바닥 가득 펌핑하고, 손바닥→손등→손깍지→손가락 등→엄지→손톱 끝 순서 6단계를 15~20초간 지켜야 해요.',
     phraseKo:'손 위생을 먼저 하겠습니다.'},
-  {key:'temp', titleKo:'③ 체온 측정',
+  {key:'temp', titleKo:'③ 체온 측정', shortKo:'체온',
     tipKo:'프로브 커버는 환자마다 새 것으로 교체해 감염을 예방해요. 고막 쪽으로 귓바퀴를 살짝 당기며 삽입하면 정확도가 올라가요.',
     phraseKo:'체온을 측정하겠습니다. 잠시만 기다려 주세요.'},
-  {key:'pulseResp', titleKo:'④ 맥박·호흡',
+  {key:'pulseResp', titleKo:'④ 맥박·호흡', shortKo:'맥박·호흡',
     tipKo:'환자가 호흡을 의식하면 속도가 달라질 수 있어요. 맥박을 재는 동안 자연스럽게 흉곽 움직임도 함께 관찰하세요.',
     phraseKo:'맥박을 확인하겠습니다. 편하게 계세요.'},
-  {key:'bp', titleKo:'⑤ 혈압 측정',
+  {key:'bp', titleKo:'⑤ 혈압 측정', shortKo:'혈압',
     tipKo:'커프는 팔오금 위 2~3cm 지점에 감아야 정확해요. 손목에 감는 건 외국인 실습생이 흔히 하는 실수예요.',
     phraseKo:'혈압을 측정하겠습니다. 팔에 힘을 빼 주세요.'},
-  {key:'spo2', titleKo:'⑥ SpO₂ 측정',
+  {key:'spo2', titleKo:'⑥ SpO₂ 측정', shortKo:'SpO₂',
     tipKo:'매니큐어나 차가운 손끝은 측정값에 영향을 줄 수 있어요. 집게가 손톱 위로 오도록 검지에 장착하세요.',
     phraseKo:'산소포화도를 측정하겠습니다.'},
-  {key:'assess', titleKo:'⑦ 기초사정',
+  {key:'assess', titleKo:'⑦ 기초사정', shortKo:'기초사정',
     tipKo:'의식·호흡·피부색·통증은 문진과 관찰을 함께 사용해요. 정해진 순서를 지키면 놓치는 항목이 줄어들어요.',
     phraseKo:'환자의 상태를 관찰하겠습니다.'},
-  {key:'report', titleKo:'⑧ 기록 및 보고',
+  {key:'report', titleKo:'⑧ 기록 및 보고', shortKo:'기록·보고',
     tipKo:'구두 보고는 체온-맥박-호흡-혈압-산소포화도(T-P-R-BP-SpO2) 순서로, 숫자는 또박또박 말하는 연습을 해보세요.',
     phraseKo:'활력징후 측정 결과를 보고하겠습니다.'}
 ];
@@ -455,17 +452,16 @@ function nextStep(){
 /* ---------------------------------------------------------- stepper render */
 function renderStepper(){
   var el = document.getElementById('stepperList');
-  el.innerHTML = STEPS.map(function(st,i){
-    var cls = 'stepItem'+(i===S.step?' active':'')+(S.done[i]?' done':'')+(i>S.step && !S.done[i-1<0?0:i-1] && i>0 && !S.done[i-1] ? ' locked':'');
+  var chips = STEPS.map(function(st,i){
     var locked = i>0 && !S.done[i-1] && !S.done[i];
-    if(locked) cls += ' locked';
+    var cls = 'stepChip'+(i===S.step?' active':'')+(S.done[i]?' done':'')+(locked?' locked':'');
     var badge = S.done[i] ? '✓' : (i+1);
-    return '<button type="button" class="'+cls+'" onclick="XR.goStep('+i+')">'+
+    return '<button type="button" class="'+cls+'" onclick="XR.goStep('+i+')" title="'+st.titleKo+'">'+
       '<span class="stepBadge">'+badge+'</span>'+
-      '<span class="stepTxt"><span class="t">'+st.titleKo+'</span>'+
-      '<span class="s">'+(S.done[i]?'완료':(i===S.step?'진행 중':(locked?'잠김':'대기')))+'</span></span>'+
+      '<span class="lbl">'+st.shortKo+'</span>'+
       '</button>';
   }).join('');
+  el.innerHTML = '<div class="stepLine"></div>' + chips;
 }
 
 /* ---------------------------------------------------------- AI panel */
