@@ -100,14 +100,22 @@ cp .env.example .env.local
 - **발음 채점**: 실제 음성 신호 기반 채점이 아닌, 인식된 텍스트와 목표 문장을
   비교하는 **텍스트 유사도 근사치**입니다 (`lib/scoring.ts`)
 - **아바타 (한글학습 화면의 AI 아바타 선생님)**: 외부에서 받은 Canvas 2D 벡터 캐릭터
-  엔진(`lib/teacher2d/character2d-canvas.js`, React 래퍼 `components/TeacherAvatar.tsx`)을
-  씁니다. 문장을 초성·중성·종성으로 분해해 입모양(비셈) 타임라인을 만들고, 브라우저
-  TTS의 단어 경계(`onboundary`) 이벤트로 타이밍을 보정하며 재생합니다 — 실제 음성
-  파형을 분석한 게 아니라 텍스트 기반 타임라인이라, 브라우저·음성 조합에 따라 완벽히
-  일치하지 않을 수 있습니다. 호흡·눈 깜빡임·시선 추적 애니메이션도 함께 포함되어
-  있습니다. 역할극 화면의 "AI 환자" 아바타와 독립 실행형 `hangulcare.html`은 아직
-  이전의 간단한 SVG 얼굴(`components/Avatar2D.tsx`, 말하는 동안 무작위 입모양)을
-  그대로 씁니다.
+  엔진(원본 `character2d-canvas.js`)을 씁니다. 문장을 초성·중성·종성으로 분해해
+  입모양(비셈) 타임라인을 만들고, 브라우저 TTS의 단어 경계(`onboundary`) 이벤트로
+  타이밍을 보정하며 재생합니다 — 실제 음성 파형을 분석한 게 아니라 텍스트 기반
+  타임라인이라, 브라우저·음성 조합에 따라 완벽히 일치하지 않을 수 있습니다.
+  호흡·눈 깜빡임·시선 추적 애니메이션도 함께 포함되어 있습니다.
+  - Next.js 앱: `lib/teacher2d/character2d-canvas.js` + React 래퍼
+    `components/TeacherAvatar.tsx`.
+  - `hangulcare.html`: 같은 엔진의 전역 스크립트판(`character2d-canvas.global.js`,
+    저장소 루트)을 `<script>` 태그로 불러와 씁니다. 이 파일은 상태가 바뀔 때마다
+    화면 전체를 `innerHTML`로 다시 그리는데, 캔버스 엔진은 계속 살아있는
+    애니메이션 인스턴스라 매번 새로 만들면 안 돼서 인스턴스를 하나만 만들어 두고
+    다시 그릴 때마다 캔버스만 새 컨테이너로 옮겨 붙이는 방식(`mountTeacherAvatar()`)을
+    씁니다.
+  - 역할극(`/roleplay`) 화면의 "AI 환자" 아바타는 다른 캐릭터라 이전의 간단한 SVG
+    얼굴(Next.js `components/Avatar2D.tsx`, `hangulcare.html`의 `avatarFaceSvg()` —
+    말하는 동안 무작위 입모양)을 그대로 씁니다.
 - **사용자 통계**: 이 브라우저의 `localStorage`에만 저장되는 데모 값(다른 기기와 공유되지 않음)
 - **로그인/관리자 화면**: 실제 서버 인증·다중 사용자 DB가 아닌 데모 계정 + 목데이터
   (`lib/auth.ts`, `data/learners.json`) 기반 UX 프로토타입입니다
