@@ -38,7 +38,7 @@ npm run dev       # http://localhost:3000
 이 로그인은 실제 서버 인증이 아닌 `localStorage` 기반 데모 인증입니다(`lib/auth.ts`).
 
 로그인 후에는 상단바(로고·언어 선택·알림·프로필) + 좌측 사이드바 메뉴 셸
-(`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 학습 /
+(`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 한글학습 /
 XR실습 / 역할극 / 단어장 / 리포트 / 실습 일지 / 알림 / 설정이고, 관리자 메뉴는
 전체 현황 / 알림 및 면담입니다.
 

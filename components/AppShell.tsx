@@ -64,7 +64,7 @@ export default function AppShell({
   const learnerNav: NavItem[] = [
     { id: 'home', ko: '홈', en: 'Home', href: '/home' },
     { id: 'courses', ko: '커리큘럼', en: 'Units', href: '/courses' },
-    { id: 'learn', ko: '학습', en: 'Learn', href: learnHref, match: '/learn/' },
+    { id: 'learn', ko: '한글학습', en: 'Learn', href: learnHref, match: '/learn/' },
     { id: 'xr', ko: 'XR실습', en: 'XR', href: '/xr' },
     { id: 'roleplay', ko: '역할극', en: 'Role play', href: roleplayHref, match: '/roleplay/' },
     { id: 'vocab', ko: '단어장', en: 'Words', href: '/vocab' },
