@@ -247,6 +247,7 @@
 <div class="app" id="app"></div>
 <div class="modalMask" id="modalMask" hidden><div class="modal" id="modalBody"></div></div>
 
+<script src="./character2d-canvas.global.js"></script>
 <script>
 (function () {
   "use strict";
@@ -579,6 +580,30 @@
     tickAvatarBlink();
   }
 
+  /* ============================== 한글학습 화면 전용 AI 아바타 선생님 (Character2DCanvas) ==============================
+     한글학습(renderLesson)만 새 Canvas 2D 캐릭터 엔진을 쓴다(역할극의 "AI 환자"는 위의
+     간단한 SVG 얼굴을 그대로 쓴다). renderLesson()은 상태가 바뀔 때마다 el.innerHTML을
+     통째로 다시 그리는데, 이 엔진은 자체 requestAnimationFrame 루프와 진행 중인 발화
+     타임라인을 가진 살아있는 인스턴스라 매번 새로 만들면 호흡·시선 애니메이션이 끊기고
+     말하는 도중 끊길 수 있다. 그래서 인스턴스는 딱 하나만 만들어 두고, 다시 그릴 때마다
+     캔버스만 새 컨테이너로 옮겨 붙인다(엔진 내부 상태는 그대로 유지됨). */
+  var teacherEngine = null;
+
+  function mountTeacherAvatar() {
+    var box = document.getElementById("teacherAvatarBox");
+    if (!box || typeof Character2DCanvas === "undefined") return;
+    if (!teacherEngine) {
+      teacherEngine = new Character2DCanvas({ container: box });
+      teacherEngine.on("start", function () { state.avatar.state = "speaking"; renderLesson(); });
+      teacherEngine.on("end", function () { state.avatar.state = "idle"; renderLesson(); });
+      return;
+    }
+    box.appendChild(teacherEngine.canvas);
+    teacherEngine.o.container = box;
+    if (teacherEngine._ro) { teacherEngine._ro.disconnect(); teacherEngine._ro.observe(box); }
+    teacherEngine.resize();
+  }
+
   /* ============================== CHAT (규칙 기반 목데이터 응답) ============================== */
   function mockChatReply(situation, message) {
     var term = situation.terms.filter(function (t) { return message.indexOf(t.hangul) !== -1; })[0];
@@ -621,6 +646,10 @@
   }
 
   function navigate(view, params) {
+    if (state.view === "learn" && view !== "learn" && teacherEngine) {
+      teacherEngine.destroy();
+      teacherEngine = null;
+    }
     state.view = view; state.params = params || {};
     state.topLangOpen = false;
     if (view === "learn") {
@@ -631,6 +660,7 @@
         lastScore: null, lastFeedback: [], chatMessages: [], recErr: null
       };
       state.avatar = { state: "idle", mouthShape: "closed", blink: false };
+      if (teacherEngine) teacherEngine.stop();
       setLastSituation(found.unit.id, found.situation.id);
     }
     if (view === "roleplay") {
@@ -1021,8 +1051,11 @@
 
     var avatarHtml =
       '<div class="avatarCard"><div style="display:flex;justify-content:space-between;"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 아바타 선생님</p><span class="pill" style="background:rgba(255,255,255,.15);">' + (state.avatar.state === "speaking" ? "● 말하는 중" : state.avatar.state === "listening" ? "● 듣는 중" : "대기 중") + "</span></div>" +
-        '<div class="avatarFace" id="avatarFaceBox" style="margin-top:10px;">' + avatarFaceSvg() + "</div>" +
-        '<p style="margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.5);">* 실제 발음 분석이 아닌, 말하는 동안 일정한 리듬으로 음소 그룹별 입모양 중 하나를 무작위로 보여주는 근사치입니다.</p>' +
+        '<div class="avatarFace" style="margin-top:10px;position:relative;">' +
+          '<div id="teacherAvatarBox" style="width:100%;height:100%;"></div>' +
+          (state.avatar.state === "listening" ? '<div style="position:absolute;inset:8px;border-radius:10px;box-shadow:0 0 0 2px rgba(255,255,255,.5);pointer-events:none;animation:avatarPulse 1.6s ease-in-out infinite;"></div>' : "") +
+        "</div>" +
+        '<p style="margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.5);">* 실제 음성 파형을 분석한 것이 아니라, 문장을 초성·중성·종성으로 분해해 만든 입모양 타임라인을 TTS 음성 재생에 맞춰 보여주는 방식입니다. 브라우저 TTS 특성상 완벽히 일치하지 않을 수 있습니다.</p>' +
         '<div style="margin-top:12px;background:rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:.84rem;">' + esc(sentence.textKo) + (bilingual ? '<div style="font-size:.72rem;opacity:.75;margin-top:2px;">' + esc(sentence.textEn) + "</div>" : "") + "</div>" +
         '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">' +
           '<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(1,true)">🔁 다시 듣기</button>' +
@@ -1065,8 +1098,7 @@
       "</div>";
 
     el.innerHTML = shell(mainHtml, "learn");
-    ensureAvatarMouthTimer();
-    ensureAvatarBlinkTimer();
+    mountTeacherAvatar();
   }
 
   var App_gotoSituation = function (dir) {
@@ -1078,9 +1110,13 @@
     var settings = getSettings();
     var found = findSituation(state.lesson.unitId, state.lesson.situationId);
     var sentence = found.situation.sentences[Math.min(state.lesson.sentenceIndex, found.situation.sentences.length - 1)];
-    if (isAvatar) state.avatar.state = "speaking";
-    renderLesson();
-    speak(sentence.textKo, { rate: rate * settings.speechRate, onEnd: function () { if (isAvatar) { state.avatar.state = "idle"; renderLesson(); } } });
+    if (isAvatar && teacherEngine) {
+      // 엔진 자체의 speak()가 TTS 재생과 립싱크를 함께 처리한다 — start/end 이벤트는
+      // mountTeacherAvatar()에서 한 번만 등록해 state.avatar.state를 갱신한다.
+      teacherEngine.speak(sentence.textKo, { rate: rate * settings.speechRate });
+      return;
+    }
+    speak(sentence.textKo, { rate: rate * settings.speechRate });
   };
   var App_toggleRecording = function () {
     var L = state.lesson;
