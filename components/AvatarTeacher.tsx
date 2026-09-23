@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useLessonStore, useSettingsStore } from '@/lib/store';
-import { speak } from '@/lib/speech';
-import Avatar2D from './Avatar2D';
+import TeacherAvatar, { type TeacherAvatarHandle } from './TeacherAvatar';
 import type { Sentence } from '@/lib/types';
 
 const STATE_LABEL: Record<string, string> = {
@@ -27,25 +26,16 @@ export default function AvatarTeacher({
   const displayLang = useSettingsStore((s) => s.displayLang);
   const speechRate = useSettingsStore((s) => s.speechRate);
   const [closeup, setCloseup] = useState(false);
+  const teacherRef = useRef<TeacherAvatarHandle>(null);
 
   function handleReplay() {
-    speak(sentence.textKo, {
-      rate: speechRate,
-      onStart: () => setAvatarState('speaking'),
-      onEnd: () => setAvatarState('idle'),
-    });
+    setCloseup(false);
+    teacherRef.current?.speak(sentence.textKo, { rate: speechRate });
   }
 
   function handleCloseup() {
     setCloseup(true);
-    speak(sentence.textKo, {
-      rate: speechRate * 0.5,
-      onStart: () => setAvatarState('speaking'),
-      onEnd: () => {
-        setAvatarState('idle');
-        setCloseup(false);
-      },
-    });
+    teacherRef.current?.speak(sentence.textKo, { rate: speechRate * 0.5 });
   }
 
   return (
@@ -55,12 +45,22 @@ export default function AvatarTeacher({
         <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs">{STATE_LABEL[avatarState]}</span>
       </div>
 
-      <div className="aspect-[4/3] overflow-hidden rounded-xl bg-brand-dark/40">
-        <Avatar2D state={avatarState} closeup={closeup} />
+      <div
+        className={`relative aspect-[4/3] overflow-hidden rounded-xl bg-brand-dark/40 transition-transform duration-300 motion-reduce:transition-none ${closeup ? 'scale-125' : ''}`}
+      >
+        <TeacherAvatar
+          ref={teacherRef}
+          onStart={() => setAvatarState('speaking')}
+          onEnd={() => setAvatarState('idle')}
+        />
+        {avatarState === 'listening' && (
+          <div className="pointer-events-none absolute inset-2 rounded-lg ring-2 ring-white/50 motion-safe:animate-pulse" />
+        )}
       </div>
       <p className="mt-1.5 text-[10px] text-white/50">
-        * 실제 발음 분석이 아닌, 말하는 동안 일정한 리듬으로 음소 그룹별 입모양 중
-        하나를 무작위로 보여주는 근사치입니다.
+        * 실제 음성 파형을 분석한 것이 아니라, 문장을 초성·중성·종성으로 분해해 만든 입모양
+        타임라인을 TTS 음성 재생에 맞춰 보여주는 방식입니다. 브라우저 TTS 특성상 완벽히
+        일치하지 않을 수 있습니다.
       </p>
 
       <div className="mt-3.5 rounded-xl bg-white/10 p-3.5 text-sm">
