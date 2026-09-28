@@ -48,7 +48,11 @@ function itemsFromUnits(units: Unit[]): CourseItem[] {
  * 실제 콘텐츠가 없어 고정 placeholder로 둔다.
  */
 export async function getCourseSections(): Promise<CourseSection[]> {
-  const [practiceUnits, xrModules] = await Promise.all([getUnitsByCategory('practice'), getXrModules()]);
+  const [basicUnits, practiceUnits, xrModules] = await Promise.all([
+    getUnitsByCategory('basic'),
+    getUnitsByCategory('practice'),
+    getXrModules(),
+  ]);
 
   // XR실습 화면(/xr/[moduleId])이 Phase 1(화면 흐름·상호작용 셸) 수준으로 구현되어
   // 있어 실제로 열어볼 수 있다. 3D/물리 엔진은 아직 없다(docs/XR_MODULE_DESIGN.md 로드맵).
@@ -62,9 +66,17 @@ export async function getCourseSections(): Promise<CourseSection[]> {
       }))
     : [EMPTY_PLACEHOLDER];
 
-  // 기초한글은 왼쪽 사이드바의 별도 "기초한글" 메뉴(/basic-hangul)에서 다루므로
-  // 여기(커리큘럼)에는 실습한글·XR실습만 남긴다.
+  // 기초한글은 왼쪽 사이드바에도 전용 메뉴(/basic-hangul, 단어장과 통합된 화면)가
+  // 있지만, 커리큘럼 전체 개요에서도 다른 분류와 나란히 보이도록 여기에도 둔다.
   return [
+    {
+      id: 'basic',
+      titleKo: '기초한글',
+      titleEn: 'Basic Hangul',
+      descriptionKo: '자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다.',
+      descriptionEn: 'Learn Hangul itself from the basics — consonants, vowels, batchim, simple words.',
+      items: itemsFromUnits(basicUnits),
+    },
     {
       id: 'practice',
       titleKo: '실습한글',
