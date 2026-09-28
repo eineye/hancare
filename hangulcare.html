@@ -232,7 +232,12 @@
   td { padding: 10px 8px; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
 
   .modalMask { position: fixed; inset: 0; background: rgba(18,36,31,.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 30; }
-  .modal { width: min(440px,100%); background: var(--card); border-radius: 16px; padding: 18px; max-height: 84vh; overflow-y: auto; }
+  .modal { width: min(440px,100%); background: var(--card); border-radius: 16px; padding: 18px; max-height: 84vh; overflow-y: auto; position: relative; }
+  .modal.wide { width: min(1040px,96vw); max-height: min(640px,80vh); }
+  .modalCloseX { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border: none; border-radius: 999px; background: var(--chip); color: var(--muted); font-size: 1rem; cursor: pointer; line-height: 1; }
+  .modalGrid { display: flex; flex-wrap: wrap; gap: 16px; }
+  .modalGrid .col-left { flex: 1 1 320px; display: flex; flex-direction: column; gap: 14px; }
+  .modalGrid .col-right { flex: 1 1 260px; }
 
   /* ---------------- vocab / journal / notices / settings / admin-alerts ---------------- */
   .vocabCard { border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 16px; background: var(--card); }
@@ -1671,9 +1676,12 @@
   var modalMask = document.getElementById("modalMask");
   var modalBody = document.getElementById("modalBody");
   function openModal(title, bodyHtml, opts) {
-    modalBody.style.maxWidth = (opts && opts.wide) ? "640px" : "";
+    var wide = !!(opts && opts.wide);
+    modalBody.classList.toggle("wide", wide);
+    var closeX = wide ? '<button type="button" class="modalCloseX" aria-label="닫기" onclick="App.closeModal()">✕</button>' : "";
+    var titleStyle = wide ? "font-size:1.05rem;margin-bottom:14px;padding-right:32px;color:var(--brand-dark);" : "font-size:1rem;margin-bottom:10px;color:var(--brand-dark);";
     var closeBtn = (opts && opts.noCloseBtn) ? "" : '<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="App.closeModal()">닫기</button>';
-    modalBody.innerHTML = "<h3 style=\"font-size:1rem;margin-bottom:10px;color:var(--brand-dark);\">" + esc(title) + "</h3>" + bodyHtml + closeBtn;
+    modalBody.innerHTML = closeX + "<h3 style=\"" + titleStyle + "\">" + esc(title) + "</h3>" + bodyHtml + closeBtn;
     modalMask.hidden = false;
   }
   modalMask.addEventListener("click", function (e) { if (e.target === modalMask) modalMask.hidden = true; });
@@ -1713,28 +1721,34 @@
     }).join('<div style="height:14px;"></div>');
 
     var body =
-      '<p style="font-size:.76rem;color:var(--muted);margin-bottom:2px;">' + esc(l.nationality) + " · " + esc(l.level) + " · " + esc(l.department) + " · 최근 학습 " + esc(l.lastActiveKo) + '</p>' +
-      '<p style="border-radius:11px;background:var(--chip);padding:10px 12px;font-size:.74rem;line-height:1.5;color:var(--muted);margin-top:10px;">이 세부현황은 실제 다중 사용자 백엔드가 없어 데모용 목데이터입니다(진도관리 화면 전체와 동일). 실제 서비스에서는 이 실습생 본인 계정에 쌓인 실제 학습 기록을 표시합니다.</p>' +
-      attentionHtml +
-      '<div style="margin-top:12px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">' +
-        statTile(String(l.avgAccuracy), "평균 발음 정확도", l.avgAccuracy < 70) +
-        statTile(String(l.wordsPracticed), "누적 학습 문장 수") +
-        statTile(Math.round(l.wordsPracticed * 0.5) + "분", "학습 시간(추정)") +
-        statTile(completedCount + "/" + totalSituations, "완료 상황") +
-      '</div>' +
-      '<div style="margin-top:12px;border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
-        '<p class="eyebrow" style="margin-bottom:12px;">주차별 평균 점수 (예시)</p>' +
-        '<div style="height:100px;display:flex;align-items:flex-end;gap:8px;">' + weeklyBars + '</div>' +
-        '<p style="margin-top:8px;font-size:.66rem;color:var(--faint);">* 주차별 이력은 저장하지 않아 예시 그래프입니다.</p>' +
-      '</div>' +
-      '<div style="margin-top:12px;border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
-        '<p class="eyebrow" style="margin-bottom:12px;">약한 발음 요소 (예시)</p>' +
-        weakSoundsHtml +
-        '<p style="margin-top:10px;font-size:.66rem;color:var(--faint);">* 음소 단위 분석은 하지 않아 예시 값입니다.</p>' +
-      '</div>' +
-      '<div style="margin-top:12px;border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
-        '<p class="eyebrow" style="margin-bottom:12px;">학습한 내용</p>' +
-        learnedHtml +
+      '<p style="font-size:.76rem;color:var(--muted);margin-bottom:10px;">' + esc(l.nationality) + " · " + esc(l.level) + " · " + esc(l.department) + " · 최근 학습 " + esc(l.lastActiveKo) + '</p>' +
+      '<div class="modalGrid">' +
+        '<div class="col-left">' +
+          '<p style="border-radius:11px;background:var(--chip);padding:10px 12px;font-size:.74rem;line-height:1.5;color:var(--muted);">이 세부현황은 실제 다중 사용자 백엔드가 없어 데모용 목데이터입니다(진도관리 화면 전체와 동일). 실제 서비스에서는 이 실습생 본인 계정에 쌓인 실제 학습 기록을 표시합니다.</p>' +
+          attentionHtml +
+          '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">' +
+            statTile(String(l.avgAccuracy), "평균 발음 정확도", l.avgAccuracy < 70) +
+            statTile(String(l.wordsPracticed), "누적 학습 문장 수") +
+            statTile(Math.round(l.wordsPracticed * 0.5) + "분", "학습 시간(추정)") +
+            statTile(completedCount + "/" + totalSituations, "완료 상황") +
+          '</div>' +
+          '<div style="border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
+            '<p class="eyebrow" style="margin-bottom:12px;">주차별 평균 점수 (예시)</p>' +
+            '<div style="height:90px;display:flex;align-items:flex-end;gap:8px;">' + weeklyBars + '</div>' +
+            '<p style="margin-top:8px;font-size:.66rem;color:var(--faint);">* 주차별 이력은 저장하지 않아 예시 그래프입니다.</p>' +
+          '</div>' +
+          '<div style="border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
+            '<p class="eyebrow" style="margin-bottom:12px;">약한 발음 요소 (예시)</p>' +
+            weakSoundsHtml +
+            '<p style="margin-top:10px;font-size:.66rem;color:var(--faint);">* 음소 단위 분석은 하지 않아 예시 값입니다.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="col-right">' +
+          '<div style="border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
+            '<p class="eyebrow" style="margin-bottom:12px;">학습한 내용</p>' +
+            learnedHtml +
+          '</div>' +
+        '</div>' +
       '</div>';
 
     openModal(esc(l.name), body, { wide: true });
