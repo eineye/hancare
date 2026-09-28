@@ -925,6 +925,9 @@
     var avgAcc = stats.accuracyCount ? Math.round(stats.accuracySum / stats.accuracyCount) : 0;
     var xrProgress = getXrProgress();
 
+    var basicItems = BASIC_UNITS[0].situations.map(function (s) {
+      return itemButtonHtml(s.menuLabelKo, "App.openLesson('" + BASIC_UNITS[0].id + "','" + s.id + "')", true);
+    }).join("");
     var practiceItems = PRACTICE_UNITS[0].situations.map(function (s) {
       return itemButtonHtml(s.menuLabelKo, "App.openLesson('" + PRACTICE_UNITS[0].id + "','" + s.id + "')", true);
     }).join("");
@@ -935,10 +938,11 @@
 
     var mainHtml =
       '<p class="eyebrow">커리큘럼 CURRICULUM</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">진도관리 · 학습 단계 선택</h1>' +
-      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">실습한글 · XR실습 순서로 구성했습니다(기초한글은 왼쪽 메뉴의 "기초한글"에서 다룹니다).</p>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">기초한글 · 실습한글 · XR실습 순서로 구성했습니다.</p>' +
       '<div class="notice" style="margin-top:14px;">이 페이지는 로그인부터 학습·XR실습까지 전체 흐름을 브라우저에서만 테스트하는 독립 HTML입니다. 음성 인식(마이크)은 브라우저 설정·권한에 따라 제한될 수 있고, 역할극·대화는 서버 연동 없이 규칙 기반 응답으로 대체되어 있습니다.</div>' +
       '<div class="sectionHead"><h2>나의 진도</h2></div>' +
       '<div class="statGrid"><div class="card statTile"><p>학습 문장 수</p><p>' + stats.wordsPracticed + '</p></div><div class="card statTile"><p>평균 정확도</p><p>' + avgAcc + '%</p></div><div class="card statTile"><p>학습 시간(추정)</p><p>' + Math.round(stats.wordsPracticed * 0.5) + '분</p></div></div>' +
+      '<div class="sectionHead"><h2>기초한글</h2></div><div class="itemGrid">' + basicItems + '</div>' +
       '<div class="sectionHead"><h2>실습한글</h2></div><div class="itemGrid">' + practiceItems + '</div>' +
       '<div class="sectionHead"><h2>XR실습</h2></div><div class="itemGrid">' + xrItems + '</div>';
 
