@@ -1,4 +1,4 @@
-import { getUnits, getUnitsByCategory, getXrModules } from './content';
+import { getUnitsByCategory, getXrModules } from './content';
 import type { Unit } from './types';
 
 export type CourseItemStatus = 'available' | 'coming-soon';
@@ -48,11 +48,7 @@ function itemsFromUnits(units: Unit[]): CourseItem[] {
  * 실제 콘텐츠가 없어 고정 placeholder로 둔다.
  */
 export async function getCourseSections(): Promise<CourseSection[]> {
-  const [basicUnits, practiceUnits, xrModules] = await Promise.all([
-    getUnitsByCategory('basic'),
-    getUnitsByCategory('practice'),
-    getXrModules(),
-  ]);
+  const [practiceUnits, xrModules] = await Promise.all([getUnitsByCategory('practice'), getXrModules()]);
 
   // XR실습 화면(/xr/[moduleId])이 Phase 1(화면 흐름·상호작용 셸) 수준으로 구현되어
   // 있어 실제로 열어볼 수 있다. 3D/물리 엔진은 아직 없다(docs/XR_MODULE_DESIGN.md 로드맵).
@@ -66,15 +62,9 @@ export async function getCourseSections(): Promise<CourseSection[]> {
       }))
     : [EMPTY_PLACEHOLDER];
 
+  // 기초한글은 왼쪽 사이드바의 별도 "기초한글" 메뉴(/basic-hangul)에서 다루므로
+  // 여기(커리큘럼)에는 실습한글·XR실습만 남긴다.
   return [
-    {
-      id: 'basic',
-      titleKo: '기초한글',
-      titleEn: 'Basic Hangul',
-      descriptionKo: '자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다.',
-      descriptionEn: 'Learn Hangul itself from the basics — consonants, vowels, batchim, simple words.',
-      items: itemsFromUnits(basicUnits),
-    },
     {
       id: 'practice',
       titleKo: '실습한글',
@@ -95,15 +85,22 @@ export async function getCourseSections(): Promise<CourseSection[]> {
 }
 
 /**
- * 아직 아무 상황도 방문한 적 없는 사용자를 위한 "이어서 학습" 기본 목적지.
- * 실습한글의 첫 유닛·첫 상황을 우선하고, 없으면 기초한글로 대체한다. 사이드바/홈
- * 화면은 이 값을 실제 방문 기록(lib/store.ts의 useProgressStore)이 있으면
- * 그것으로 덮어써 보여준다.
+ * 사이드바 "실습한글" 메뉴의 기본 목적지(실습한글의 첫 유닛·첫 상황). 기초한글은
+ * 별도 "기초한글" 메뉴(/basic-hangul)로 다루므로 여기서는 대체하지 않는다.
+ * 사이드바/홈 화면은 이 값을, 실제 방문 기록(lib/store.ts의 useProgressStore)이
+ * 실습한글 상황을 가리키고 있으면 그 값으로 덮어써 보여준다.
  */
 export async function getDefaultLearnHref(): Promise<string | undefined> {
-  const units = await getUnits();
-  const unit = units.find((u) => u.category === 'practice') ?? units[0];
-  const situation = unit?.situations[0];
-  if (!unit || !situation) return undefined;
-  return `/learn/${unit.id}/${situation.id}`;
+  const units = await getUnitsByCategory('practice');
+  const situation = units[0]?.situations[0];
+  if (!units[0] || !situation) return undefined;
+  return `/learn/${units[0].id}/${situation.id}`;
+}
+
+/** 실습한글 카테고리의 유닛 id 목록. 사이드바가 "이어서 학습" 방문 기록이
+ * 실습한글인지(→ 실습한글 메뉴에 반영) 기초한글인지(→ 기초한글 메뉴로 취급)
+ * 구분하는 데 쓴다. */
+export async function getPracticeUnitIds(): Promise<string[]> {
+  const units = await getUnitsByCategory('practice');
+  return units.map((u) => u.id);
 }
