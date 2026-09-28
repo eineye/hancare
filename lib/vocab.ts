@@ -8,7 +8,7 @@ export interface VocabCard extends Term {
 }
 
 /**
- * 단어장(/vocab)용 데이터. content/*.json의 모든 유닛·상황에 등장하는 용어를
+ * 단어장(기초한글 화면(/basic-hangul) 하단)용 데이터. content/*.json의 모든 유닛·상황에 등장하는 용어를
  * 모아 중복 제거한다. 시안의 "발음 점수"는 실제로 측정한 적 없는 수치라 만들어
  * 넣지 않고, 대신 학습 화면에서 실제로 들어본 적 있는지(usePracticedTermsStore)로
  * "학습함/아직"만 구분한다.

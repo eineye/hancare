@@ -1,0 +1,100 @@
+'use client';
+
+import Link from 'next/link';
+import { speak } from '@/lib/speech';
+import { usePracticedTermsStore, useSettingsStore } from '@/lib/store';
+import VocabView from './VocabView';
+import type { Unit, Term } from '@/lib/types';
+import type { VocabCard } from '@/lib/vocab';
+
+function TermRow({ term }: { term: Term }) {
+  const practicedTermIds = usePracticedTermsStore((s) => s.practicedTermIds);
+  const markPracticed = usePracticedTermsStore((s) => s.markPracticed);
+  const displayLang = useSettingsStore((s) => s.displayLang);
+  const learned = practicedTermIds.includes(term.id);
+
+  return (
+    <div className="flex items-center justify-between gap-2.5 rounded-xl bg-panel px-3.5 py-2.5">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-brand-dark">{term.hangul}</p>
+        <p className="mt-0.5 text-xs text-muted">
+          [{term.romanization}]{displayLang !== 'ko' && ` · ${term.glossEn}`}
+        </p>
+      </div>
+      <div className="flex flex-none items-center gap-2">
+        <span className={`text-[11px] ${learned ? 'text-brand' : 'text-faint'}`}>{learned ? '학습함' : '아직'}</span>
+        <button
+          type="button"
+          onClick={() => {
+            speak(term.hangul);
+            markPracticed(term.id);
+          }}
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-chip text-xs text-brand hover:bg-brand hover:text-white"
+          aria-label={`${term.hangul} 발음 듣기`}
+        >
+          ▶
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function BasicHangulView({ units, vocabCards }: { units: Unit[]; vocabCards: VocabCard[] }) {
+  const situations = units.flatMap((unit) => unit.situations.map((situation) => ({ unit, situation })));
+
+  return (
+    <div className="flex flex-col gap-3.5">
+      <div>
+        <p className="text-[11.5px] font-bold tracking-wide text-brand">기초한글 BASIC HANGUL</p>
+        <h1 className="mt-2.5 text-[28px] font-black tracking-tight text-brand-dark sm:text-[30px]">
+          한글 자체를 처음부터 배우기
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 상황별로 학습을 시작하거나, 아래
+          단어장에서 용어를 듣고 복습할 수 있습니다.
+        </p>
+      </div>
+
+      {situations.length === 0 ? (
+        <p className="rounded-2xl border border-line bg-white p-8 text-center text-sm text-muted">
+          아직 등록된 기초한글 콘텐츠가 없습니다.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-3.5">
+          {situations.map(({ unit, situation }) => (
+            <section key={situation.id} className="rounded-2xl border border-line bg-white p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-lg font-bold text-brand-dark">{situation.menuLabelKo}</h2>
+                  <p className="mt-1 text-sm text-muted">{situation.titleKo}</p>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    <span className="rounded-full border border-chipBorder bg-chip px-3 py-1 text-xs font-medium text-brand">
+                      {situation.placeTag}
+                    </span>
+                    <span className="rounded-full border border-chipBorder bg-chip px-3 py-1 text-xs font-medium text-brand">
+                      {situation.formalityTag}
+                    </span>
+                  </div>
+                </div>
+                <Link
+                  href={`/learn/${unit.id}/${situation.id}`}
+                  className="flex-none whitespace-nowrap rounded-[10px] bg-brand-dark px-4 py-2.5 text-xs font-bold text-white hover:bg-brand-dark/90"
+                >
+                  학습하기 →
+                </Link>
+              </div>
+
+              <div className="mt-3.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {situation.terms.map((term) => (
+                  <TermRow key={term.id} term={term} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+
+      <VocabView cards={vocabCards} />
+    </div>
+  );
+}

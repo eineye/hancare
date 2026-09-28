@@ -203,7 +203,7 @@ interface PracticedTermsState {
   markPracticed: (termId: string) => void;
 }
 
-/** 단어장(/vocab)의 "학습함" 구분에 쓰는 실제 기록 — 학습 화면에서 용어 발음을
+/** 단어장(기초한글 화면(/basic-hangul))의 "학습함" 구분에 쓰는 실제 기록 — 학습 화면에서 용어 발음을
  * 들으면 그 용어 id가 여기 쌓인다. 점수화된 숙련도가 아니라 "들어봤는지"만
  * 구분하는 단순한 실제 신호다. */
 export const usePracticedTermsStore = create<PracticedTermsState>()(
