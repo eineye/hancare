@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import learnersData from '@/data/learners.json';
-import type { Learner } from '@/lib/types';
+import type { Learner, Unit } from '@/lib/types';
 import type { CourseSection } from '@/lib/courses';
+import LearnerDetailModal from './LearnerDetailModal';
 
 const learners = learnersData as Learner[];
 
@@ -17,7 +19,9 @@ function StatTile({ value, label, hint, warn }: { value: string; label: string; 
   );
 }
 
-export default function AdminView({ sections }: { sections: CourseSection[] }) {
+export default function AdminView({ sections, units }: { sections: CourseSection[]; units: Unit[] }) {
+  const [selectedLearnerId, setSelectedLearnerId] = useState<string | undefined>(undefined);
+  const selectedLearner = learners.find((l) => l.id === selectedLearnerId);
   const totalLearners = learners.length;
   const avgAccuracy = Math.round(learners.reduce((sum, l) => sum + l.avgAccuracy, 0) / totalLearners);
   const totalWords = learners.reduce((sum, l) => sum + l.wordsPracticed, 0);
@@ -66,7 +70,13 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
               {learners.map((l) => (
                 <tr key={l.id} className="border-b border-line last:border-0">
                   <td className="py-3 font-medium text-brand-dark">
-                    {l.name}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLearnerId(l.id)}
+                      className="text-left hover:underline"
+                    >
+                      {l.name}
+                    </button>
                     <div className="text-[11.5px] font-normal text-muted">
                       {l.nationality} · {l.level}
                     </div>
@@ -91,7 +101,9 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
               {attentionNeeded.length === 0 && <p className="text-[12.5px] text-white/70">현재 없습니다.</p>}
               {attentionNeeded.map((l) => (
                 <div key={l.id} className="rounded-xl bg-white/10 p-3.5">
-                  <p className="text-sm font-bold">{l.name}</p>
+                  <button type="button" onClick={() => setSelectedLearnerId(l.id)} className="text-sm font-bold hover:underline">
+                    {l.name}
+                  </button>
                   <p className="mt-1.5 text-xs leading-relaxed text-white/70">{l.needsAttentionKo}</p>
                 </div>
               ))}
@@ -122,6 +134,14 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
           </div>
         </div>
       </div>
+
+      {selectedLearner && (
+        <LearnerDetailModal
+          learner={selectedLearner}
+          units={units}
+          onClose={() => setSelectedLearnerId(undefined)}
+        />
+      )}
     </div>
   );
 }
