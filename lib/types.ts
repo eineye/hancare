@@ -106,6 +106,16 @@ export interface Learner {
   avgAccuracy: number;
   lastActiveKo: string;
   needsAttentionKo?: string;
+  /** 개인 세부현황 팝업(주차별 점수 추이)용 예시 값 6개. 실제 주차별 이력을
+   * 저장하는 백엔드가 없어 목데이터다. */
+  weeklyScores: number[];
+  /** 개인 세부현황 팝업의 "약한 발음 요소" 예시 값. 실제 음소 단위 분석은
+   * 하지 않으므로 목데이터다. */
+  weakSounds: { labelKo: string; value: number; warn: boolean }[];
+  /** 이 학습자가 "완료"한 상황(situation) id 목록 — content/*.json의 실제
+   * 유닛·상황 구조에 맞춰 진도표를 그리는 데 쓴다. 실제 다중 사용자 백엔드가
+   * 없어 목데이터로 미리 채워 둔 값이다. */
+  completedSituationIds: string[];
 }
 
 /** 실습 일지(진도관리 > 실습일지) 한 건. 이 브라우저의 localStorage에 실제로
