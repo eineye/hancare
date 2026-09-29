@@ -66,8 +66,8 @@ export async function getCourseSections(): Promise<CourseSection[]> {
       }))
     : [EMPTY_PLACEHOLDER];
 
-  // 기초한글은 왼쪽 사이드바에도 전용 메뉴(/basic-hangul, 단어장과 통합된 화면)가
-  // 있지만, 커리큘럼 전체 개요에서도 다른 분류와 나란히 보이도록 여기에도 둔다.
+  // 기초한글은 왼쪽 사이드바에도 전용 메뉴(/basic-hangul)가 있지만, 커리큘럼
+  // 전체 개요에서도 다른 분류와 나란히 보이도록 여기에도 둔다.
   return [
     {
       id: 'basic',

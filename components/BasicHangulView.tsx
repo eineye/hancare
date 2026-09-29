@@ -3,9 +3,7 @@
 import Link from 'next/link';
 import { speak } from '@/lib/speech';
 import { usePracticedTermsStore, useSettingsStore } from '@/lib/store';
-import VocabView from './VocabView';
 import type { Unit, Term } from '@/lib/types';
-import type { VocabCard } from '@/lib/vocab';
 
 function TermRow({ term }: { term: Term }) {
   const practicedTermIds = usePracticedTermsStore((s) => s.practicedTermIds);
@@ -39,7 +37,7 @@ function TermRow({ term }: { term: Term }) {
   );
 }
 
-export default function BasicHangulView({ units, vocabCards }: { units: Unit[]; vocabCards: VocabCard[] }) {
+export default function BasicHangulView({ units }: { units: Unit[] }) {
   const situations = units.flatMap((unit) => unit.situations.map((situation) => ({ unit, situation })));
 
   return (
@@ -50,8 +48,8 @@ export default function BasicHangulView({ units, vocabCards }: { units: Unit[]; 
           한글 자체를 처음부터 배우기
         </h1>
         <p className="mt-2 text-sm text-muted">
-          자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 상황별로 학습을 시작하거나, 아래
-          단어장에서 용어를 듣고 복습할 수 있습니다.
+          자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고
+          연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.
         </p>
       </div>
 
@@ -93,8 +91,6 @@ export default function BasicHangulView({ units, vocabCards }: { units: Unit[]; 
           ))}
         </div>
       )}
-
-      <VocabView cards={vocabCards} />
     </div>
   );
 }

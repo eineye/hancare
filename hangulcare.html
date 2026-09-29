@@ -685,7 +685,7 @@
       state.avatar = { state: "idle", mouthShape: "closed", blink: false };
       state.roleplayRecording = false;
     }
-    if (view === "basic-hangul") state.vocab = { tab: "전체", query: "" };
+    if (view === "vocab") state.vocab = { tab: "전체", query: "" };
     if (view === "xr-practice") {
       var idx = XR_MODULES.findIndex(function (m) { return m.id === state.params.moduleId; });
       var prog = getXrProgress()[state.params.moduleId] || { completed: [], submitted: false };
@@ -712,6 +712,7 @@
     if (state.view === "xr-practice") return renderXrPractice();
     if (state.view === "roleplay") return renderRoleplay();
     if (state.view === "basic-hangul") return renderBasicHangul();
+    if (state.view === "vocab") return renderVocab();
     if (state.view === "report") return renderReport();
     if (state.view === "journal") return renderJournal();
     if (state.view === "notices") return renderNotices();
@@ -732,6 +733,7 @@
       { id: "home", ko: "홈", en: "Home" },
       { id: "courses", ko: "커리큘럼", en: "Units" },
       { id: "basic-hangul", ko: "기초한글", en: "Basics" },
+      { id: "vocab", ko: "단어장", en: "Vocabulary" },
       { id: "learn", ko: "실습한글", en: "Practice" },
       { id: "xr-list", ko: "XR실습", en: "XR" },
       { id: "roleplay", ko: "역할극", en: "Role play" },
@@ -912,7 +914,7 @@
     var mainHtml = heroHtml +
       '<div class="widgetGrid">' +
         '<div class="card" style="padding:14px;"><p class="eyebrow">주간 발음 추이 (예시)</p><div class="barChart" style="margin-top:14px;height:120px;">' + barsHtml + '</div><p style="margin-top:12px;font-size:.68rem;color:var(--faint);line-height:1.6;">* 실제 요일별 이력은 아직 저장하지 않아 예시 그래프입니다.</p></div>' +
-        '<div class="card" style="padding:14px;"><p class="eyebrow">복습이 필요한 용어</p><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">' + reviewHtml + '</div><a class="btn btn-primary" style="margin-top:14px;width:100%;text-align:center;display:block;text-decoration:none;" href="#" onclick="App.navItem(\'basic-hangul\');return false;">단어장 전체 보기</a></div>' +
+        '<div class="card" style="padding:14px;"><p class="eyebrow">복습이 필요한 용어</p><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">' + reviewHtml + '</div><a class="btn btn-primary" style="margin-top:14px;width:100%;text-align:center;display:block;text-decoration:none;" href="#" onclick="App.navItem(\'vocab\');return false;">단어장 전체 보기</a></div>' +
         '<div class="card" style="padding:14px;"><div style="display:flex;justify-content:space-between;align-items:center;"><p class="eyebrow">최근 실습 일지</p><a href="#" onclick="App.navItem(\'journal\');return false;" style="font-size:.72rem;color:var(--brand);text-decoration:none;">일지 →</a></div><div style="margin-top:12px;">' + journalHtml + '</div></div>' +
       '</div>';
 
@@ -1267,11 +1269,7 @@
     });
   };
 
-  /* ============================== 기초한글 (상황별 학습 + 단어장 통합) ==============================
-     예전에 '단어장' 메뉴로 따로 있던 화면을 '기초한글' 메뉴로 옮겨 합쳤다. 위쪽은
-     기초한글 유닛의 상황을 학습 화면처럼 용어(듣기·학습함 표시 포함)와 함께 바로
-     보여주고, 아래쪽은 기초한글+실습한글 전체 용어를 모은 단어장(옛 renderVocab
-     본문 그대로)이다. */
+  /* ============================== 기초한글 (상황별 학습) ============================== */
   function renderBasicHangul() {
     var bilingual = getSettings().displayLang !== "ko";
     var practiced = getPracticedTerms();
@@ -1293,6 +1291,18 @@
       '</div>';
     }).join("");
 
+    var mainHtml =
+      '<p class="eyebrow">기초한글 BASIC HANGUL</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글 자체를 처음부터 배우기</h1>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고 연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.</p>' +
+      situationsHtml;
+
+    el.innerHTML = shell(mainHtml, "basic-hangul");
+  }
+
+  /* ============================== 단어장 (기초한글+실습한글 전체 용어) ============================== */
+  function renderVocab() {
+    var bilingual = getSettings().displayLang !== "ko";
+    var practiced = getPracticedTerms();
     var V = state.vocab;
     var all = getAllTerms();
     var shown = all.filter(function (t) {
@@ -1317,22 +1327,19 @@
     }).join("");
 
     var mainHtml =
-      '<p class="eyebrow">기초한글 BASIC HANGUL</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글 자체를 처음부터 배우기</h1>' +
-      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 상황별로 학습을 시작하거나, 아래 단어장에서 용어를 듣고 복습할 수 있습니다.</p>' +
-      situationsHtml +
-      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;margin-top:22px;">' +
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
         '<div><p class="eyebrow">단어장 VOCABULARY</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">내 의료 용어 ' + all.length + '개</h1>' +
-        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">학습 화면·단어장에서 듣기 버튼을 누르면 "학습함"으로 표시됩니다 (' + practiced.length + '/' + all.length + ').</p></div>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">학습 화면에서 용어 듣기 버튼을 누르면 "학습함"으로 표시됩니다 (' + practiced.length + '/' + all.length + ').</p></div>' +
         '<input value="' + esc(V.query) + '" oninput="App.vocabSearch(this.value)" placeholder="용어 검색 · Search" style="min-width:200px;border:1px solid var(--line);border-radius:11px;padding:10px 14px;background:var(--card);color:var(--text);" />' +
       '</div>' +
       '<div style="display:flex;gap:6px;margin-top:16px;">' + tabsHtml + '</div>' +
       '<div style="margin-top:16px;">' + cardsHtml + '</div>';
 
-    el.innerHTML = shell(mainHtml, "basic-hangul");
+    el.innerHTML = shell(mainHtml, "vocab");
   }
-  var App_vocabPlay = function (id, hangul) { speak(hangul); markTermPracticed(id); renderBasicHangul(); };
-  var App_vocabTab = function (t) { state.vocab.tab = t; renderBasicHangul(); };
-  var App_vocabSearch = function (v) { state.vocab.query = v; renderBasicHangul(); };
+  var App_vocabPlay = function (id, hangul) { speak(hangul); markTermPracticed(id); if (state.view === "vocab") renderVocab(); else renderBasicHangul(); };
+  var App_vocabTab = function (t) { state.vocab.tab = t; renderVocab(); };
+  var App_vocabSearch = function (v) { state.vocab.query = v; renderVocab(); };
 
   /* ============================== REPORT ============================== */
   function renderReport() {
