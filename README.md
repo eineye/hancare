@@ -122,9 +122,11 @@ cp .env.example .env.local
     애니메이션 인스턴스라 매번 새로 만들면 안 돼서 인스턴스를 하나만 만들어 두고
     다시 그릴 때마다 캔버스만 새 컨테이너로 옮겨 붙이는 방식(`mountTeacherAvatar()`)을
     씁니다.
-  - 역할극(`/roleplay`) 화면의 "AI 환자" 아바타는 다른 캐릭터라 이전의 간단한 SVG
-    얼굴(Next.js `components/Avatar2D.tsx`, `hangulcare.html`의 `avatarFaceSvg()` —
-    말하는 동안 무작위 입모양)을 그대로 씁니다.
+  - 역할극(`/roleplay`) 화면의 "AI 환자" 아바타도 같은 엔진을 쓰되, `palette`만
+    바꿔 남자 노인 인상(흰/회색 머리·눈썹·콧수염, 저채도 입술, 환자복 색, 배지
+    없음 — `lib/teacher2d/palettes.ts`의 `ELDERLY_MAN_PALETTE`)을 표현합니다.
+    실제 TTS 음성은 재생하지 않고(대화가 텍스트로만 오가므로) 답변 전체 텍스트가
+    도착하면 `playText()`로 무음 입모양 타임라인만 재생합니다.
 - **사용자 통계**: 이 브라우저의 `localStorage`에만 저장되는 데모 값(다른 기기와 공유되지 않음)
 - **로그인/관리자 화면**: 실제 서버 인증·다중 사용자 DB가 아닌 데모 계정 + 목데이터
   (`lib/auth.ts`, `data/learners.json`) 기반 UX 프로토타입입니다

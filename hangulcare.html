@@ -552,108 +552,28 @@
     return function () { try { rec.stop(); } catch (e) {} };
   }
 
-  /* ============================== AVATAR (2D 일러스트 + 음소 그룹별 입모양) ==============================
-     학습 화면과 역할극 화면이 공유하는 아바타 상태(state.avatar)를 그린다. Web Speech
-     API는 음소 타이밍을 주지 않아, 말하는 동안(state.avatar.state === "speaking")
-     스스로 일정한 리듬으로 6가지 입모양 중 하나를 무작위로 순환하는 근사치다.
-     TTS의 onBoundary(단어 경계) 이벤트에 맞춰봤지만 브라우저·음성 조합에 따라
-     아예 발생하지 않는 경우가 있어, 이벤트에 기대지 않는 자체 타이머로 구현했다. */
-  var AVATAR_LIP = "#b6534e";
-  var AVATAR_CAVITY = "#5b211d";
-  var AVATAR_MOUTH_SHAPES = ["wideOpen", "round", "teeth", "smile", "fv"];
-  var avatarMouthTimerRunning = false;
-  var avatarBlinkTimerRunning = false;
+  /* ============================== AI 아바타 (Character2DCanvas 공용 엔진) ==============================
+     학습 화면의 "AI 아바타 선생님"과 역할극의 "AI 환자" 모두 같은 Canvas 2D 캐릭터
+     엔진을 쓴다 — 자모 분해 기반 입모양(비셈) 타임라인을 실제 TTS(선생님, speak())
+     또는 텍스트 길이만으로(환자, playText() — 대화가 텍스트로만 오가 실제 음성이
+     없음) 재생한다. palette만 바꿔 인물을 구분한다: 선생님은 엔진 기본값, 환자는
+     ELDERLY_MAN_PALETTE(흰/회색 짧은 머리·콧수염, 저채도 입술, 환자복 색, 배지 없음)로
+     남자 노인 인상을 준다. renderLesson()/renderRoleplay()는 상태가 바뀔 때마다
+     el.innerHTML을 통째로 다시 그리는데, 이 엔진은 자체 requestAnimationFrame 루프와
+     진행 중인 발화 타임라인을 가진 살아있는 인스턴스라 매번 새로 만들면 호흡·시선
+     애니메이션이 끊기고 말하는 도중 끊길 수 있다. 그래서 각 화면마다 인스턴스를 딱
+     하나만 만들어 두고, 다시 그릴 때마다 캔버스만 새 컨테이너로 옮겨 붙인다(엔진
+     내부 상태는 그대로 유지됨). */
+  var ELDERLY_MAN_PALETTE = {
+    skin: "#e3c3a4", skinLight: "#f2ddc6", skinShade: "#c9a17d", skinDeep: "#ad8161",
+    hair: "#d6d6d2", hairMid: "#c2c2bc", hairLight: "#eeeeec", hairStyle: "short",
+    iris: "#5b6773", irisDark: "#2a323a", lash: "#8a8a86", brow: "#cccac4",
+    lipUpper: "#c99483", lipLower: "#d19c8b", lipLine: "#8f6152",
+    mouth: "#5c352d", teeth: "#f0ebe3", tongue: "#c48d84",
+    cloth: "#7c93a6", clothLight: "#9db2c2", collar: "#eef2f4",
+    badge: null, mustache: "#8c8c85"
+  };
 
-  function avatarMouthSvg(shape) {
-    switch (shape) {
-      case "wideOpen":
-        return '<path d="M72 120 Q100 106 128 120 Q126 158 100 160 Q74 158 72 120 Z" fill="' + AVATAR_CAVITY + '" />' +
-          '<rect x="80" y="116" width="40" height="9" rx="3.5" fill="#fff" />';
-      case "round":
-        return '<ellipse cx="100" cy="132" rx="13" ry="15" fill="' + AVATAR_CAVITY + '" stroke="' + AVATAR_LIP + '" stroke-width="6" />';
-      case "teeth":
-        return '<rect x="75" y="125" width="50" height="13" rx="6" fill="' + AVATAR_CAVITY + '" />' +
-          '<rect x="78" y="126" width="44" height="5" rx="2.5" fill="#fff" />';
-      case "smile":
-        return '<path d="M68 124 Q100 114 132 124 Q129 138 100 140 Q71 138 68 124 Z" fill="' + AVATAR_CAVITY + '" />' +
-          '<rect x="75" y="121" width="50" height="7" rx="3.5" fill="#fff" />';
-      case "fv":
-        return '<rect x="77" y="129" width="46" height="11" rx="5" fill="' + AVATAR_LIP + '" />' +
-          '<rect x="81" y="123" width="38" height="7" rx="3.5" fill="#fff" />';
-      case "closed":
-      default:
-        return '<rect x="78" y="130" width="44" height="7" rx="3.5" fill="' + AVATAR_LIP + '" />';
-    }
-  }
-
-  function avatarFaceSvg() {
-    var A = state.avatar;
-    if (!A) return "";
-    var listening = A.state === "listening";
-    var speaking = A.state === "speaking";
-    var eyeRy = A.blink ? 1.2 : 9;
-    return (
-      '<svg viewBox="0 0 200 200" role="img" aria-label="AI 아바타 얼굴">' +
-        (listening ? '<circle cx="100" cy="100" r="90" fill="none" stroke="#fff" stroke-width="3" opacity="0.5" style="animation:avatarPulse 1.6s ease-in-out infinite;" />' : "") +
-        '<circle cx="100" cy="100" r="80" fill="#faf7ef" />' +
-        '<ellipse cx="72" cy="88" rx="9" ry="' + eyeRy + '" fill="#0f2e24" style="transition:ry 90ms ease;" />' +
-        '<ellipse cx="128" cy="88" rx="9" ry="' + eyeRy + '" fill="#0f2e24" style="transition:ry 90ms ease;" />' +
-        avatarMouthSvg(speaking ? A.mouthShape : "closed") +
-      "</svg>"
-    );
-  }
-
-  function renderAvatarFace() {
-    var box = document.getElementById("avatarFaceBox");
-    if (!box) return false;
-    box.innerHTML = avatarFaceSvg();
-    return true;
-  }
-
-  function tickAvatarMouth() {
-    var A = state.avatar;
-    if (!A || !renderAvatarFace()) { avatarMouthTimerRunning = false; return; }
-    if (A.state !== "speaking") {
-      if (A.mouthShape !== "closed") { A.mouthShape = "closed"; renderAvatarFace(); }
-      setTimeout(tickAvatarMouth, 200);
-      return;
-    }
-    var prev = A.mouthShape;
-    var next = AVATAR_MOUTH_SHAPES[Math.floor(Math.random() * AVATAR_MOUTH_SHAPES.length)];
-    if (next === prev) next = AVATAR_MOUTH_SHAPES[(AVATAR_MOUTH_SHAPES.indexOf(next) + 1) % AVATAR_MOUTH_SHAPES.length];
-    A.mouthShape = next;
-    renderAvatarFace();
-    setTimeout(tickAvatarMouth, 110 + Math.random() * 130);
-  }
-  function ensureAvatarMouthTimer() {
-    if (avatarMouthTimerRunning) return;
-    avatarMouthTimerRunning = true;
-    tickAvatarMouth();
-  }
-
-  function tickAvatarBlink() {
-    var A = state.avatar;
-    if (!A || !renderAvatarFace()) { avatarBlinkTimerRunning = false; return; }
-    A.blink = true;
-    renderAvatarFace();
-    setTimeout(function () {
-      if (state.avatar) { state.avatar.blink = false; renderAvatarFace(); }
-    }, 130);
-    setTimeout(tickAvatarBlink, 2800 + Math.random() * 2000);
-  }
-  function ensureAvatarBlinkTimer() {
-    if (avatarBlinkTimerRunning) return;
-    avatarBlinkTimerRunning = true;
-    tickAvatarBlink();
-  }
-
-  /* ============================== 한글학습 화면 전용 AI 아바타 선생님 (Character2DCanvas) ==============================
-     한글학습(renderLesson)만 새 Canvas 2D 캐릭터 엔진을 쓴다(역할극의 "AI 환자"는 위의
-     간단한 SVG 얼굴을 그대로 쓴다). renderLesson()은 상태가 바뀔 때마다 el.innerHTML을
-     통째로 다시 그리는데, 이 엔진은 자체 requestAnimationFrame 루프와 진행 중인 발화
-     타임라인을 가진 살아있는 인스턴스라 매번 새로 만들면 호흡·시선 애니메이션이 끊기고
-     말하는 도중 끊길 수 있다. 그래서 인스턴스는 딱 하나만 만들어 두고, 다시 그릴 때마다
-     캔버스만 새 컨테이너로 옮겨 붙인다(엔진 내부 상태는 그대로 유지됨). */
   var teacherEngine = null;
 
   function mountTeacherAvatar() {
@@ -669,6 +589,23 @@
     teacherEngine.o.container = box;
     if (teacherEngine._ro) { teacherEngine._ro.disconnect(); teacherEngine._ro.observe(box); }
     teacherEngine.resize();
+  }
+
+  var patientEngine = null;
+
+  function mountPatientAvatar() {
+    var box = document.getElementById("patientAvatarBox");
+    if (!box || typeof Character2DCanvas === "undefined") return;
+    if (!patientEngine) {
+      patientEngine = new Character2DCanvas({ container: box, palette: ELDERLY_MAN_PALETTE });
+      patientEngine.on("start", function () { state.avatar.state = "speaking"; renderRoleplay(); });
+      patientEngine.on("end", function () { state.avatar.state = "idle"; renderRoleplay(); });
+      return;
+    }
+    box.appendChild(patientEngine.canvas);
+    patientEngine.o.container = box;
+    if (patientEngine._ro) { patientEngine._ro.disconnect(); patientEngine._ro.observe(box); }
+    patientEngine.resize();
   }
 
   /* ============================== CHAT (규칙 기반 목데이터 응답) ============================== */
@@ -717,6 +654,10 @@
       teacherEngine.destroy();
       teacherEngine = null;
     }
+    if (state.view === "roleplay" && view !== "roleplay" && patientEngine) {
+      patientEngine.destroy();
+      patientEngine = null;
+    }
     state.view = view; state.params = params || {};
     state.topLangOpen = false;
     if (view === "learn") {
@@ -726,14 +667,14 @@
         sentenceIndex: 0, recordingState: "idle",
         lastScore: null, lastFeedback: [], chatMessages: [], recErr: null
       };
-      state.avatar = { state: "idle", mouthShape: "closed", blink: false };
+      state.avatar = { state: "idle" };
       if (teacherEngine) teacherEngine.stop();
       setLastSituation(found.unit.id, found.situation.id);
     }
     if (view === "roleplay") {
       var foundRp = findSituation(state.params.unitId, state.params.situationId);
-      state.roleplay = { unitId: foundRp.unit.id, situationId: foundRp.situation.id, messages: [{ role: "assistant", content: mockPatientOpening(foundRp.situation) }] };
-      state.avatar = { state: "idle", mouthShape: "closed", blink: false };
+      state.roleplay = { unitId: foundRp.unit.id, situationId: foundRp.situation.id, messages: [{ role: "assistant", content: mockPatientOpening(foundRp.situation) }], spokenIndex: -1 };
+      state.avatar = { state: "idle" };
       state.roleplayRecording = false;
     }
     if (view === "vocab") state.vocab = { tab: "전체", query: "" };
@@ -1274,14 +1215,24 @@
           '<p style="margin-top:12px;font-size:.68rem;color:rgba(255,255,255,.5);line-height:1.6;">이 독립 실행형 페이지는 서버가 없어 정해진 규칙 기반 응답으로만 동작합니다 — Next.js 앱에서는 Gemini API로 실제 대화합니다.</p>' +
         '</div>' +
         '<div style="flex:1 1 280px;max-width:380px;min-width:0;display:flex;flex-direction:column;gap:14px;">' +
-          '<div class="avatarCard"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 환자 아바타</p><div class="avatarFace" id="avatarFaceBox" style="margin-top:10px;">' + avatarFaceSvg() + '</div></div>' +
+          '<div class="avatarCard"><div style="display:flex;justify-content:space-between;"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 환자 아바타</p><span class="pill" style="background:rgba(255,255,255,.15);">' + (state.avatar.state === "speaking" ? "● 말하는 중" : state.avatar.state === "listening" ? "● 듣는 중" : "대기 중") + "</span></div>" +
+            '<div class="avatarFace" style="margin-top:10px;position:relative;">' +
+              '<div id="patientAvatarBox" style="width:100%;height:100%;"></div>' +
+              (state.avatar.state === "listening" ? '<div style="position:absolute;inset:8px;border-radius:10px;box-shadow:0 0 0 2px rgba(255,255,255,.5);pointer-events:none;animation:avatarPulse 1.6s ease-in-out infinite;"></div>' : "") +
+            "</div>" +
+            '<p style="margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.5);">* 대화가 텍스트로만 오가 실제 음성은 없습니다 — 도착한 답변 길이에 맞춘 입모양만 재생합니다.</p>' +
+          '</div>' +
           termsBlock +
         '</div>' +
       '</div>';
 
     el.innerHTML = shell(mainHtml, "roleplay");
-    ensureAvatarMouthTimer();
-    ensureAvatarBlinkTimer();
+    mountPatientAvatar();
+    var lastMsg = R.messages[R.messages.length - 1];
+    if (patientEngine && lastMsg && lastMsg.role === "assistant" && R.spokenIndex !== R.messages.length - 1) {
+      R.spokenIndex = R.messages.length - 1;
+      patientEngine.playText(lastMsg.content);
+    }
   }
 
   var App_roleplaySend = function () {
