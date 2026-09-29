@@ -86,6 +86,10 @@ XR실습(`/xr`)은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)의 Pha
 | `content/practice-hangul.json` | 실습한글 |
 | `content/basic-hangul.json` | 기초한글 |
 
+JSON을 직접 고치는 대신 관리자 메뉴 **실습내용 편집**(`/admin/library-editor`)의
+실습내용 편집기(`public/hancare-library-editor.html`)로 편집할 수도 있습니다. 편집 내용은
+`/api/hangul-library`를 통해 위 파일에 바로 자동 저장됩니다.
+
 ### LLM 대화 기능 활성화 (선택)
 
 대화창(영역 6)의 LLM 대화는 [Gemini API](https://aistudio.google.com/app/apikey)로

@@ -85,6 +85,7 @@ export default function AppShell({
   const adminNav: NavItem[] = [
     { id: 'admin', ko: '전체 현황', en: 'Overview', href: '/admin' },
     { id: 'admin-alerts', ko: '알림 및 면담', en: 'Alerts', href: '/admin/alerts' },
+    { id: 'admin-library', ko: '실습내용 편집', en: 'Content editor', href: '/admin/library-editor' },
   ];
   const nav = isAdmin ? adminNav : learnerNav;
 

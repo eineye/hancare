@@ -14,6 +14,28 @@
 필요하면 같은 형식으로 새 파일을 만들고 `lib/content.ts`의 `CONTENT_FILES` 배열에
 파일명을 추가하면 됩니다.
 
+## 실습내용 편집기 (hancare-library-editor)
+
+JSON을 손으로 고치지 않고 표/폼 화면으로 편집하려면 관리자로 로그인한 뒤 사이드바의
+**실습내용 편집**(`/admin/library-editor`)을 여세요. 편집기 본체는
+`public/hancare-library-editor.html`(단독 실행형 HTML)이며, 한글케어 서버의
+`/api/hangul-library` 에 연결되어 **편집 즉시 자동 저장**됩니다.
+
+| 엔드포인트 | 동작 |
+|---|---|
+| `GET /api/hangul-library/units` | `practice-hangul.json` + `basic-hangul.json`의 유닛 전체 |
+| `PUT /api/hangul-library/units/:id` | 유닛 생성/수정 — `category`가 `practice`면 `practice-hangul.json`, `basic`이면 `basic-hangul.json`에 저장(카테고리를 바꾸면 파일도 옮겨짐) |
+| `DELETE /api/hangul-library/units/:id` | 유닛 삭제 |
+
+저장은 `lib/contentStore.ts`가 해당 JSON 파일을 직접 다시 쓰는 방식이라, 학습자
+화면에도 재빌드 없이 바로 반영됩니다. 로마자·음절 자동 채우기, JSON/엑셀 불러오기·
+내보내기, 중복 ID 경고도 편집기에서 쓸 수 있습니다.
+
+> 주의: 데모 인증은 브라우저 `localStorage` 기반이라 API 자체에는 서버 인증이 없습니다.
+> 외부에 공개된 서버에서는 이 API를 막거나 인증을 붙여야 합니다. 또 파일 시스템이
+> 읽기 전용인 호스팅(Vercel 등)에서는 저장이 실패하므로, 그때는 편집기의 JSON 내보내기로
+> 파일을 받아 저장소에 커밋하세요.
+
 ## 스키마
 
 각 파일의 최상위 값은 **유닛(Unit) 배열**입니다.
