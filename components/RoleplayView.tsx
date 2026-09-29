@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import Avatar2D from './Avatar2D';
+import TeacherAvatar, { type TeacherAvatarHandle } from './TeacherAvatar';
+import { ELDERLY_MAN_PALETTE } from '@/lib/teacher2d/palettes';
 import { isSttSupported, startRecognition } from '@/lib/speech';
 import { useSettingsStore, type AvatarState } from '@/lib/store';
 import type { ChatMessage, Term } from '@/lib/types';
@@ -34,6 +35,7 @@ export default function RoleplayView({
   const [sttSupported, setSttSupported] = useState(false);
   const stopFnRef = useRef<(() => void) | undefined>(undefined);
   const startedRef = useRef(false);
+  const patientRef = useRef<TeacherAvatarHandle>(null);
   const displayLang = useSettingsStore((s) => s.displayLang);
 
   useEffect(() => {
@@ -50,8 +52,8 @@ export default function RoleplayView({
     setMessages([...history, userMessage, { id: assistantId, role: 'assistant', content: '' }]);
     setDraft('');
     setStreaming(true);
-    setAvatarState('speaking');
 
+    let fullText = '';
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -66,16 +68,21 @@ export default function RoleplayView({
           const { value, done } = await reader.read();
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
+          fullText += chunk;
           setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m)));
         }
       }
     } catch {
+      fullText = '';
       setMessages((prev) =>
         prev.map((m) => (m.id === assistantId ? { ...m, content: '메시지를 가져오지 못했습니다.' } : m)),
       );
     } finally {
       setStreaming(false);
-      setAvatarState('idle');
+      if (fullText.trim()) {
+        // 실제 음성 없이(무음) 문장 길이에 맞춘 입모양 타임라인만 재생한다 — AvatarTeacher와 같은 방식.
+        patientRef.current?.playText(fullText);
+      }
     }
   }
 
@@ -177,13 +184,26 @@ export default function RoleplayView({
 
         <div className="min-w-0 flex-[1_1_300px] max-w-[400px] space-y-4">
           <div className="rounded-2xl bg-brand p-4 text-white">
-            <p className="mb-3.5 text-[11px] font-bold tracking-wide text-white/80">AI 환자 아바타</p>
-            <div className="aspect-[4/3] overflow-hidden rounded-xl bg-brand-dark/40">
-              <Avatar2D state={avatarState} closeup={false} />
+            <div className="mb-3.5 flex items-center justify-between">
+              <p className="text-[11px] font-bold tracking-wide text-white/80">AI 환자 아바타</p>
+              <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs">
+                {avatarState === 'speaking' ? '● 말하는 중' : avatarState === 'listening' ? '● 듣는 중' : '대기 중'}
+              </span>
+            </div>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-brand-dark/40">
+              <TeacherAvatar
+                ref={patientRef}
+                options={{ palette: ELDERLY_MAN_PALETTE }}
+                onStart={() => setAvatarState('speaking')}
+                onEnd={() => setAvatarState('idle')}
+              />
+              {avatarState === 'listening' && (
+                <div className="pointer-events-none absolute inset-2 rounded-lg ring-2 ring-white/50 motion-safe:animate-pulse" />
+              )}
             </div>
             <p className="mt-2.5 text-[11px] leading-relaxed text-white/70">
               Gemini API로 실제 대화하는 역할극입니다. 환자 대사는 실시간 생성되며, 실제 임상 판단이 필요한 질문에는
-              답하지 않도록 안내되어 있습니다.
+              답하지 않도록 안내되어 있습니다. 아바타는 실제 음성 없이 대사 길이에 맞춘 입모양만 재생합니다.
             </p>
           </div>
 
