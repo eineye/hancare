@@ -263,6 +263,7 @@
   var PRACTICE_UNITS = [{"id":"unit-1","category":"practice","titleKo":"간호조무 실습 한국어","titleEn":"Korean for nursing-assistant trainees","situations":[{"id":"situation-1","menuLabelKo":"혈압·체온 측정","menuLabelEn":"Vital signs","titleKo":"아침 회진 전, 환자의 혈압을 측정합니다.","titleEn":"Before morning rounds, you measure the patient's blood pressure.","descriptionKo":"환자에게 인사하고, 무엇을 할지 설명한 뒤 동의를 구하세요.","descriptionEn":"Greet the patient, explain what you'll do, then ask for consent.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 2","terms":[{"id":"term-bp","hangul":"혈압","romanization":"hyeol-ap","glossEn":"blood pressure"},{"id":"term-temp","hangul":"체온","romanization":"che-on","glossEn":"body temperature"},{"id":"term-pulse","hangul":"맥박","romanization":"maek-bak","glossEn":"pulse"},{"id":"term-injection","hangul":"주사","romanization":"ju-sa","glossEn":"injection"}],"sentences":[{"id":"sentence-1-1","textKo":"혈압 좀 재겠습니다.","textEn":"I'll take your blood pressure now.","romanization":"hyeol-ap jom jae-get-seum-ni-da","syllables":["혈","압","좀","재","겠","습","니","다"]},{"id":"sentence-1-2","textKo":"팔을 조금만 올려 주세요.","textEn":"Please raise your arm a little.","romanization":"pal-eul jo-geum-man ol-lyeo ju-se-yo","syllables":["팔","을","조","금","만","올","려","주","세","요"]},{"id":"sentence-1-3","textKo":"체온도 같이 확인하겠습니다.","textEn":"I'll also check your temperature.","romanization":"che-on-do gat-i hwak-in-ha-get-seum-ni-da","syllables":["체","온","도","같","이","확","인","하","겠","습","니","다"]}]},{"id":"situation-2","menuLabelKo":"투약 시간 안내","menuLabelEn":"Medication time","titleKo":"식후 투약 시간을 안내합니다.","titleEn":"You let the patient know it's time for their medicine after a meal.","descriptionKo":"약의 이름과 복용 방법을 설명하고, 부작용이 있는지 확인하세요.","descriptionEn":"Explain the medicine's name and how to take it, then check for side effects.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 2","terms":[{"id":"term-medicine","hangul":"약","romanization":"yak","glossEn":"medicine"},{"id":"term-pill","hangul":"알약","romanization":"al-yak","glossEn":"pill"},{"id":"term-prescription","hangul":"처방전","romanization":"cheo-bang-jeon","glossEn":"prescription"},{"id":"term-side-effect","hangul":"부작용","romanization":"bu-jag-yong","glossEn":"side effect"}],"sentences":[{"id":"sentence-2-1","textKo":"지금 약 드실 시간이에요.","textEn":"It's time to take your medicine now.","romanization":"ji-geum yak deu-sil si-gan-i-e-yo","syllables":["지","금","약","드","실","시","간","이","에","요"]},{"id":"sentence-2-2","textKo":"물과 함께 드세요.","textEn":"Please take it with water.","romanization":"mul-gwa ham-kke deu-se-yo","syllables":["물","과","함","께","드","세","요"]}]},{"id":"situation-3","menuLabelKo":"통증 호소 응대","menuLabelEn":"Patient in pain","titleKo":"환자가 통증을 호소합니다.","titleEn":"The patient reports feeling pain.","descriptionKo":"어디가 아픈지, 얼마나 아픈지 물어보고 담당 간호사에게 전달하세요.","descriptionEn":"Ask where it hurts and how much, then relay it to the nurse in charge.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 1","terms":[{"id":"term-pain","hangul":"통증","romanization":"tong-jeung","glossEn":"pain"},{"id":"term-hurt","hangul":"아프다","romanization":"a-peu-da","glossEn":"to hurt"},{"id":"term-dizzy","hangul":"어지럽다","romanization":"eo-ji-reop-da","glossEn":"dizzy"},{"id":"term-uncomfortable","hangul":"불편하다","romanization":"bul-pyeon-ha-da","glossEn":"uncomfortable"}],"sentences":[{"id":"sentence-3-1","textKo":"어디가 아프세요?","textEn":"Where does it hurt?","romanization":"eo-di-ga a-peu-se-yo","syllables":["어","디","가","아","프","세","요"]},{"id":"sentence-3-2","textKo":"간호사 선생님을 불러 드릴게요.","textEn":"I'll call the nurse for you.","romanization":"gan-ho-sa seon-saeng-nim-eul bul-leo deu-ril-ge-yo","syllables":["간","호","사","선","생","님","을","불","러","드","릴","게","요"]}]}]}];
 
   var ALL_UNITS = BASIC_UNITS.concat(PRACTICE_UNITS);
+  var DEFAULT_BASIC_UNITS = BASIC_UNITS, DEFAULT_PRACTICE_UNITS = PRACTICE_UNITS;
 
   var XR_MODULES = [{"id":"xr-vital-signs","order":1,"titleKo":"활력징후 및 기초사정","titleEn":"Vital Signs & Basic Assessment","legalHours":20,"patientNameKo":"김진수","situationKo":"숨이 조금 차고 열나는것 같은데 저좀 봐주시겠어요?","situationEn":"I feel a bit short of breath and warm — could you check on me?","techNoteKo":"Web Audio 오디오 노드, Raycaster 좌표 추적, Canvas 게이지","interactions":[{"id":"stethoscope","labelKo":"가상 청진기","resultKo":"청진 완료 — 호흡음 정상, 미세한 수포음 감지"},{"id":"brachial-contact","labelKo":"상완동맥접촉","resultKo":"상완동맥 위치 확인 완료 — 맥박 68회/분"},{"id":"bp-cuff","labelKo":"혈압계 사용","resultKo":"혈압 137/82 mmHg 측정 완료"},{"id":"glucose","labelKo":"혈당 채혈","resultKo":"혈당 108 mg/dL 측정 완료"}]},{"id":"xr-asepsis","order":2,"titleKo":"무균술 및 상처관리","titleEn":"Aseptic Technique & Wound Care","legalHours":25,"patientNameKo":"이영희","situationKo":"상처 소독을 도와주시겠어요? 조금 아파요.","situationEn":"Could you help disinfect my wound? It hurts a little.","techNoteKo":"GLSL 오버레이 셰이더, Cannon-es 정밀 바운딩 충돌체","interactions":[{"id":"sterile-drape","labelKo":"멸균포 개봉","resultKo":"멸균포 개봉 완료 — 오염 없음"},{"id":"forceps-transfer","labelKo":"핀셋 기구 전달","resultKo":"기구 전달 완료 — 멸균 유지"},{"id":"sterile-boundary","labelKo":"멸균 경계면 확인","resultKo":"경고: 멸균 구역 5cm 침범 감지"}]},{"id":"xr-nutrition-elimination","order":3,"titleKo":"영양 및 배설 보조","titleEn":"Nutrition & Elimination Assistance","legalHours":20,"patientNameKo":"박민수","situationKo":"속이 더부룩하고 소변줄이 불편해요.","situationEn":"My stomach feels bloated and the catheter is uncomfortable.","techNoteKo":"Spatial Audio PannerNode, 중력 벡터 판정 알고리즘","interactions":[{"id":"l-tube-air","labelKo":"L-tube 공기 주입음 청취","resultKo":"위내 공기음 확인 — 튜브 위치 정상"},{"id":"catheter-fixation","labelKo":"도뇨관 고정","resultKo":"도뇨관 고정 완료"},{"id":"bag-height","labelKo":"소변백 높이 조정","resultKo":"소변백 높이 적절 — 역류 위험 없음"}]},{"id":"xr-medication-suction","order":4,"titleKo":"투약 및 기도흡인","titleEn":"Medication & Airway Suction","legalHours":20,"patientNameKo":"최수진","situationKo":"인슐린 주사랑 가래 흡인 좀 도와주세요.","situationEn":"Could you help with my insulin shot and clearing my airway?","techNoteKo":"3D 벡터 각도 연산, 정밀 인터벌 타이머 엔진","interactions":[{"id":"insulin-injection","labelKo":"인슐린 피하주사","resultKo":"주사 각도 62도 — 적정 범위(45~90도) 내 판정"},{"id":"suction-catheter","labelKo":"석션 카테터 삽입","resultKo":"흡인 시간 12초 — 권장 범위 내"}]},{"id":"xr-positioning-safety","order":5,"titleKo":"체위변경 및 안전","titleEn":"Position Change & Safety","legalHours":15,"patientNameKo":"정하늘","situationKo":"몸을 좀 돌려 눕혀 주시겠어요? 왼쪽이 잘 안 움직여요.","situationEn":"Could you help turn me over? My left side doesn't move well.","techNoteKo":"Three.js IK(역운동학), 골격 조인트 트래킹","interactions":[{"id":"support-point","labelKo":"지지점 선정","resultKo":"지지점 선정 완료 — 편마비측 보호됨"},{"id":"reposition","labelKo":"체위 변경 시행","resultKo":"체위 변경 완료 — 욕창 위험 부위 압력 해제"},{"id":"wheelchair-brake","labelKo":"휠체어 브레이크 확인","resultKo":"브레이크 잠금 확인 완료"}]}];
 
@@ -318,6 +319,56 @@
   var STORE = ls();
   function readJSON(key, fallback) { try { var v = STORE.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
   function writeJSON(key, val) { try { STORE.setItem(key, JSON.stringify(val)); } catch (e) {} }
+
+  /* ---- 실습내용(라이브러리): 관리자 "실습내용 편집"에서 고친 유닛을 이 브라우저에 보관해
+     위 기본 콘텐츠 대신 쓴다. 편집기(public/hancare-library-editor.html)와는 postMessage로 연결. */
+  var LIBRARY_KEY = "hc-library-units";
+  function applyLibrary(units) {
+    var basic = units.filter(function (u) { return u.category === "basic"; });
+    var practice = units.filter(function (u) { return u.category !== "basic"; });
+    // 화면 곳곳이 각 분류의 첫 유닛을 전제로 하므로, 한 분류가 비면 기본 콘텐츠를 쓴다.
+    BASIC_UNITS = basic.length ? basic : DEFAULT_BASIC_UNITS;
+    PRACTICE_UNITS = practice.length ? practice : DEFAULT_PRACTICE_UNITS;
+    ALL_UNITS = BASIC_UNITS.concat(PRACTICE_UNITS);
+  }
+  function getLibraryUnits() {
+    var saved = readJSON(LIBRARY_KEY, null);
+    return Array.isArray(saved) ? saved : DEFAULT_BASIC_UNITS.concat(DEFAULT_PRACTICE_UNITS);
+  }
+  function setLibraryUnits(units) {
+    writeJSON(LIBRARY_KEY, units);
+    applyLibrary(units);
+  }
+  if (Array.isArray(readJSON(LIBRARY_KEY, null))) applyLibrary(getLibraryUnits());
+  window.addEventListener("message", function (e) {
+    var frame = document.getElementById("libraryEditorFrame");
+    var d = e.data;
+    if (!frame || e.source !== frame.contentWindow || !d || d.hcLib !== "req") return;
+    var reply = function (ok, data, error) { e.source.postMessage({ hcLib: "res", id: d.id, ok: ok, data: data, error: error }, "*"); };
+    var auth = getAuth();
+    if (!auth || auth.role !== "admin") return reply(false, null, "관리자만 편집할 수 있습니다.");
+    try {
+      var units = getLibraryUnits();
+      if (d.op === "list") return reply(true, units);
+      if (d.op === "save") {
+        var u = d.payload || {};
+        if (!u.id || (u.category !== "basic" && u.category !== "practice") || !Array.isArray(u.situations)) {
+          return reply(false, null, "유닛 형식이 올바르지 않습니다.");
+        }
+        var clean = { id: u.id, category: u.category, titleKo: u.titleKo, titleEn: u.titleEn, situations: u.situations };
+        var idx = -1;
+        units.forEach(function (x, i) { if (x.id === clean.id) idx = i; });
+        if (idx >= 0) units[idx] = clean; else units.push(clean);
+        setLibraryUnits(units);
+        return reply(true, null);
+      }
+      if (d.op === "delete") {
+        setLibraryUnits(units.filter(function (x) { return x.id !== d.payload; }));
+        return reply(true, null);
+      }
+      reply(false, null, "알 수 없는 요청");
+    } catch (err) { reply(false, null, String(err)); }
+  });
 
   function getAuth() { return readJSON("hc-demo-auth", null); }
   function setAuth(a) { writeJSON("hc-demo-auth", a); }
@@ -702,7 +753,7 @@
     if (state.view === "login") return renderLogin();
     var auth = getAuth();
     if (!auth) { state.view = "login"; return renderLogin(); }
-    var adminViews = ["admin", "admin-alerts"];
+    var adminViews = ["admin", "admin-alerts", "admin-library"];
     if (auth.role === "admin" && adminViews.indexOf(state.view) === -1) { state.view = "admin"; return renderAdmin(); }
     if (auth.role !== "admin" && adminViews.indexOf(state.view) !== -1) { state.view = "home"; return renderHome(); }
     if (state.view === "home") return renderHome();
@@ -719,6 +770,7 @@
     if (state.view === "settings") return renderSettings();
     if (state.view === "admin") return renderAdmin();
     if (state.view === "admin-alerts") return renderAdminAlerts();
+    if (state.view === "admin-library") return renderAdminLibrary();
   }
 
   /* ============================== SHELL (topbar + sidebar) ============================== */
@@ -726,7 +778,8 @@
     if (role === "admin") {
       return [
         { id: "admin", ko: "전체 현황", en: "Overview" },
-        { id: "admin-alerts", ko: "알림 및 면담", en: "Alerts" }
+        { id: "admin-alerts", ko: "알림 및 면담", en: "Alerts" },
+        { id: "admin-library", ko: "실습내용 편집", en: "Content editor" }
       ];
     }
     return [
@@ -1556,6 +1609,27 @@
 
     el.innerHTML = shell(mainHtml, "admin-alerts");
   }
+
+  /* ============================== ADMIN: 실습내용 편집 ============================== */
+  // 편집기 본체는 public/hancare-library-editor.html. 저장 내용은 위 LIBRARY_KEY로 이 브라우저에
+  // 보관되어 기초한글·실습한글 화면에 바로 반영된다(Next.js 앱에서는 content/*.json에 저장).
+  function renderAdminLibrary() {
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
+        '<div><p class="eyebrow">실습내용 편집 CONTENT EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글실습 내용 편집</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">여기서 고친 유닛·상황·용어·문장은 자동 저장되어 기초한글/실습한글 화면에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장되니, 보관·공유하려면 편집기의 JSON 내보내기를 쓰세요.</p></div>' +
+        '<button class="btn btn-ghost" onclick="App.resetLibrary()">기본 콘텐츠로 되돌리기</button>' +
+      '</div>' +
+      '<iframe id="libraryEditorFrame" src="./public/hancare-library-editor.html?host=hangulcare" title="실습내용 편집기" ' +
+        'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
+    el.innerHTML = shell(mainHtml, "admin-library");
+  }
+  var App_resetLibrary = function () {
+    if (!confirm("편집한 실습내용을 모두 지우고 기본 콘텐츠로 되돌릴까요?")) return;
+    STORE.removeItem(LIBRARY_KEY);
+    applyLibrary(DEFAULT_BASIC_UNITS.concat(DEFAULT_PRACTICE_UNITS));
+    renderAdminLibrary();
+  };
   var App_adminSendAlert = function () { state.adminAlertSent = true; renderAdminAlerts(); };
 
   /* ============================== XR LIST ============================== */
@@ -1776,7 +1850,7 @@
     journalSave: App_journalSave,
     noticeRead: App_noticeRead, noticesReadAll: App_noticesReadAll,
     roleplaySend: App_roleplaySend, roleplayMic: App_roleplayMic,
-    adminSendAlert: App_adminSendAlert
+    adminSendAlert: App_adminSendAlert, resetLibrary: App_resetLibrary
   };
 
   /* ============================== BOOT ============================== */

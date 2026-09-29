@@ -370,11 +370,43 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-  // 한글케어 연결: 한글케어 서버(/api/hangul-library → content/*.json)에 자동 저장한다.
-  // 파일만 따로 열었을 때(file://)는 서버가 없으므로 로컬 전용 모드로 동작한다.
-  if (!window.HANCARE_STUDIO_CONFIG && location.protocol !== "file:") {
-    window.HANCARE_STUDIO_CONFIG = { api: { baseUrl: "/api/hangul-library" }, readOnly: false };
-  }
+  // 한글케어 연결
+  // - ?host=hangulcare: 단일 파일판 hangulcare.html 안(iframe)에서 열린 경우. 부모 창과
+  //   postMessage로 유닛을 주고받고, 부모가 브라우저 저장소에 보관해 학습 화면에 반영한다.
+  //   (file://로 열어도 동작하도록 부모 창 객체에 직접 접근하지 않는다.)
+  // - 그 밖에 서버에서 열린 경우: Next.js 서버(/api/hangul-library → content/*.json)에 자동 저장.
+  // - 파일만 따로 열었을 때(file://)는 서버가 없으므로 로컬 전용 모드로 동작한다.
+  (function () {
+    if (window.HANCARE_STUDIO_CONFIG) return;
+    if (/[?&]host=hangulcare\b/.test(location.search) && window.parent !== window) {
+      var seq = 0, pending = {};
+      window.addEventListener("message", function (e) {
+        var d = e.data;
+        if (e.source !== window.parent || !d || d.hcLib !== "res" || !pending[d.id]) return;
+        var p = pending[d.id]; delete pending[d.id];
+        if (d.ok) p.resolve(d.data); else p.reject(new Error(d.error || "저장 실패"));
+      });
+      var call = function (op, payload) {
+        return new Promise(function (resolve, reject) {
+          var id = ++seq;
+          pending[id] = { resolve: resolve, reject: reject };
+          window.parent.postMessage({ hcLib: "req", id: id, op: op, payload: payload }, "*");
+        });
+      };
+      window.HANCARE_STUDIO_CONFIG = {
+        api: {
+          adapter: {
+            listUnits: function () { return call("list"); },
+            saveUnit: function (unit) { return call("save", unit); },
+            deleteUnit: function (id) { return call("delete", id); }
+          }
+        },
+        readOnly: false
+      };
+    } else if (location.protocol !== "file:") {
+      window.HANCARE_STUDIO_CONFIG = { api: { baseUrl: "/api/hangul-library" }, readOnly: false };
+    }
+  })();
 </script>
 <script>
 /* ==================================================================
@@ -597,6 +629,9 @@
      load; Import/Export is the only persistence.
      ============================================================ */
   function buildApi(cfg){
+    // 한글케어 단일 파일판(hangulcare.html)처럼 REST 서버 없이 붙이는 경우,
+    // listUnits/saveUnit/deleteUnit(Promise 반환)을 가진 어댑터를 그대로 쓴다.
+    if(cfg.adapter) return cfg.adapter;
     var baseUrl = String(cfg.baseUrl || "").replace(/\/+$/,"");
     function withHeaders(init){
       init = init || {};
@@ -668,7 +703,7 @@
     readOnly = !!config.readOnly;
     document.body.classList.toggle("ro", readOnly);
 
-    if(config.api && config.api.baseUrl){
+    if(config.api && (config.api.baseUrl || config.api.adapter)){
       API = buildApi(config.api);
       setStatus("saving", "서버에서 불러오는 중…");
       API.listUnits().then(function(data){
