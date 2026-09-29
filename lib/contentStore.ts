@@ -1,6 +1,6 @@
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Unit } from './types';
+import type { Unit, XrInteraction, XrModule } from './types';
 
 // 서버 전용 모듈 — 실습내용 편집기(public/hancare-library-editor.html)가 쓰는
 // /api/hangul-library 라우트에서 content/*.json 파일을 직접 고쳐 쓴다.
@@ -84,6 +84,60 @@ export function deleteLibraryUnit(unitId: string): Promise<boolean> {
       }
     }
     return found;
+  });
+}
+
+/* ---------------- XR실습 모듈 (content/xr-modules.json) ---------------- */
+
+/** XR실습 편집기(public/hancare-xr-editor.html) 저장 — 모듈 배열 전체를 교체한다.
+ * 배열 순서대로 order를 1부터 다시 매긴다. 문제가 있으면 오류 메시지를 돌려준다. */
+export function cleanXrModules(body: unknown): XrModule[] | string {
+  if (!Array.isArray(body)) return '본문은 모듈 배열이어야 합니다.';
+  const ids = new Set<string>();
+  const out: XrModule[] = [];
+  for (const [i, raw] of body.entries()) {
+    const m = raw as Partial<XrModule>;
+    if (!m || typeof m.id !== 'string' || !m.id.trim()) return `${i + 1}번째 모듈의 id가 비어 있습니다.`;
+    if (ids.has(m.id)) return `모듈 id가 중복됩니다: ${m.id}`;
+    ids.add(m.id);
+    if (!Array.isArray(m.interactions)) return `${m.id}: interactions는 배열이어야 합니다.`;
+    const itIds = new Set<string>();
+    const interactions: XrInteraction[] = [];
+    for (const it of m.interactions) {
+      if (!it || typeof it.id !== 'string' || !it.id.trim()) return `${m.id}: 인터랙션 id가 비어 있습니다.`;
+      if (itIds.has(it.id)) return `${m.id}: 인터랙션 id가 중복됩니다: ${it.id}`;
+      itIds.add(it.id);
+      interactions.push({
+        id: it.id,
+        labelKo: String(it.labelKo ?? ''),
+        labelEn: String(it.labelEn ?? ''),
+        resultKo: String(it.resultKo ?? ''),
+        resultEn: String(it.resultEn ?? ''),
+      });
+    }
+    const hours = Number(m.legalHours);
+    out.push({
+      id: m.id,
+      order: i + 1,
+      titleKo: String(m.titleKo ?? ''),
+      titleEn: String(m.titleEn ?? ''),
+      legalHours: Number.isFinite(hours) && hours >= 0 ? hours : 0,
+      patientNameKo: String(m.patientNameKo ?? ''),
+      situationKo: String(m.situationKo ?? ''),
+      situationEn: String(m.situationEn ?? ''),
+      techNoteKo: String(m.techNoteKo ?? ''),
+      interactions,
+    });
+  }
+  return out;
+}
+
+export function saveXrModules(modules: XrModule[]): Promise<void> {
+  return serialize(async () => {
+    const target = path.join(CONTENT_DIR, 'xr-modules.json');
+    const tmp = `${target}.${process.pid}.tmp`;
+    await writeFile(tmp, JSON.stringify(modules, null, 2) + '\n', 'utf-8');
+    await rename(tmp, target);
   });
 }
 

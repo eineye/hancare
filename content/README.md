@@ -71,6 +71,20 @@ JSON을 손으로 고치지 않고 표/폼 화면으로 편집하려면 관리�
   `LessonTerms` 시트(id, visible Y/N, group, note).
 - `hangulcare.html`(단일 파일판)에서는 같은 설정이 브라우저 `localStorage`(`hc-vocab-config`)에 저장됩니다.
 
+## XR실습 편집기 (hancare-xr-editor)
+
+관리자 메뉴 **XR실습 편집**(`/admin/xr-editor`, 편집기 본체 `public/hancare-xr-editor.html`)에서
+`xr-modules.json`을 편집합니다(`GET/PUT /api/xr-modules`). 저장하면 학습자 XR실습 목록(`/xr`)·
+실습 화면(`/xr/[moduleId]`)·커리큘럼의 XR실습 항목에 바로 반영됩니다.
+
+- 모듈: 순서(▲▼ — 저장 시 `order`를 1부터 다시 매김), id, 모듈명(한/영), 법정 실습시간, 환자 이름,
+  환자 첫 마디/상황(한/영), 적용 기술(표시용) / 추가·삭제
+- 인터랙션: 실습 화면의 조작 버튼 이름(한/영)과 누르면 로그에 나오는 결과 문구(한/영), id / 추가·삭제·순서 변경
+- id가 비었거나 중복되면 저장하지 않고 상태줄에 이유를 보여줍니다.
+- 모듈 id `xr-vital-signs`는 3D 실습 화면과 연결되어 있으니 바꾸지 마세요.
+- 엑셀 불러오기/내보내기: `Modules` 시트 + `Interactions` 시트(moduleId로 연결).
+- `hangulcare.html`(단일 파일판)에서는 브라우저 `localStorage`(`hc-xr-modules`)에 저장됩니다.
+
 ## 스키마
 
 각 파일의 최상위 값은 **유닛(Unit) 배열**입니다.

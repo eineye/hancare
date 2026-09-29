@@ -370,6 +370,37 @@
     } catch (err) { reply(false, null, String(err)); }
   });
 
+  /* ---- XR실습: 관리자 "XR실습 편집"에서 고친 모듈 배열을 이 브라우저에 보관해 위 기본 모듈 대신 쓴다 ---- */
+  var XR_KEY = "hc-xr-modules";
+  var DEFAULT_XR_MODULES = XR_MODULES;
+  function applyXrModules(list) {
+    // 화면이 모듈이 하나 이상 있다고 전제하므로, 비어 있으면 기본 모듈을 쓴다.
+    XR_MODULES = Array.isArray(list) && list.length ? list.slice().sort(function (a, b) { return a.order - b.order; }) : DEFAULT_XR_MODULES;
+  }
+  applyXrModules(readJSON(XR_KEY, null));
+  window.addEventListener("message", function (e) {
+    var frame = document.getElementById("xrEditorFrame");
+    var d = e.data;
+    if (!frame || e.source !== frame.contentWindow || !d || d.hcXr !== "req") return;
+    var reply = function (ok, data, error) { e.source.postMessage({ hcXr: "res", id: d.id, ok: ok, data: data, error: error }, "*"); };
+    var auth = getAuth();
+    if (!auth || auth.role !== "admin") return reply(false, null, "관리자만 편집할 수 있습니다.");
+    if (d.op === "get") return reply(true, XR_MODULES);
+    if (d.op === "put") {
+      if (!Array.isArray(d.payload) || !d.payload.length) return reply(false, null, "모듈이 하나 이상 있어야 합니다.");
+      var ids = {};
+      for (var i = 0; i < d.payload.length; i++) {
+        var m = d.payload[i];
+        if (!m || !m.id || ids[m.id] || !Array.isArray(m.interactions)) return reply(false, null, "모듈 형식이 올바르지 않습니다: " + (m && m.id));
+        ids[m.id] = 1;
+      }
+      writeJSON(XR_KEY, d.payload);
+      applyXrModules(d.payload);
+      return reply(true, null);
+    }
+    reply(false, null, "알 수 없는 요청");
+  });
+
   /* ---- 단어장: 관리자 "단어장 편집"의 설정 { custom, lessonOverrides }을 이 브라우저에 보관 ---- */
   var VOCAB_KEY = "hc-vocab-config";
   function getVocabConfig() {
@@ -720,7 +751,7 @@
     }
     if (view === "vocab") state.vocab = { tab: "전체", query: "", group: "" };
     if (view === "xr-practice") {
-      var idx = XR_MODULES.findIndex(function (m) { return m.id === state.params.moduleId; });
+      var idx = Math.max(0, XR_MODULES.findIndex(function (m) { return m.id === state.params.moduleId; }));
       var prog = getXrProgress()[state.params.moduleId] || { completed: [], submitted: false };
       state.xr = { moduleIndex: idx, started: false, dialogueDismissed: false, completed: prog.completed.slice(), reading: "대기 중…", sessionStart: Date.now() };
     }
@@ -735,7 +766,7 @@
     if (state.view === "login") return renderLogin();
     var auth = getAuth();
     if (!auth) { state.view = "login"; return renderLogin(); }
-    var adminViews = ["admin", "admin-alerts", "admin-library", "admin-vocab"];
+    var adminViews = ["admin", "admin-alerts", "admin-library", "admin-vocab", "admin-xr"];
     if (auth.role === "admin" && adminViews.indexOf(state.view) === -1) { state.view = "admin"; return renderAdmin(); }
     if (auth.role !== "admin" && adminViews.indexOf(state.view) !== -1) { state.view = "home"; return renderHome(); }
     if (state.view === "home") return renderHome();
@@ -754,6 +785,7 @@
     if (state.view === "admin-alerts") return renderAdminAlerts();
     if (state.view === "admin-library") return renderAdminLibrary();
     if (state.view === "admin-vocab") return renderAdminVocab();
+    if (state.view === "admin-xr") return renderAdminXr();
   }
 
   /* ============================== SHELL (topbar + sidebar) ============================== */
@@ -763,7 +795,8 @@
         { id: "admin", ko: "전체 현황", en: "Overview" },
         { id: "admin-alerts", ko: "알림 및 면담", en: "Alerts" },
         { id: "admin-library", ko: "실습내용 편집", en: "Content editor" },
-        { id: "admin-vocab", ko: "단어장 편집", en: "Vocab editor" }
+        { id: "admin-vocab", ko: "단어장 편집", en: "Vocab editor" },
+        { id: "admin-xr", ko: "XR실습 편집", en: "XR editor" }
       ];
     }
     return [
@@ -1650,6 +1683,26 @@
         'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
     el.innerHTML = shell(mainHtml, "admin-vocab");
   }
+  /* ============================== ADMIN: XR실습 편집 ============================== */
+  // 편집기 본체는 public/hancare-xr-editor.html. 모듈 배열은 XR_KEY로 이 브라우저에 보관되어
+  // XR실습 목록·실습 화면·커리큘럼에 바로 반영된다(Next.js 앱에서는 content/xr-modules.json에 저장).
+  function renderAdminXr() {
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
+        '<div><p class="eyebrow">XR실습 편집 XR EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">XR실습 메뉴 편집</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">XR실습 모듈의 순서·모듈명·법정시간·환자 상황·인터랙션을 편집합니다. 자동 저장되어 학습자 XR실습 화면에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장됩니다.</p></div>' +
+        '<button class="btn btn-ghost" onclick="App.resetXr()">기본 모듈로 되돌리기</button>' +
+      '</div>' +
+      '<iframe id="xrEditorFrame" src="./public/hancare-xr-editor.html?host=hangulcare" title="XR실습 편집기" ' +
+        'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
+    el.innerHTML = shell(mainHtml, "admin-xr");
+  }
+  var App_resetXr = function () {
+    if (!confirm("편집한 XR실습 모듈을 모두 지우고 기본 모듈로 되돌릴까요?")) return;
+    STORE.removeItem(XR_KEY);
+    applyXrModules(null);
+    renderAdminXr();
+  };
   var App_resetVocab = function () {
     if (!confirm("추가한 단어와 분류·메모·숨김 설정을 모두 지울까요?")) return;
     STORE.removeItem(VOCAB_KEY);
@@ -1678,7 +1731,7 @@
     }).join("");
     var mainHtml =
       '<p class="eyebrow">XR실습 XR PRACTICE</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">HnaCare XR 5대 모듈</h1>' +
-      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);line-height:1.6;">docs/XR_MODULE_DESIGN.md의 Phase 1(화면 흐름·상호작용 셸)입니다. "01. 활력징후 및 기초사정"은 실제 Three.js 3D 뷰포트가 동작하는 심화 프로토타입(§7.1)으로 대체되어 있고, 나머지 모듈은 인터랙션 버튼 결과가 미리 정의된 텍스트로 대체되어 있습니다.</p>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);line-height:1.6;">docs/XR_MODULE_DESIGN.md의 Phase 1(화면 흐름·상호작용 셸)입니다. "활력징후 및 기초사정"은 실제 Three.js 3D 뷰포트가 동작하는 심화 프로토타입(§7.1)으로 대체되어 있고, 나머지 모듈은 인터랙션 버튼 결과가 미리 정의된 텍스트로 대체되어 있습니다.</p>' +
       '<div class="modGrid">' + cards + "</div>";
     el.innerHTML = shell(mainHtml, "xr-list");
   }
@@ -1881,7 +1934,7 @@
     journalSave: App_journalSave,
     noticeRead: App_noticeRead, noticesReadAll: App_noticesReadAll,
     roleplaySend: App_roleplaySend, roleplayMic: App_roleplayMic,
-    adminSendAlert: App_adminSendAlert, resetLibrary: App_resetLibrary, resetVocab: App_resetVocab
+    adminSendAlert: App_adminSendAlert, resetLibrary: App_resetLibrary, resetVocab: App_resetVocab, resetXr: App_resetXr
   };
 
   /* ============================== BOOT ============================== */
