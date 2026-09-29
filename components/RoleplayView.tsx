@@ -6,7 +6,7 @@ import TeacherAvatar, { type TeacherAvatarHandle } from './TeacherAvatar';
 import { ELDERLY_MAN_PALETTE } from '@/lib/teacher2d/palettes';
 import { isSttSupported, startRecognition } from '@/lib/speech';
 import { useSettingsStore, type AvatarState } from '@/lib/store';
-import type { ChatMessage, Term } from '@/lib/types';
+import type { ChatMessage, RoleplayScenario, Term } from '@/lib/types';
 
 let idCounter = 0;
 function nextId() {
@@ -20,12 +20,15 @@ export default function RoleplayView({
   situationTitleKo,
   terms,
   learnHref,
+  scenario,
 }: {
   unitId: string;
   situationId: string;
   situationTitleKo: string;
   terms: Term[];
   learnHref: string;
+  /** 관리자 "역할극 편집"(content/roleplays.json)에서 정한 시나리오. 비어 있으면 기본 역할극. */
+  scenario: RoleplayScenario;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState(false);
@@ -58,7 +61,7 @@ export default function RoleplayView({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, history, situationTitleKo, terms }),
+        body: JSON.stringify({ message: trimmed, history, situationTitleKo, terms, roleplay: scenario }),
       });
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
@@ -87,8 +90,14 @@ export default function RoleplayView({
   }
 
   useEffect(() => {
-    if (startedRef.current) return;
+    if (startedRef.current || scenario.enabled === false) return;
     startedRef.current = true;
+    // 편집기에서 첫 대사를 정했으면 AI 호출 없이 그 대사로 시작한다.
+    if (scenario.openingKo) {
+      setMessages([{ id: nextId(), role: 'assistant', content: scenario.openingKo }]);
+      setTimeout(() => patientRef.current?.playText(scenario.openingKo ?? ''), 300);
+      return;
+    }
     send(
       `환자 역할을 맡아서 저와 역할극 대화를 시작해 주세요. 상황: ${situationTitleKo}. 짧은 인사말로 먼저 말을 걸어주세요.`,
       [],
@@ -118,6 +127,22 @@ export default function RoleplayView({
     });
   }
 
+  if (scenario.enabled === false) {
+    return (
+      <div className="flex flex-col gap-3.5">
+        <Link href={learnHref} className="inline-block w-fit text-xs font-medium text-brand hover:underline">
+          ← 학습 화면으로
+        </Link>
+        <div className="rounded-2xl border border-line bg-white p-8 text-center">
+          <p className="text-lg font-bold text-brand-dark">{situationTitleKo}</p>
+          <p className="mt-2 text-sm text-muted">이 상황은 아직 역할극이 준비되지 않았습니다.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const patientLabel = [scenario.patientNameKo, scenario.patientProfileKo].filter(Boolean).join(' · ');
+
   return (
     <div className="flex flex-col gap-3.5">
       <Link href={learnHref} className="inline-block w-fit text-xs font-medium text-brand hover:underline">
@@ -131,8 +156,14 @@ export default function RoleplayView({
               <p className="text-[11px] font-bold tracking-wide text-brand-light">역할극 ROLE PLAY</p>
               <h1 className="mt-2.5 text-2xl font-black tracking-tight">{situationTitleKo}</h1>
             </div>
-            <span className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs">환자 역: AI</span>
+            <span className="rounded-full bg-white/10 px-3.5 py-1.5 text-xs">환자 역: {patientLabel || 'AI'}</span>
           </div>
+          {scenario.goalKo && (
+            <p className="mt-3 rounded-xl bg-white/10 px-3.5 py-2.5 text-[13px] leading-relaxed text-white/85">
+              <b className="mr-1.5 text-brand-light">목표</b>
+              {scenario.goalKo}
+            </p>
+          )}
 
           <div className="mt-5 flex max-h-[420px] flex-col gap-3 overflow-y-auto pr-1">
             {messages.map((m) => (
@@ -202,10 +233,28 @@ export default function RoleplayView({
               )}
             </div>
             <p className="mt-2.5 text-[11px] leading-relaxed text-white/70">
-              Gemini API로 실제 대화하는 역할극입니다. 환자 대사는 실시간 생성되며, 실제 임상 판단이 필요한 질문에는
-              답하지 않도록 안내되어 있습니다. 아바타는 실제 음성 없이 대사 길이에 맞춘 입모양만 재생합니다.
+              Gemini API로 실제 대화하는 역할극입니다(API 키가 없으면 관리자가 정한 규칙 응답으로 대화합니다). 환자
+              대사는 실시간 생성되며, 실제 임상 판단이 필요한 질문에는 답하지 않도록 안내되어 있습니다. 아바타는 실제 음성 없이 대사 길이에 맞춘 입모양만 재생합니다.
             </p>
           </div>
+
+          {scenario.hintsKo && scenario.hintsKo.length > 0 && (
+            <div className="rounded-2xl border border-line bg-white p-4">
+              <p className="mb-3.5 text-[11.5px] font-bold tracking-wide text-brand">추천 표현 · 눌러서 입력</p>
+              <div className="flex flex-col gap-2">
+                {scenario.hintsKo.map((h) => (
+                  <button
+                    key={h}
+                    type="button"
+                    onClick={() => setDraft(h)}
+                    className="rounded-xl bg-panel px-3.5 py-2.5 text-left text-sm text-brand-dark hover:bg-chip"
+                  >
+                    {h}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {terms.length > 0 && (
             <div className="rounded-2xl border border-line bg-white p-4">

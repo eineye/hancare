@@ -28,6 +28,38 @@ export interface VocabConfig {
   lessonOverrides: Record<string, VocabLessonOverride>;
 }
 
+/** 역할극 규칙 응답 — 학습자 말에 키워드 중 하나가 들어 있으면 이 대사로 답한다. */
+export interface RoleplayReplyRule {
+  keywords: string[];
+  replyKo: string;
+}
+
+/** 상황 하나의 역할극 시나리오 (content/roleplays.json). 모든 필드는 선택이며, 비어 있으면 기본 동작. */
+export interface RoleplayScenario {
+  /** false면 이 상황의 역할극을 열지 않는다. */
+  enabled?: boolean;
+  patientNameKo?: string;
+  /** 예: "72세 남성, 고혈압으로 입원 3일째" */
+  patientProfileKo?: string;
+  /** 학습자에게 보여줄 목표 */
+  goalKo?: string;
+  /** 환자의 첫 대사 */
+  openingKo?: string;
+  /** AI(Gemini)에게 주는 환자 성격·말투·증상 설정 */
+  personaKo?: string;
+  /** Gemini를 쓸 수 없을 때(키 없음·단일 파일판) 쓰는 규칙 응답 */
+  replies?: RoleplayReplyRule[];
+  /** 규칙에 맞는 응답이 없을 때의 대사 */
+  fallbackKo?: string;
+  /** 학습자에게 보여줄 추천 표현 (누르면 입력창에 채워짐) */
+  hintsKo?: string[];
+}
+
+export interface RoleplayConfig {
+  /** 키: `${unitId}/${situationId}` */
+  scenarios: Record<string, RoleplayScenario>;
+}
+
 export interface Sentence {
   id: string;
   textKo: string;

@@ -10,6 +10,7 @@
 | `practice-hangul.json` | 실습한글 (간호조무 실습 회화) |
 | `basic-hangul.json` | 기초한글 |
 | `xr-modules.json` | XR실습 (HnaCare XR 5대 모듈 — 스키마는 [`docs/XR_MODULE_DESIGN.md`](../docs/XR_MODULE_DESIGN.md) §6 참고, Unit 스키마와 다름) |
+| `roleplays.json` | 역할극 시나리오 (상황별 환자 설정·첫 대사·규칙 응답 — 아래 "역할극 편집기" 참고) |
 | `vocab.json` | 단어장 설정 (단어장 전용 단어 + 상황 용어 숨김·분류·메모 — 아래 "단어장 편집기" 참고, Unit 스키마와 다름) |
 
 필요하면 같은 형식으로 새 파일을 만들고 `lib/content.ts`의 `CONTENT_FILES` 배열에
@@ -84,6 +85,36 @@ JSON을 손으로 고치지 않고 표/폼 화면으로 편집하려면 관리�
 - 모듈 id `xr-vital-signs`는 3D 실습 화면과 연결되어 있으니 바꾸지 마세요.
 - 엑셀 불러오기/내보내기: `Modules` 시트 + `Interactions` 시트(moduleId로 연결).
 - `hangulcare.html`(단일 파일판)에서는 브라우저 `localStorage`(`hc-xr-modules`)에 저장됩니다.
+
+## 역할극 편집기 (hancare-roleplay-editor)
+
+관리자 메뉴 **역할극 편집**(`/admin/roleplay-editor`, 편집기 본체 `public/hancare-roleplay-editor.html`)에서
+상황별 역할극 시나리오를 편집합니다. 설정은 `content/roleplays.json`에 자동 저장됩니다(`GET/PUT /api/roleplays`).
+시나리오가 없는 상황은 기존과 같은 기본 역할극으로 동작합니다.
+
+```jsonc
+{
+  "scenarios": {
+    "unit-1/situation-1": {                 // 키 = 유닛id/상황id
+      "enabled": false,                     // 선택 — false면 "아직 역할극이 준비되지 않았습니다"
+      "patientNameKo": "김진수",
+      "patientProfileKo": "72세 남성, 고혈압으로 입원 3일째",
+      "goalKo": "인사하고 혈압 측정을 설명한 뒤 동의를 구하세요.",   // 학습자 화면에 표시
+      "openingKo": "아이고, 선생님 오셨어요?",   // 환자 첫 대사 (없으면 AI가 인사를 만듦)
+      "personaKo": "말수가 적고 조금 불안해함…",  // Gemini에게 주는 환자 성격·말투·증상
+      "replies": [{ "keywords": ["혈압", "재겠"], "replyKo": "네, 팔 걷을게요." }],
+      "fallbackKo": "네? 다시 한 번 말씀해 주시겠어요?",
+      "hintsKo": ["혈압 좀 재겠습니다."]       // 학습자 화면 추천 표현 (누르면 입력창에 채워짐)
+    }
+  }
+}
+```
+
+- **Gemini 키가 있을 때**: 환자 설정·목표·용어로 만든 환자 역할 지시(`app/api/chat/route.ts`)로 AI가 대사를 만듭니다.
+- **키가 없을 때 / `hangulcare.html`**: 규칙 응답(`lib/roleplay.ts` `ruleReply()`)으로 답합니다 —
+  키워드 규칙(위에서부터) → 상황 용어 언급 → 통증·감사 → `fallbackKo` 순.
+- 편집기 오른쪽 **테스트 대화**로 규칙 응답을 바로 시험할 수 있습니다.
+- `hangulcare.html`(단일 파일판)에서는 브라우저 `localStorage`(`hc-roleplay-config`)에 저장됩니다.
 
 ## 스키마
 

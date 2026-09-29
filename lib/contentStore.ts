@@ -1,6 +1,6 @@
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Unit, XrInteraction, XrModule } from './types';
+import type { RoleplayConfig, RoleplayScenario, Unit, XrInteraction, XrModule } from './types';
 
 // 서버 전용 모듈 — 실습내용 편집기(public/hancare-library-editor.html)가 쓰는
 // /api/hangul-library 라우트에서 content/*.json 파일을 직접 고쳐 쓴다.
@@ -138,6 +138,71 @@ export function saveXrModules(modules: XrModule[]): Promise<void> {
     const tmp = `${target}.${process.pid}.tmp`;
     await writeFile(tmp, JSON.stringify(modules, null, 2) + '\n', 'utf-8');
     await rename(tmp, target);
+  });
+}
+
+/* ---------------- 역할극 시나리오 (content/roleplays.json) ---------------- */
+
+const ROLEPLAY_FILE = path.join(CONTENT_DIR, 'roleplays.json');
+
+/** 매번 새로 읽는다. 없거나 깨졌으면 빈 설정(= 모든 상황 기본 역할극). */
+export async function getRoleplayConfig(): Promise<RoleplayConfig> {
+  try {
+    const parsed = JSON.parse(await readFile(ROLEPLAY_FILE, 'utf-8'));
+    return { scenarios: parsed?.scenarios && typeof parsed.scenarios === 'object' ? parsed.scenarios : {} };
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error('[content] roleplays.json 을(를) 읽는 데 실패했습니다:', err);
+    }
+    return { scenarios: {} };
+  }
+}
+
+export async function getRoleplayScenario(unitId: string, situationId: string): Promise<RoleplayScenario | undefined> {
+  const config = await getRoleplayConfig();
+  return config.scenarios[`${unitId}/${situationId}`];
+}
+
+function str(v: unknown): string | undefined {
+  return typeof v === 'string' && v.trim() ? v : undefined;
+}
+
+/** PUT 본문 정리 — 빈 필드는 빼고, 내용이 하나도 없는 시나리오는 저장하지 않는다. */
+export function cleanRoleplayConfig(body: unknown): RoleplayConfig | string {
+  if (!body || typeof body !== 'object') return '본문이 JSON 객체가 아닙니다.';
+  const raw = (body as Partial<RoleplayConfig>).scenarios;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return 'scenarios는 객체여야 합니다.';
+  const scenarios: RoleplayConfig['scenarios'] = {};
+  for (const [key, s] of Object.entries(raw)) {
+    if (!s || typeof s !== 'object') continue;
+    const replies = (Array.isArray(s.replies) ? s.replies : [])
+      .map((r) => ({
+        keywords: (Array.isArray(r?.keywords) ? r.keywords : []).map(String).map((k) => k.trim()).filter(Boolean),
+        replyKo: String(r?.replyKo ?? '').trim(),
+      }))
+      .filter((r) => r.keywords.length && r.replyKo);
+    const hintsKo = (Array.isArray(s.hintsKo) ? s.hintsKo : []).map(String).map((h) => h.trim()).filter(Boolean);
+    const clean: RoleplayScenario = {
+      ...(s.enabled === false ? { enabled: false } : {}),
+      ...(str(s.patientNameKo) ? { patientNameKo: str(s.patientNameKo) } : {}),
+      ...(str(s.patientProfileKo) ? { patientProfileKo: str(s.patientProfileKo) } : {}),
+      ...(str(s.goalKo) ? { goalKo: str(s.goalKo) } : {}),
+      ...(str(s.openingKo) ? { openingKo: str(s.openingKo) } : {}),
+      ...(str(s.personaKo) ? { personaKo: str(s.personaKo) } : {}),
+      ...(replies.length ? { replies } : {}),
+      ...(str(s.fallbackKo) ? { fallbackKo: str(s.fallbackKo) } : {}),
+      ...(hintsKo.length ? { hintsKo } : {}),
+    };
+    if (Object.keys(clean).length) scenarios[key] = clean;
+  }
+  return { scenarios };
+}
+
+export function saveRoleplayConfig(config: RoleplayConfig): Promise<void> {
+  return serialize(async () => {
+    const tmp = `${ROLEPLAY_FILE}.${process.pid}.tmp`;
+    await writeFile(tmp, JSON.stringify(config, null, 2) + '\n', 'utf-8');
+    await rename(tmp, ROLEPLAY_FILE);
   });
 }
 
