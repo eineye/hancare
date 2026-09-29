@@ -136,7 +136,7 @@ export default function HomeContent({
               ))}
             </div>
           )}
-          <Link href="/basic-hangul" className="mt-4 block rounded-[11px] bg-brand-dark py-3 text-center text-[13px] font-bold text-white">
+          <Link href="/vocab" className="mt-4 block rounded-[11px] bg-brand-dark py-3 text-center text-[13px] font-bold text-white">
             단어장 전체 보기
           </Link>
         </div>
