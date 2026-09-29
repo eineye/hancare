@@ -124,7 +124,7 @@ export default function HomeContent({
               {reviewCards.map((c) => (
                 <Link
                   key={c.id}
-                  href={c.situationHref}
+                  href={c.situationHref ?? '/vocab'}
                   className="flex items-center gap-3.5 rounded-xl bg-panel px-4 py-3 hover:bg-chip"
                 >
                   <div className="min-w-0 flex-1">

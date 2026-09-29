@@ -7,6 +7,27 @@ export interface Term {
   glossEn: string;
 }
 
+/** 단어장 전용으로 추가한 단어 (content/vocab.json의 custom). 학습 상황에는 속하지 않는다. */
+export interface VocabEntry extends Term {
+  /** 단어장 화면의 분류 필터에 쓰는 이름 (예: "활력징후"). */
+  group?: string;
+  note?: string;
+}
+
+/** 상황 용어(content/*.json의 terms)를 단어장에서 어떻게 보여줄지. 용어 자체는 실습내용 편집에서 고친다. */
+export interface VocabLessonOverride {
+  hidden?: boolean;
+  group?: string;
+  note?: string;
+}
+
+/** content/vocab.json — 단어장 편집기가 저장하는 설정. */
+export interface VocabConfig {
+  custom: VocabEntry[];
+  /** 상황 용어 id → 단어장 표시 설정 */
+  lessonOverrides: Record<string, VocabLessonOverride>;
+}
+
 export interface Sentence {
   id: string;
   textKo: string;

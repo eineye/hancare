@@ -86,6 +86,7 @@ export default function AppShell({
     { id: 'admin', ko: '전체 현황', en: 'Overview', href: '/admin' },
     { id: 'admin-alerts', ko: '알림 및 면담', en: 'Alerts', href: '/admin/alerts' },
     { id: 'admin-library', ko: '실습내용 편집', en: 'Content editor', href: '/admin/library-editor' },
+    { id: 'admin-vocab', ko: '단어장 편집', en: 'Vocab editor', href: '/admin/vocab-editor' },
   ];
   const nav = isAdmin ? adminNav : learnerNav;
 
