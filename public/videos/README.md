@@ -1,5 +1,9 @@
 # 영상학습 MP4 파일 넣는 곳
 
+> 관리자 화면 **실습내용 편집 → 영상** 메뉴(영상 에디터)에서 영상을 올리면 서버의 `uploads/videos/`에
+> 저장되고 AI 자동 자막까지 만들 수 있습니다([`docs/VIDEO_EDITOR_DESIGN.md`](../../docs/VIDEO_EDITOR_DESIGN.md)).
+> 이 폴더는 빌드 때 함께 배포할 영상이나, 서버가 없는 `hangulcare.html`용 영상을 두는 곳입니다.
+
 `content/videos.json`의 각 영상 `src`가 가리키는 파일을 이 폴더에 넣으면 됩니다.
 (독립 실행형 `hangulcare.html`은 같은 파일을 `./public/videos/…` 경로로 읽습니다.)
 

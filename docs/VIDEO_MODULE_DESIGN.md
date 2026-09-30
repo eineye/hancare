@@ -245,7 +245,7 @@ Zustand `persist`(`hangulcare-video`, `safeLocalStorage`) — `lib/xrStore.ts`�
 | 단계 | 범위 | 상태 |
 |---|---|---|
 | **Phase 1** | `/video` 목록, `/video/[id]` 플레이어(자체 MP4 + 자막 연습 모드), 단어 탭 → 자동 정지 → AI 질문(스트리밍, 음성 입력), 이어보기, 구간 반복·속도, 위치 저장/복원, 단어장 담기·장면 딥링크, 사이드바/홈 진입점 | ✅ 완료 |
-| **Phase 2** | 관리자 영상 등록 화면(업로드 + 자막 편집기), STT 자동 자막 생성, 답변 캐시, HLS 스트리밍, 서버 DB에 시청·질문 기록 적재, 리포트 연동, 다국어 자막(`textVi`, `textMn` … 필드 확장) | 예정 |
+| **Phase 2** | ✅ 관리자 영상 등록 화면(업로드 + 자막 편집기)과 AI 자동 자막 생성 — [`VIDEO_EDITOR_DESIGN.md`](VIDEO_EDITOR_DESIGN.md) 1단계로 구현. 남은 것: 답변 캐시, HLS 스트리밍, 서버 DB에 시청·질문 기록 적재, 리포트 연동, 다국어 자막(`textVi`, `textMn` … 필드 확장) | 예정 |
 | **Phase 3** | 쉐도잉: 대사 구간을 따라 말하면 기존 발음 채점(`lib/scoring.ts`, `PronunciationScore`)으로 채점, 질문 기록 기반 복습 퀴즈 자동 생성, 영상 속 장면 역할극(`/roleplay`와 연결) | 예정 |
 
 - 독립 실행형 `hangulcare.html`(GitHub Pages 데모)에도 같은 **영상학습** 메뉴가 들어가 있다

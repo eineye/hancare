@@ -10,7 +10,8 @@
 전체 시스템 아키텍처, 데이터 모델, API, AI/음성 파이프라인, 개발 로드맵은
 [`docs/PROGRAM_DESIGN.md`](docs/PROGRAM_DESIGN.md)를, XR실습(HnaCare XR) 구성
 지침은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)를, 영상학습(멈추고
-질문하기) 설계는 [`docs/VIDEO_MODULE_DESIGN.md`](docs/VIDEO_MODULE_DESIGN.md)를 참고하세요.
+질문하기) 설계는 [`docs/VIDEO_MODULE_DESIGN.md`](docs/VIDEO_MODULE_DESIGN.md)를, 영상을 올리고 AI 자동 자막으로
+편집하는 관리자 영상 에디터(실습내용 편집기의 "영상" 메뉴)는 [`docs/VIDEO_EDITOR_DESIGN.md`](docs/VIDEO_EDITOR_DESIGN.md)를 참고하세요.
 
 디자인은 claude.ai/design에서 만든 시안(웜 베이지 배경 · 다크 그린 `#12241F` ·
 포인트 틸 `#0E7C66`, Noto Sans KR + IBM Plex Mono, 상단바+좌측 사이드바 메뉴 구조)을
