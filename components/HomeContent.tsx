@@ -70,6 +70,9 @@ export default function HomeContent({
             >
               역할극 연습
             </Link>
+            <Link href="/video" className="rounded-[11px] border border-white/25 bg-white/10 px-5 py-3 text-sm">
+              영상으로 배우기
+            </Link>
           </div>
         </div>
         <div className="flex flex-wrap gap-3.5">

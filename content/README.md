@@ -9,6 +9,7 @@
 |---|---|
 | `practice-hangul.json` | 실습한글 (간호조무 실습 회화) |
 | `basic-hangul.json` | 기초한글 |
+| `videos.json` | 영상학습 (`/video` — 영상 경로·자막(cues)·어휘 주석. 스키마는 [`docs/VIDEO_MODULE_DESIGN.md`](../docs/VIDEO_MODULE_DESIGN.md) §5 참고, 영상 파일은 `public/videos/`) |
 | `xr-modules.json` | XR실습 (HnaCare XR 5대 모듈 — 스키마는 [`docs/XR_MODULE_DESIGN.md`](../docs/XR_MODULE_DESIGN.md) §6 참고, Unit 스키마와 다름) |
 
 필요하면 같은 형식으로 새 파일을 만들고 `lib/content.ts`의 `CONTENT_FILES` 배열에

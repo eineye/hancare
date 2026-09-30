@@ -5,12 +5,15 @@ import Link from 'next/link';
 import { speak } from '@/lib/speech';
 import { usePracticedTermsStore } from '@/lib/store';
 import type { VocabCard } from '@/lib/vocab';
+import { useVideoStore } from '@/lib/videoStore';
 
 type Tab = '전체' | '학습함' | '아직';
 
 export default function VocabView({ cards }: { cards: VocabCard[] }) {
   const practicedTermIds = usePracticedTermsStore((s) => s.practicedTermIds);
   const markPracticed = usePracticedTermsStore((s) => s.markPracticed);
+  const savedVideoTerms = useVideoStore((s) => s.savedTerms);
+  const removeVideoTerm = useVideoStore((s) => s.removeTerm);
   const [tab, setTab] = useState<Tab>('전체');
   const [query, setQuery] = useState('');
 
@@ -47,6 +50,48 @@ export default function VocabView({ cards }: { cards: VocabCard[] }) {
           className="min-w-[220px] rounded-[11px] border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-brand"
         />
       </div>
+
+      {savedVideoTerms.length > 0 && (
+        <section className="rounded-2xl border border-line bg-white p-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className="text-[11.5px] font-bold tracking-wide text-brand">영상에서 담은 표현 {savedVideoTerms.length}개</p>
+            <Link href="/video" className="text-xs text-brand hover:underline">
+              영상학습 →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {savedVideoTerms.map((t) => (
+              <div key={t.id} className="rounded-xl bg-panel px-3 py-2.5">
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-brand-dark">
+                      {t.hangul}
+                      {t.glossEn && <span className="ml-1.5 text-xs font-normal text-muted">{t.glossEn}</span>}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-muted">&ldquo;{t.sentenceKo}&rdquo;</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => speak(t.hangul)}
+                    className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-chip text-xs text-brand hover:bg-brand hover:text-white"
+                    aria-label={`${t.hangul} 발음 듣기`}
+                  >
+                    ▶
+                  </button>
+                </div>
+                <div className="mt-1.5 flex justify-between text-[11px]">
+                  <Link href={`/video/${t.videoId}?t=${Math.floor(t.cueStart)}`} className="text-brand hover:underline">
+                    {t.videoTitleKo} 장면 보기 →
+                  </Link>
+                  <button type="button" onClick={() => removeVideoTerm(t.id)} className="text-faint hover:text-warn">
+                    삭제
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="flex flex-wrap gap-1.5">
         {(['전체', '학습함', '아직'] as Tab[]).map((t) => (

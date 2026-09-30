@@ -120,3 +120,38 @@ export interface JournalEntry {
   tags: string[];
   createdAt: number;
 }
+
+/** 영상학습 자막 한 줄에 달린 어휘 주석. 자막에서 강조 표시되고 탭하면 바로 질문 대상이 된다. */
+export interface VideoCueTerm {
+  hangul: string;
+  glossEn: string;
+}
+
+/** 영상학습 자막 한 줄(초 단위 구간). docs/VIDEO_MODULE_DESIGN.md §5 참고. */
+export interface VideoCue {
+  id: string;
+  start: number;
+  end: number;
+  /** 화자 표시(예: "간호조무사", "환자"). 없으면 생략. */
+  speakerKo?: string;
+  textKo: string;
+  textEn: string;
+  terms?: VideoCueTerm[];
+}
+
+/** 영상학습(/video) 한 편. 영상 파일은 public/videos/ 아래 자체 MP4를 쓴다. */
+export interface VideoLesson {
+  id: string;
+  order: number;
+  titleKo: string;
+  titleEn: string;
+  descriptionKo: string;
+  /** public 기준 경로(/videos/xxx.mp4) 또는 절대 URL. 비었거나 재생 실패 시 자막 연습 모드로 대체된다. */
+  src: string;
+  poster?: string;
+  durationSec: number;
+  levelTag: string;
+  /** 연결된 실습한글 상황(있으면 "관련 학습" 링크를 보여준다). */
+  related?: { unitId: string; situationId: string; labelKo: string };
+  cues: VideoCue[];
+}

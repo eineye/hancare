@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { Sentence, Situation, Unit, XrModule } from './types';
+import type { Sentence, Situation, Unit, VideoLesson, XrModule } from './types';
 
 // 서버 전용 모듈(node:fs 사용) — 클라이언트 컴포넌트에서 import하면 안 된다.
 // 실습내용(기초한글/실습한글)을 웹팩 번들에 정적으로 넣지 않고, content/ 아래
@@ -92,4 +92,24 @@ export async function getXrModules(): Promise<XrModule[]> {
 export async function getXrModule(moduleId: string): Promise<XrModule | undefined> {
   const modules = await getXrModules();
   return modules.find((m) => m.id === moduleId);
+}
+
+/** 영상학습 목록. docs/VIDEO_MODULE_DESIGN.md 참고. content/videos.json을 매 요청마다 새로 읽는다. */
+export async function getVideos(): Promise<VideoLesson[]> {
+  try {
+    const raw = await readFile(path.join(CONTENT_DIR, 'videos.json'), 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) throw new Error('최상위 값은 영상 배열(VideoLesson[])이어야 합니다.');
+    return (parsed as VideoLesson[])
+      .map((v) => ({ ...v, cues: [...(v.cues ?? [])].sort((a, b) => a.start - b.start) }))
+      .sort((a, b) => a.order - b.order);
+  } catch (err) {
+    console.error('[content] videos.json 을(를) 읽는 데 실패했습니다:', err);
+    return [];
+  }
+}
+
+export async function getVideo(videoId: string): Promise<VideoLesson | undefined> {
+  const videos = await getVideos();
+  return videos.find((v) => v.id === videoId);
 }

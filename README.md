@@ -9,7 +9,8 @@
 
 전체 시스템 아키텍처, 데이터 모델, API, AI/음성 파이프라인, 개발 로드맵은
 [`docs/PROGRAM_DESIGN.md`](docs/PROGRAM_DESIGN.md)를, XR실습(HnaCare XR) 구성
-지침은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)를 참고하세요.
+지침은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)를, 영상학습(멈추고
+질문하기) 설계는 [`docs/VIDEO_MODULE_DESIGN.md`](docs/VIDEO_MODULE_DESIGN.md)를 참고하세요.
 
 디자인은 claude.ai/design에서 만든 시안(웜 베이지 배경 · 다크 그린 `#12241F` ·
 포인트 틸 `#0E7C66`, Noto Sans KR + IBM Plex Mono, 상단바+좌측 사이드바 메뉴 구조)을
@@ -39,7 +40,7 @@ npm run dev       # http://localhost:3000
 
 로그인 후에는 상단바(로고·언어 선택·알림·프로필) + 좌측 사이드바 메뉴 셸
 (`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 학습 /
-XR실습 / 역할극 / 단어장 / 리포트 / 실습 일지 / 알림 / 설정이고, 관리자 메뉴는
+XR실습 / 영상학습 / 역할극 / 단어장 / 리포트 / 실습 일지 / 알림 / 설정이고, 관리자 메뉴는
 전체 현황 / 알림 및 면담입니다.
 
 진도관리(`/courses`)에서는 학습 단계를 기초한글 / 실습한글 / XR실습 3개 분류로
@@ -52,6 +53,7 @@ XR실습(`/xr`)은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)의 Pha
 
 | 화면 | 실제로 동작하는 부분 | 아직 목데이터인 부분 |
 |---|---|---|
+| `/video`, `/video/[videoId]` | 자체 MP4 영상 + 자막 동기화, 자막 단어를 누르면 자동 정지 후 Gemini(`/api/video-qa`)가 그 장면 대사를 근거로 뜻·문법·예문 설명, 이어보기(2초 전부터)·구간 반복·속도, 시청 위치 저장, 단어장 담기 | 샘플 영상 파일은 저장소에 없어 **자막 연습 모드**로 동작(`public/videos/README.md`에 MP4를 넣으면 실제 영상 재생) |
 | `/roleplay/[unitId]/[situationId]` | Gemini API(`/api/chat`)로 실제 대화하는 역할극. 마이크로 말하면 STT로 인식해 전송 | — |
 | `/vocab` | `content/*.json`의 실제 용어 전체를 모은 단어장, 듣기·검색·"학습함" 구분 | 시안에 있던 가짜 발음 점수 숫자는 빼고, 실제로 들어봤는지만 표시 |
 | `/report` | 평균 발음 점수·학습 문장 수·유닛별 용어 학습 현황은 실제 누적 기록 | 주차별 추이 그래프, 약한 발음 요소 분석은 예시 데이터(음소 단위 분석 미구현) |
