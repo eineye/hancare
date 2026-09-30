@@ -1,6 +1,6 @@
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { RoleplayConfig, RoleplayScenario, Unit, XrInteraction, XrModule } from './types';
+import type { RoleplayConfig, RoleplayScenario, Unit, VideoCue, VideoCueTerm, VideoLesson, XrInteraction, XrModule } from './types';
 
 // 서버 전용 모듈 — 실습내용 편집기(public/hancare-library-editor.html)가 쓰는
 // /api/hangul-library 라우트에서 content/*.json 파일을 직접 고쳐 쓴다.
@@ -215,4 +215,82 @@ export function validateUnit(body: unknown, idFromPath: string): string | undefi
   if (u.category !== 'basic' && u.category !== 'practice') return 'category는 "basic" 또는 "practice"여야 합니다.';
   if (!Array.isArray(u.situations)) return 'situations는 배열이어야 합니다.';
   return undefined;
+}
+
+/* ---------------- 영상학습 (content/videos.json) ---------------- */
+
+const VIDEOS_FILE = path.join(CONTENT_DIR, 'videos.json');
+const ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
+
+function num(v: unknown): number {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+/** 영상 에디터(라이브러리 에디터 "영상" 메뉴) 저장 본문 검증·정리. 배열 순서대로 order를 1부터
+ * 다시 매긴다. 문제가 있으면 오류 메시지를 돌려준다. docs/VIDEO_EDITOR_DESIGN.md §5. */
+export function cleanVideos(body: unknown): VideoLesson[] | string {
+  if (!Array.isArray(body)) return '본문은 영상 배열이어야 합니다.';
+  const ids = new Set<string>();
+  const out: VideoLesson[] = [];
+  for (const [i, raw] of body.entries()) {
+    const v = raw as Partial<VideoLesson>;
+    if (!v || typeof v.id !== 'string' || !ID_PATTERN.test(v.id)) {
+      return `${i + 1}번째 영상의 id는 영문 소문자·숫자·-만 쓸 수 있습니다.`;
+    }
+    if (ids.has(v.id)) return `영상 id가 중복됩니다: ${v.id}`;
+    ids.add(v.id);
+    if (!Array.isArray(v.cues)) return `${v.id}: cues는 배열이어야 합니다.`;
+    const cueIds = new Set<string>();
+    const cues: VideoCue[] = [];
+    for (const [ci, c] of v.cues.entries()) {
+      const start = num(c?.start);
+      const end = num(c?.end);
+      if (!c || typeof c.id !== 'string' || !c.id.trim()) return `${v.id}: ${ci + 1}번째 자막의 id가 비어 있습니다.`;
+      if (cueIds.has(c.id)) return `${v.id}: 자막 id가 중복됩니다: ${c.id}`;
+      cueIds.add(c.id);
+      if (!(start >= 0) || !(end > start)) return `${v.id}: ${ci + 1}번째 자막의 시간이 올바르지 않습니다(끝이 시작보다 커야 함).`;
+      const terms: VideoCueTerm[] = Array.isArray(c.terms)
+        ? c.terms
+            .filter((t) => t && typeof t.hangul === 'string' && t.hangul.trim())
+            .map((t) => ({ hangul: t.hangul.trim(), glossEn: String(t.glossEn ?? '').trim() }))
+        : [];
+      cues.push({
+        id: c.id,
+        start: Math.round(start * 10) / 10,
+        end: Math.round(end * 10) / 10,
+        ...(typeof c.speakerKo === 'string' && c.speakerKo.trim() ? { speakerKo: c.speakerKo.trim() } : {}),
+        textKo: String(c.textKo ?? ''),
+        textEn: String(c.textEn ?? ''),
+        ...(terms.length ? { terms } : {}),
+      });
+    }
+    cues.sort((a, b) => a.start - b.start);
+    const duration = num(v.durationSec);
+    const related = v.related;
+    out.push({
+      id: v.id,
+      order: out.length + 1,
+      titleKo: String(v.titleKo ?? ''),
+      titleEn: String(v.titleEn ?? ''),
+      descriptionKo: String(v.descriptionKo ?? ''),
+      src: String(v.src ?? ''),
+      poster: String(v.poster ?? ''),
+      durationSec: duration > 0 ? Math.ceil(duration) : Math.ceil(cues.length ? cues[cues.length - 1].end : 0),
+      levelTag: String(v.levelTag ?? ''),
+      ...(related && related.unitId && related.situationId
+        ? { related: { unitId: String(related.unitId), situationId: String(related.situationId), labelKo: String(related.labelKo ?? '') } }
+        : {}),
+      cues,
+    });
+  }
+  return out;
+}
+
+export function saveVideos(videos: VideoLesson[]): Promise<void> {
+  return serialize(async () => {
+    const tmp = `${VIDEOS_FILE}.${process.pid}.tmp`;
+    await writeFile(tmp, JSON.stringify(videos, null, 2) + '\n', 'utf-8');
+    await rename(tmp, VIDEOS_FILE);
+  });
 }

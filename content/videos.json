@@ -46,7 +46,7 @@
       { "id": "med-3", "start": 8, "end": 12, "speakerKo": "환자", "textKo": "이 알약은 몇 개 먹어요?", "textEn": "How many of these pills do I take?", "terms": [{ "hangul": "알약", "glossEn": "pill"  }]},
       { "id": "med-4", "start": 12, "end": 16, "speakerKo": "실습생", "textKo": "처방전대로 두 알 드시면 돼요.", "textEn": "Take two pills, as prescribed.", "terms": [{ "hangul": "처방전", "glossEn": "prescription"  }, {  "hangul": "드시면 돼요", "glossEn": "you can take (it's fine to take)"  }]},
       { "id": "med-5", "start": 16, "end": 20, "speakerKo": "실습생", "textKo": "물과 함께 드세요.", "textEn": "Please take it with water.", "terms": [{ "hangul": "물과 함께", "glossEn": "with water"  }]},
-      { "id": "med-6", "start": 20, "end": 24, "speakerKo": "환자", "textKo": "어제 먹고 속이 좀 안 좋았어요.", "textEn": "My stomach felt a bit upset after taking it yesterday.", "terms": [{ "hangul": "속이 안 좋다", "glossEn": "to have an upset stomach"  }]},
+      { "id": "med-6", "start": 20, "end": 24, "speakerKo": "환자", "textKo": "어제 먹고 속이 좀 안 좋았어요.", "textEn": "My stomach felt a bit upset after taking it yesterday.", "terms": [{ "hangul": "속이 좀 안 좋았어요", "glossEn": "(my) stomach felt a bit upset" }]},
       { "id": "med-7", "start": 24, "end": 28, "speakerKo": "실습생", "textKo": "부작용일 수 있으니 간호사 선생님께 바로 알려 드릴게요.", "textEn": "It could be a side effect, so I'll let the nurse know right away.", "terms": [{ "hangul": "부작용", "glossEn": "side effect"  }, {  "hangul": "알려 드릴게요", "glossEn": "I will let (them) know"  }]}
     ]
   }
