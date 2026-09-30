@@ -244,5 +244,10 @@ Zustand `persist`(`hangulcare-video`, `safeLocalStorage`) — `lib/xrStore.ts`�
 | **Phase 2** | 관리자 영상 등록 화면(업로드 + 자막 편집기), STT 자동 자막 생성, 답변 캐시, HLS 스트리밍, 서버 DB에 시청·질문 기록 적재, 리포트 연동, 다국어 자막(`textVi`, `textMn` … 필드 확장) | 예정 |
 | **Phase 3** | 쉐도잉: 대사 구간을 따라 말하면 기존 발음 채점(`lib/scoring.ts`, `PronunciationScore`)으로 채점, 질문 기록 기반 복습 퀴즈 자동 생성, 영상 속 장면 역할극(`/roleplay`와 연결) | 예정 |
 
-- 독립 실행형 `hangulcare.html`(GitHub Pages 데모)에는 이번 단계에서 포함하지 않았다.
-  Next.js 앱에서 흐름이 확정된 뒤 동일 로직을 이식한다.
+- 독립 실행형 `hangulcare.html`(GitHub Pages 데모)에도 같은 **영상학습** 메뉴가 들어가 있다
+  (사이드바 `XR실습` 다음, 홈 "영상으로 배우기", 단어장 "영상에서 담은 표현"). 재생·자막·단어 탭 정지·
+  이어보기·구간 반복·속도·위치 저장(`localStorage` `hc-demo-video`)은 동일하게 동작하고, 서버가 없으므로
+  **AI 답변만 규칙 기반**이다 — 자막 어휘 주석(gloss), 존댓말·겸양 어미 규칙(`VIDEO_GRAMMAR`), 비슷한 표현
+  사전(`VIDEO_SIMILAR`), 영상·실습한글 문장에서 찾은 예문으로 뜻/문법/예문/비슷한 표현 답을 만든다.
+  영상 데이터는 `content/videos.json`을 파일 안 `VIDEOS` 상수로 인라인했으므로 JSON을 고치면 이 상수도 함께
+  갱신해야 한다. `src`의 `/videos/x.mp4`는 저장소 루트 기준 `./public/videos/x.mp4`로 읽는다.
