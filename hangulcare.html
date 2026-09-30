@@ -410,8 +410,8 @@
     } catch (err) { reply(false, null, String(err)); }
   });
 
-  /* ---- 영상학습: 라이브러리 에디터(실습내용 편집)의 "영상" 메뉴에서 고친 영상 목록을 이 브라우저에
-     보관해 위 기본 VIDEOS 대신 쓴다. 편집기(public/hancare-video-editor.js)와는 postMessage(hcVid)로 연결.
+  /* ---- 영상학습: 관리자 "영상 편집"에서 고친 영상 목록을 이 브라우저에 보관해 위 기본 VIDEOS 대신
+     쓴다. 편집기(public/hancare-video-editor.html)와는 postMessage(hcVid)로 연결.
      docs/VIDEO_EDITOR_DESIGN.md §6 */
   var VIDEO_LIST_KEY = "hc-videos";
   var DEFAULT_VIDEOS = VIDEOS;
@@ -421,13 +421,15 @@
   }
   applyVideos(readJSON(VIDEO_LIST_KEY, null));
   window.addEventListener("message", function (e) {
-    var frame = document.getElementById("libraryEditorFrame");
+    var frame = document.getElementById("videoEditorFrame");
     var d = e.data;
     if (!frame || e.source !== frame.contentWindow || !d || d.hcVid !== "req") return;
     var reply = function (ok, data, error) { e.source.postMessage({ hcVid: "res", id: d.id, ok: ok, data: data, error: error }, "*"); };
     var auth = getAuth();
     if (!auth || auth.role !== "admin") return reply(false, null, "관리자만 편집할 수 있습니다.");
     if (d.op === "list") return reply(true, VIDEOS);
+    // 편집기의 "관련 학습" 선택지 — 기초한글·실습한글 유닛(편집한 내용 포함)
+    if (d.op === "units") return reply(true, ALL_UNITS);
     if (d.op === "save") {
       var list = d.payload;
       var ok = Array.isArray(list) && list.every(function (v) { return v && typeof v.id === "string" && v.id && Array.isArray(v.cues); });
@@ -877,7 +879,7 @@
     if (state.view === "login") return renderLogin();
     var auth = getAuth();
     if (!auth) { state.view = "login"; return renderLogin(); }
-    var adminViews = ["admin", "admin-alerts", "admin-library", "admin-vocab", "admin-xr", "admin-roleplay"];
+    var adminViews = ["admin", "admin-alerts", "admin-library", "admin-vocab", "admin-video", "admin-xr", "admin-roleplay"];
     if (auth.role === "admin" && adminViews.indexOf(state.view) === -1) { state.view = "admin"; return renderAdmin(); }
     if (auth.role !== "admin" && adminViews.indexOf(state.view) !== -1) { state.view = "home"; return renderHome(); }
     if (state.view === "home") return renderHome();
@@ -898,6 +900,7 @@
     if (state.view === "admin-alerts") return renderAdminAlerts();
     if (state.view === "admin-library") return renderAdminLibrary();
     if (state.view === "admin-vocab") return renderAdminVocab();
+    if (state.view === "admin-video") return renderAdminVideo();
     if (state.view === "admin-xr") return renderAdminXr();
     if (state.view === "admin-roleplay") return renderAdminRoleplay();
   }
@@ -910,6 +913,7 @@
         { id: "admin-alerts", ko: "알림 및 면담", en: "Alerts" },
         { id: "admin-library", ko: "실습내용 편집", en: "Content editor" },
         { id: "admin-vocab", ko: "단어장 편집", en: "Vocab editor" },
+        { id: "admin-video", ko: "영상 편집", en: "Video editor" },
         { id: "admin-xr", ko: "XR실습 편집", en: "XR editor" },
         { id: "admin-roleplay", ko: "역할극 편집", en: "Role play editor" }
       ];
@@ -1796,7 +1800,7 @@
     var mainHtml =
       '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
         '<div><p class="eyebrow">실습내용 편집 CONTENT EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글실습 내용 편집</h1>' +
-        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">여기서 고친 유닛·상황·용어·문장은 자동 저장되어 기초한글/실습한글 화면에 바로 반영됩니다. 편집기 위쪽의 <b>영상</b> 메뉴에서는 영상학습의 영상 목록과 자막을 편집합니다. 이 파일판에서는 이 브라우저에만 저장되니, 보관·공유하려면 편집기의 JSON 내보내기를 쓰세요.</p></div>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">여기서 고친 유닛·상황·용어·문장은 자동 저장되어 기초한글/실습한글 화면에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장되니, 보관·공유하려면 편집기의 JSON 내보내기를 쓰세요.</p></div>' +
         '<button class="btn btn-ghost" onclick="App.resetLibrary()">기본 콘텐츠로 되돌리기</button>' +
       '</div>' +
       '<iframe id="libraryEditorFrame" src="./public/hancare-library-editor.html?host=hangulcare" title="실습내용 편집기" ' +
@@ -1817,6 +1821,26 @@
         'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
     el.innerHTML = shell(mainHtml, "admin-vocab");
   }
+  /* ============================== ADMIN: 영상 편집 ============================== */
+  // 편집기 본체는 public/hancare-video-editor.html. 영상 목록은 VIDEO_LIST_KEY로 이 브라우저에 보관되어
+  // 영상학습 화면에 바로 반영된다(Next.js 앱에서는 content/videos.json에 저장, 업로드·AI 자동 자막 가능).
+  function renderAdminVideo() {
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
+        '<div><p class="eyebrow">영상 편집 VIDEO EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">영상학습 편집</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">영상학습의 영상 목록·영상 경로·자막(시간·대사·영어 뜻·학습 단어)을 편집합니다. 자동 저장되어 학습자 영상학습 화면에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장되고, 영상 업로드와 AI 자동 자막은 Next.js 서버판에서만 쓸 수 있습니다.</p></div>' +
+        '<button class="btn btn-ghost" onclick="App.resetVideos()">기본 영상으로 되돌리기</button>' +
+      '</div>' +
+      '<iframe id="videoEditorFrame" src="./public/hancare-video-editor.html?host=hangulcare" title="영상 편집기" ' +
+        'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
+    el.innerHTML = shell(mainHtml, "admin-video");
+  }
+  var App_resetVideos = function () {
+    if (!confirm("편집한 영상 목록을 지우고 기본 영상으로 되돌릴까요?")) return;
+    STORE.removeItem(VIDEO_LIST_KEY);
+    applyVideos(null);
+    renderAdminVideo();
+  };
   /* ============================== ADMIN: XR실습 편집 ============================== */
   // 편집기 본체는 public/hancare-xr-editor.html. 모듈 배열은 XR_KEY로 이 브라우저에 보관되어
   // XR실습 목록·실습 화면·커리큘럼에 바로 반영된다(Next.js 앱에서는 content/xr-modules.json에 저장).
@@ -2683,7 +2707,7 @@
     videoRate: App_videoRate, videoPick: App_videoPick, videoClearPick: App_videoClearPick, videoAsk: App_videoAsk,
     videoSubmit: App_videoSubmit, videoMic: App_videoMic, videoResume: App_videoResume, videoSaveTerm: App_videoSaveTerm,
     videoRemoveTerm: App_videoRemoveTerm, videoSpeakCue: App_videoSpeakCue, videoSpeakTerm: App_videoSpeakTerm,
-    adminSendAlert: App_adminSendAlert, resetLibrary: App_resetLibrary, resetVocab: App_resetVocab, resetXr: App_resetXr, resetRoleplay: App_resetRoleplay, roleplayHint: App_roleplayHint
+    adminSendAlert: App_adminSendAlert, resetLibrary: App_resetLibrary, resetVocab: App_resetVocab, resetXr: App_resetXr, resetVideos: App_resetVideos, resetRoleplay: App_resetRoleplay, roleplayHint: App_roleplayHint
   };
 
   /* ============================== BOOT ============================== */

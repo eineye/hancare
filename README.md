@@ -11,7 +11,7 @@
 [`docs/PROGRAM_DESIGN.md`](docs/PROGRAM_DESIGN.md)를, XR실습(HnaCare XR) 구성
 지침은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)를, 영상학습(멈추고
 질문하기) 설계는 [`docs/VIDEO_MODULE_DESIGN.md`](docs/VIDEO_MODULE_DESIGN.md)를, 영상을 올리고 AI 자동 자막으로
-편집하는 관리자 영상 에디터(실습내용 편집기의 "영상" 메뉴)는 [`docs/VIDEO_EDITOR_DESIGN.md`](docs/VIDEO_EDITOR_DESIGN.md)를 참고하세요.
+편집하는 관리자 영상 에디터(관리자 메뉴 "영상 편집")는 [`docs/VIDEO_EDITOR_DESIGN.md`](docs/VIDEO_EDITOR_DESIGN.md)를 참고하세요.
 
 디자인은 claude.ai/design에서 만든 시안(웜 베이지 배경 · 다크 그린 `#12241F` ·
 포인트 틸 `#0E7C66`, Noto Sans KR + IBM Plex Mono, 상단바+좌측 사이드바 메뉴 구조)을
@@ -42,7 +42,7 @@ npm run dev       # http://localhost:3000
 로그인 후에는 상단바(로고·언어 선택·알림·프로필) + 좌측 사이드바 메뉴 셸
 (`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 기초한글 /
 실습한글 / XR실습 / 영상학습 / 역할극 / 리포트 / 실습 일지 / 알림 / 설정이고, 관리자 메뉴는
-전체 현황 / 알림 및 면담입니다.
+전체 현황 / 알림 및 면담 / 실습내용 편집 / 단어장 편집 / 영상 편집 / XR실습 편집 / 역할극 편집입니다.
 
 기초한글(`/basic-hangul`)은 기초한글 유닛의 상황별 학습 목록과 단어장(용어 듣기·
 검색·"학습함" 구분, 기초한글+실습한글 전체 용어)을 한 화면에 통합해 보여줍니다

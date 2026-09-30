@@ -1,33 +1,30 @@
 /* ==================================================================
-   한글케어 영상 에디터 — 라이브러리 에디터("실습 한국어 스튜디오")의 "영상" 메뉴
+   한글케어 영상 편집기 — 관리자 왼쪽 메뉴 "영상 편집"(public/hancare-video-editor.html)
    설계: docs/VIDEO_EDITOR_DESIGN.md
 
    영상을 올리고(또는 경로 입력) AI 자동 자막 / SRT·VTT 불러오기 / 직접 입력으로
    content/videos.json 항목(영상 정보 + 자막 cues)을 만든다. 저장하면 영상학습(/video)
    화면의 재생·자막·단어 탭·질문 기능이 전부 자동으로 동작한다.
 
-   연결 방식은 라이브러리 에디터 설정(window.HANCARE_STUDIO_CONFIG)을 따른다.
-     - api.baseUrl 있음(Next.js)   → /api/videos 자동 저장, 업로드·AI 자동 자막 사용
-     - api.adapter 있음(hangulcare.html iframe) → 부모 창과 postMessage(hcVid)로 저장
-     - 둘 다 없음(file://)          → 로컬 전용(JSON 내보내기로 보관)
-   window.HANCARE_VIDEO_CONFIG = { baseUrl, readOnly } 로 따로 지정할 수도 있다.
+   연결 방식은 페이지가 정하는 window.HANCARE_VIDEO_CONFIG를 따른다.
+     - { baseUrl, libraryUrl } (Next.js) → /api/videos 자동 저장, 업로드·AI 자동 자막 사용
+     - { adapter: true } (hangulcare.html iframe) → 부모 창과 postMessage(hcVid)로 저장
+     - {} (file://)                      → 로컬 전용(JSON 내보내기로 보관)
+     - readOnly: true                    → 보기 전용
    ================================================================== */
 (function () {
   "use strict";
 
-  var studioCfg = window.HANCARE_STUDIO_CONFIG || {};
   var cfg = window.HANCARE_VIDEO_CONFIG || {};
-  var MODE = cfg.baseUrl ? "server"
-    : studioCfg.api && studioCfg.api.adapter ? "adapter"
-    : studioCfg.api && studioCfg.api.baseUrl ? "server"
-    : "local";
+  var MODE = cfg.adapter ? "adapter" : cfg.baseUrl ? "server" : "local";
   var BASE = (cfg.baseUrl || "/api/videos").replace(/\/+$/, "");
-  var READ_ONLY = !!(cfg.readOnly || studioCfg.readOnly);
+  var LIBRARY_URL = cfg.libraryUrl || "/api/hangul-library/units";
+  var READ_ONLY = !!cfg.readOnly;
   var ID_RE = /^[a-z0-9][a-z0-9-]*$/;
 
   var videos = [];
+  var situations = [];     // 관련 학습 선택지 [{ value: "unitId|situationId", label, labelKo }]
   var activeId = null;
-  var loaded = false;
   var saveTimer = null;
   var localUrls = {};      // 서버 없는 모드에서 고른 파일의 미리보기 URL (videoId → blob URL)
   var stopAt = null;       // 구간 재생 끝 시각
@@ -158,6 +155,7 @@
       };
       return {
         list: function () { return fetch(BASE, { cache: "no-store" }).then(json); },
+        units: function () { return fetch(LIBRARY_URL, { cache: "no-store" }).then(json); },
         save: function (arr) { return fetch(BASE, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(arr) }).then(json); },
         transcribe: function (src, videoId) {
           return fetch(BASE + "/transcribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ src: src, videoId: videoId }) }).then(json);
@@ -180,7 +178,11 @@
           setTimeout(function () { if (pending[id]) { delete pending[id]; reject(new Error("응답 없음")); } }, 8000);
         });
       };
-      return { list: function () { return call("list"); }, save: function (arr) { return call("save", arr); } };
+      return {
+        list: function () { return call("list"); },
+        save: function (arr) { return call("save", arr); },
+        units: function () { return call("units"); }
+      };
     }
     return null;
   })();
@@ -247,12 +249,8 @@
   function injectShell() {
     var style = document.createElement("style");
     style.textContent = [
-      ".mode-tabs{align-self:flex-start;display:inline-flex;gap:4px;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:4px;box-shadow:var(--shadow-sm);}",
-      ".mode-tabs button{border:none;background:transparent;border-radius:var(--radius-sm);padding:6px 14px;font-size:12.5px;font-weight:600;color:var(--ink-muted);}",
-      ".mode-tabs button[aria-selected=true]{background:var(--accent);color:var(--accent-ink);}",
-      "body.mode-video header.top .toolbar, body.mode-video header.top .stats, body.mode-video #statusLine, body.mode-video #banners, body.mode-video #app > .grid{display:none !important;}",
-      "body:not(.mode-video) #videoApp{display:none;}",
-      "#videoApp .ve-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px;}",
+      "@media (max-width:1100px){#vePreview{grid-column:1 / -1;position:static !important;}}",
+      "@media (max-width:760px){#vePreview{grid-column:auto;}}",
       "#videoApp .ve-list{padding:8px;display:flex;flex-direction:column;gap:2px;max-height:74vh;overflow-y:auto;}",
       ".ve-item{display:flex;gap:8px;align-items:center;padding:8px;border-radius:var(--radius-sm);cursor:pointer;font-size:12.5px;}",
       ".ve-item:hover{background:var(--surface-2);} .ve-item.active{background:var(--accent);color:var(--accent-ink);}",
@@ -278,27 +276,22 @@
     ].join("\n");
     document.head.appendChild(style);
 
-    var brand = document.querySelector("header.top .brand");
-    var tabs = document.createElement("div");
-    tabs.className = "mode-tabs";
-    tabs.setAttribute("role", "tablist");
-    tabs.innerHTML = '<button type="button" role="tab" data-mode="library">실습 한국어</button><button type="button" role="tab" data-mode="video">영상</button>';
-    brand.insertBefore(tabs, brand.querySelector(".stats"));
-    Array.prototype.forEach.call(tabs.querySelectorAll("button"), function (b) {
-      b.addEventListener("click", function () { setMode(b.getAttribute("data-mode")); });
-    });
+    var header = document.querySelector("header.top"), brand = header.querySelector(".brand");
+    var status = document.createElement("div");
+    status.className = "status-line"; status.id = "veStatus";
+    status.innerHTML = '<span class="status-dot"></span><span id="veStatusText">영상 목록을 불러오는 중…</span>';
+    brand.appendChild(status);
+    var toolbar = document.createElement("div");
+    toolbar.className = "toolbar";
+    toolbar.innerHTML =
+      '<div class="toolbar-group ve-edit-only"><button class="btn" type="button" id="veImportJson">JSON 불러오기</button><button class="btn" type="button" id="veImportSub">자막 파일(SRT/VTT)</button></div>' +
+      '<div class="toolbar-group"><button class="btn" type="button" id="veExportJson">JSON 내보내기</button><button class="btn" type="button" id="veCopyJson">JSON 복사</button></div>' +
+      '<div class="toolbar-group ve-edit-only"><button class="btn primary" type="button" id="veAdd">+ 새 영상</button></div>';
+    header.appendChild(toolbar);
 
     var app = document.createElement("div");
     app.id = "videoApp";
     app.innerHTML =
-      '<div class="ve-toolbar">' +
-        '<div class="status-line" id="veStatus"><span class="status-dot"></span><span id="veStatusText">영상 목록을 불러오는 중…</span></div>' +
-        '<div class="toolbar">' +
-          '<div class="toolbar-group ve-edit-only"><button class="btn" type="button" id="veImportJson">JSON 불러오기</button><button class="btn" type="button" id="veImportSub">자막 파일(SRT/VTT)</button></div>' +
-          '<div class="toolbar-group"><button class="btn" type="button" id="veExportJson">JSON 내보내기</button><button class="btn" type="button" id="veCopyJson">JSON 복사</button></div>' +
-          '<div class="toolbar-group ve-edit-only"><button class="btn primary" type="button" id="veAdd">+ 새 영상</button></div>' +
-        "</div>" +
-      "</div>" +
       '<div id="veBanner"></div>' +
       '<div class="grid">' +
         '<div class="panel" id="veSidebar"><div class="panel-head"><h2>영상 목록</h2><span class="count tabular" id="veCount"></span></div><div class="ve-list" id="veList"></div>' +
@@ -353,19 +346,8 @@
     };
   }
 
-  function setMode(mode) {
-    var video = mode === "video";
-    document.body.classList.toggle("mode-video", video);
-    Array.prototype.forEach.call(document.querySelectorAll(".mode-tabs button"), function (b) {
-      b.setAttribute("aria-selected", String(b.getAttribute("data-mode") === mode));
-    });
-    try { history.replaceState(null, "", video ? "#video" : location.pathname + location.search); } catch (e) {}
-    if (video && !loaded) load();
-  }
-
   /* ---------------- 불러오기 ---------------- */
   function load() {
-    loaded = true;
     var banner = $("veBanner");
     if (MODE === "local") {
       banner.innerHTML = '<div class="banner"><div><b>로컬 전용 모드.</b> 이 탭에서만 편집돼요. 편집 후 <b>JSON 내보내기</b>로 받은 파일을 content/videos.json에 넣으세요. AI 자동 자막은 Next.js 서버에서 열어야 쓸 수 있어요.</div></div>';
@@ -373,7 +355,7 @@
       banner.innerHTML = '<div class="banner"><div><b>파일판(hangulcare.html) 모드.</b> 저장한 영상 목록은 이 브라우저에 보관되어 영상학습 화면에 바로 반영돼요. 영상 파일은 올릴 수 없어 미리보기만 되니, 같은 이름으로 <b>public/videos/</b>에 넣어 주세요. AI 자동 자막은 Next.js 서버에서만 쓸 수 있어요 — 대신 자막 파일(SRT/VTT)을 불러올 수 있어요.</div></div>';
     }
     if (!API) { videos = []; activeId = null; setStatus("offline", "로컬 전용 — JSON 내보내기로 보관하세요"); renderAll(); return; }
-    API.list().then(function (data) {
+    loadSituations().then(function () { return API.list(); }).then(function (data) {
       videos = normalize(Array.isArray(data) ? data : data && data.videos);
       activeId = videos[0] ? videos[0].id : null;
       setStatus("saved", MODE === "server" ? "연결됨 · 자동 저장 켜짐" : "연결됨 · 이 브라우저에 자동 저장");
@@ -383,6 +365,20 @@
       setStatus("offline", "불러오기 실패 — " + err.message);
       renderAll();
     });
+  }
+
+  // 관련 학습 선택지 — 실습내용(유닛·상황) 목록. 못 불러와도 편집은 계속한다.
+  function loadSituations() {
+    if (!API || !API.units) return Promise.resolve();
+    return API.units().then(function (data) {
+      var units = Array.isArray(data) ? data : data && Array.isArray(data.units) ? data.units : [];
+      situations = [];
+      units.forEach(function (u) {
+        (u.situations || []).forEach(function (s) {
+          situations.push({ value: u.id + "|" + s.id, label: (u.titleKo || u.id) + " › " + (s.menuLabelKo || s.titleKo || s.id), labelKo: s.menuLabelKo || s.titleKo || "" });
+        });
+      });
+    }).catch(function () { situations = []; });
   }
 
   /* ---------------- 렌더링 ---------------- */
@@ -435,17 +431,7 @@
     return '<div class="field"' + (opts.full ? ' style="grid-column:1/-1"' : "") + "><label>" + esc(label) + (opts.hint ? '<span class="tag">' + esc(opts.hint) + "</span>" : "") + "</label>" + tag + "</div>";
   }
 
-  function situationOptions() {
-    var units = [];
-    try { units = window.HancareStudio && window.HancareStudio.getData ? window.HancareStudio.getData() : []; } catch (e) {}
-    var opts = [];
-    (units || []).forEach(function (u) {
-      (u.situations || []).forEach(function (s) {
-        opts.push({ value: u.id + "|" + s.id, label: (u.titleKo || u.id) + " › " + (s.menuLabelKo || s.titleKo || s.id), labelKo: s.menuLabelKo || s.titleKo || "" });
-      });
-    });
-    return opts;
-  }
+  function situationOptions() { return situations; }
 
   function renderEditor() {
     var v = active(), body = $("veEditorBody");
@@ -853,14 +839,13 @@
     if (!document.querySelector("header.top .brand") || !$("app")) return;
     injectShell();
     if (READ_ONLY) document.body.classList.add("ro");
-    setMode(/^#video\b/.test(location.hash) ? "video" : "library");
+    load();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
 
   window.HancareVideoEditor = {
     getData: exportArray,
-    setData: function (arr) { videos = normalize(arr); activeId = videos[0] ? videos[0].id : null; if (loaded) renderAll(); },
-    open: function () { setMode("video"); }
+    setData: function (arr) { videos = normalize(arr); activeId = videos[0] ? videos[0].id : null; renderAll(); }
   };
 })();
