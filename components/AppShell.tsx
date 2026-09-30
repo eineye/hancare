@@ -76,6 +76,7 @@ export default function AppShell({
     { id: 'vocab', ko: '단어장', en: 'Vocabulary', href: '/vocab' },
     { id: 'learn', ko: '실습한글', en: 'Practice', href: learnHref, match: '/learn/' },
     { id: 'xr', ko: 'XR실습', en: 'XR', href: '/xr' },
+    { id: 'video', ko: '영상학습', en: 'Video', href: '/video' },
     { id: 'roleplay', ko: '역할극', en: 'Role play', href: roleplayHref, match: '/roleplay/' },
     { id: 'report', ko: '리포트', en: 'Report', href: '/report' },
     { id: 'journal', ko: '실습 일지', en: 'Journal', href: '/journal' },
