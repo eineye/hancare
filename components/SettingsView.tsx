@@ -52,7 +52,7 @@ export default function SettingsView() {
   if (!account) return null;
 
   return (
-    <div className="flex max-w-[760px] flex-col gap-[18px]">
+    <div className="flex max-w-[1100px] flex-col gap-3.5">
       <div>
         <p className="text-[11.5px] font-bold tracking-wide text-brand">설정 SETTINGS</p>
         <h1 className="mt-2.5 text-[28px] font-black tracking-tight text-brand-dark sm:text-[30px]">
@@ -60,7 +60,9 @@ export default function SettingsView() {
         </h1>
       </div>
 
-      <section className="rounded-2xl border border-line bg-white p-5">
+      <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
+      <div className="flex flex-col gap-3.5">
+      <section className="rounded-2xl border border-line bg-white p-4">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex h-[60px] w-[60px] items-center justify-center rounded-full bg-brand text-xl font-bold text-white">
             {account.name.slice(0, 2).toUpperCase()}
@@ -72,7 +74,7 @@ export default function SettingsView() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-line bg-white p-5">
+      <section className="rounded-2xl border border-line bg-white p-4">
         <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">표시 언어</p>
         <div className="relative max-w-[360px]">
           <button
@@ -109,10 +111,12 @@ export default function SettingsView() {
           용어 뜻과 화면 안내에 적용됩니다. 학습 문장은 항상 한국어로 표시됩니다.
         </p>
       </section>
+      </div>
 
-      <section className="rounded-2xl border border-line bg-white p-5">
+      <div className="flex flex-col gap-3.5">
+      <section className="rounded-2xl border border-line bg-white p-4">
         <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">음성과 발음</p>
-        <div className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-3.5">
           <div>
             <div className="mb-2 flex justify-between text-[13.5px]">
               <span className="text-brand-dark">아바타 말하기 속도</span>
@@ -153,7 +157,7 @@ export default function SettingsView() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-line bg-white p-5">
+      <section className="rounded-2xl border border-line bg-white p-4">
         <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">알림 · 그 밖의 기능</p>
         <p className="mb-3.5 text-xs text-muted">
           아래 항목은 실제 녹음 오디오 저장이나 발송 서버가 아직 없어 화면 표시만 되고 실제로 켜고 끌 수는
@@ -178,6 +182,8 @@ export default function SettingsView() {
           </div>
         </div>
       </section>
+      </div>
+      </div>
 
       <button
         type="button"

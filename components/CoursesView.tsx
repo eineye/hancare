@@ -23,7 +23,7 @@ export default function CoursesView({ sections }: { sections: CourseSection[] })
   const availableItems = sections.reduce((sum, s) => sum + s.items.filter((i) => i.status === 'available').length, 0);
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
           <p className="text-[11.5px] font-bold tracking-wide text-brand">커리큘럼 CURRICULUM</p>
@@ -40,7 +40,7 @@ export default function CoursesView({ sections }: { sections: CourseSection[] })
         </div>
       </div>
 
-      <section className="rounded-2xl border border-line bg-white p-5">
+      <section className="rounded-2xl border border-line bg-white p-4">
         <p className="mb-3 text-xs font-bold uppercase tracking-wide text-brand">나의 진도</p>
         <div className="grid grid-cols-3 gap-2.5">
           <StatTile value={String(wordsPracticed)} label="학습 문장 수" />
@@ -49,37 +49,39 @@ export default function CoursesView({ sections }: { sections: CourseSection[] })
         </div>
       </section>
 
-      {sections.map((section) => (
-        <section key={section.id} className="rounded-2xl border border-line bg-white p-5">
-          <h2 className="text-lg font-bold text-brand-dark">{section.titleKo}</h2>
-          <p className="mt-1 text-xs text-muted">{section.descriptionKo}</p>
+      <div className="grid grid-cols-1 gap-3.5 xl:grid-cols-3">
+        {sections.map((section) => (
+          <section key={section.id} className="rounded-2xl border border-line bg-white p-4">
+            <h2 className="text-lg font-bold text-brand-dark">{section.titleKo}</h2>
+            <p className="mt-1 text-xs text-muted">{section.descriptionKo}</p>
 
-          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {section.items.map((item) =>
-              item.status === 'available' && item.href ? (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className="flex items-center justify-between rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium text-brand-dark transition-colors hover:bg-chip"
-                >
-                  {item.labelKo}
-                  <span aria-hidden className="text-brand">
-                    →
-                  </span>
-                </Link>
-              ) : (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between rounded-xl border border-line bg-panel px-4 py-3 text-sm text-faint"
-                >
-                  {item.labelKo}
-                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] text-faint">준비 중</span>
-                </div>
-              ),
-            )}
-          </div>
-        </section>
-      ))}
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {section.items.map((item) =>
+                item.status === 'available' && item.href ? (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="flex items-center justify-between rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium text-brand-dark transition-colors hover:bg-chip"
+                  >
+                    {item.labelKo}
+                    <span aria-hidden className="text-brand">
+                      →
+                    </span>
+                  </Link>
+                ) : (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between rounded-xl border border-line bg-panel px-4 py-3 text-sm text-faint"
+                  >
+                    {item.labelKo}
+                    <span className="rounded-full bg-white px-2 py-0.5 text-[10px] text-faint">준비 중</span>
+                  </div>
+                ),
+              )}
+            </div>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }

@@ -35,9 +35,11 @@ function initialsOf(name: string): string {
 export default function AppShell({
   children,
   defaultLearnHref,
+  practiceUnitIds = [],
 }: {
   children: React.ReactNode;
   defaultLearnHref?: string;
+  practiceUnitIds?: string[];
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -58,17 +60,24 @@ export default function AppShell({
   if (!account) return null;
 
   const isAdmin = account.role === 'admin';
-  const learnHref = lastUnitId && lastSituationId ? `/learn/${lastUnitId}/${lastSituationId}` : (defaultLearnHref ?? '/courses');
+  // "실습한글" 메뉴는 실습한글 유닛으로 이어서 학습하는 경우에만 마지막 방문 기록을
+  // 쓴다 — 기초한글 상황을 마지막으로 봤다면(기초한글은 별도 메뉴) 실습한글 기본
+  // 목적지로 되돌아간다.
+  const learnHref =
+    lastUnitId && lastSituationId && practiceUnitIds.includes(lastUnitId)
+      ? `/learn/${lastUnitId}/${lastSituationId}`
+      : (defaultLearnHref ?? '/courses');
   const roleplayHref = learnHref.startsWith('/learn/') ? learnHref.replace('/learn/', '/roleplay/') : '/courses';
 
   const learnerNav: NavItem[] = [
     { id: 'home', ko: '홈', en: 'Home', href: '/home' },
     { id: 'courses', ko: '커리큘럼', en: 'Units', href: '/courses' },
-    { id: 'learn', ko: '학습', en: 'Learn', href: learnHref, match: '/learn/' },
+    { id: 'basic-hangul', ko: '기초한글', en: 'Basics', href: '/basic-hangul' },
+    { id: 'vocab', ko: '단어장', en: 'Vocabulary', href: '/vocab' },
+    { id: 'learn', ko: '실습한글', en: 'Practice', href: learnHref, match: '/learn/' },
     { id: 'xr', ko: 'XR실습', en: 'XR', href: '/xr' },
     { id: 'video', ko: '영상학습', en: 'Video', href: '/video' },
     { id: 'roleplay', ko: '역할극', en: 'Role play', href: roleplayHref, match: '/roleplay/' },
-    { id: 'vocab', ko: '단어장', en: 'Words', href: '/vocab' },
     { id: 'report', ko: '리포트', en: 'Report', href: '/report' },
     { id: 'journal', ko: '실습 일지', en: 'Journal', href: '/journal' },
     { id: 'notices', ko: '알림', en: 'Alerts', href: '/notices' },
@@ -77,10 +86,25 @@ export default function AppShell({
   const adminNav: NavItem[] = [
     { id: 'admin', ko: '전체 현황', en: 'Overview', href: '/admin' },
     { id: 'admin-alerts', ko: '알림 및 면담', en: 'Alerts', href: '/admin/alerts' },
+    { id: 'admin-library', ko: '실습내용 편집', en: 'Content editor', href: '/admin/library-editor' },
+    { id: 'admin-vocab', ko: '단어장 편집', en: 'Vocab editor', href: '/admin/vocab-editor' },
+    { id: 'admin-xr', ko: 'XR실습 편집', en: 'XR editor', href: '/admin/xr-editor' },
+    { id: 'admin-roleplay', ko: '역할극 편집', en: 'Role play editor', href: '/admin/roleplay-editor' },
   ];
   const nav = isAdmin ? adminNav : learnerNav;
 
   function isActive(item: NavItem) {
+    // 기초한글/실습한글 둘 다 /learn/[unitId]/... 을 쓰므로, 그 유닛이 실습한글
+    // 유닛인지로 어느 메뉴를 활성화할지 구분한다.
+    if (item.id === 'learn') {
+      return pathname.startsWith('/learn/') && practiceUnitIds.some((id) => pathname.startsWith(`/learn/${id}/`));
+    }
+    if (item.id === 'basic-hangul') {
+      return (
+        pathname === '/basic-hangul' ||
+        (pathname.startsWith('/learn/') && !practiceUnitIds.some((id) => pathname.startsWith(`/learn/${id}/`)))
+      );
+    }
     const prefix = item.match ?? item.href;
     if (prefix === '/admin') return pathname === '/admin';
     return pathname === prefix || pathname.startsWith(prefix);
@@ -202,7 +226,7 @@ export default function AppShell({
         </nav>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[1440px] flex-1 items-start gap-5 p-4 lg:p-5">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-1 items-start gap-5 p-4">
         <aside className="sticky top-[76px] hidden w-56 flex-none flex-col gap-5 lg:flex">
           <div className="flex flex-col gap-0.5">
             {nav.map((item) => (

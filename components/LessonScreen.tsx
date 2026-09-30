@@ -57,12 +57,12 @@ export default function LessonScreen({ unit, situation, prevHref, nextHref, prog
   }
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <Link href="/courses" className="inline-block w-fit text-xs font-medium text-brand hover:underline">
         ← 커리큘럼으로
       </Link>
 
-      <div className="flex flex-wrap items-start gap-[18px]">
+      <div className="flex flex-wrap items-start gap-3.5">
         <div className="min-w-0 flex-[1_1_520px] space-y-4">
           <SituationCard
             situation={situation}

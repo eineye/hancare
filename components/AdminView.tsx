@@ -1,15 +1,17 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import learnersData from '@/data/learners.json';
-import type { Learner } from '@/lib/types';
+import type { Learner, Unit } from '@/lib/types';
 import type { CourseSection } from '@/lib/courses';
+import LearnerDetailModal from './LearnerDetailModal';
 
 const learners = learnersData as Learner[];
 
 function StatTile({ value, label, hint, warn }: { value: string; label: string; hint?: string; warn?: boolean }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5">
+    <div className="rounded-2xl border border-line bg-white p-4">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-2 text-[28px] font-black text-brand-dark">{value}</p>
       {hint && <p className={`mt-1.5 text-xs ${warn ? 'text-warn' : 'text-muted'}`}>{hint}</p>}
@@ -17,14 +19,16 @@ function StatTile({ value, label, hint, warn }: { value: string; label: string; 
   );
 }
 
-export default function AdminView({ sections }: { sections: CourseSection[] }) {
+export default function AdminView({ sections, units }: { sections: CourseSection[]; units: Unit[] }) {
+  const [selectedLearnerId, setSelectedLearnerId] = useState<string | undefined>(undefined);
+  const selectedLearner = learners.find((l) => l.id === selectedLearnerId);
   const totalLearners = learners.length;
   const avgAccuracy = Math.round(learners.reduce((sum, l) => sum + l.avgAccuracy, 0) / totalLearners);
   const totalWords = learners.reduce((sum, l) => sum + l.wordsPracticed, 0);
   const attentionNeeded = learners.filter((l) => l.needsAttentionKo);
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
           <p className="text-[11.5px] font-bold tracking-wide text-brand">기관 관리자 ADMIN</p>
@@ -50,8 +54,8 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
         <StatTile value={String(attentionNeeded.length)} label="주의가 필요한 실습생" warn hint="확인 필요" />
       </div>
 
-      <div className="flex flex-wrap items-start gap-[18px]">
-        <div className="min-w-0 flex-[1_1_520px] overflow-x-auto rounded-2xl border border-line bg-white p-5">
+      <div className="flex flex-wrap items-start gap-3.5">
+        <div className="min-w-0 flex-[1_1_520px] overflow-x-auto rounded-2xl border border-line bg-white p-4">
           <p className="mb-4 text-xs font-bold uppercase tracking-wide text-brand">실습생 현황</p>
           <table className="w-full min-w-[520px] text-left text-sm">
             <thead>
@@ -66,7 +70,13 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
               {learners.map((l) => (
                 <tr key={l.id} className="border-b border-line last:border-0">
                   <td className="py-3 font-medium text-brand-dark">
-                    {l.name}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLearnerId(l.id)}
+                      className="text-left hover:underline"
+                    >
+                      {l.name}
+                    </button>
                     <div className="text-[11.5px] font-normal text-muted">
                       {l.nationality} · {l.level}
                     </div>
@@ -85,13 +95,15 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
         </div>
 
         <div className="flex min-w-0 flex-[1_1_300px] max-w-[360px] flex-col gap-4">
-          <div className="rounded-2xl bg-brand-dark p-5 text-white">
+          <div className="rounded-2xl bg-brand-dark p-4 text-white">
             <p className="text-[11px] font-bold tracking-wide text-brand-light">주의가 필요한 실습생</p>
             <div className="mt-4 flex flex-col gap-3">
               {attentionNeeded.length === 0 && <p className="text-[12.5px] text-white/70">현재 없습니다.</p>}
               {attentionNeeded.map((l) => (
                 <div key={l.id} className="rounded-xl bg-white/10 p-3.5">
-                  <p className="text-sm font-bold">{l.name}</p>
+                  <button type="button" onClick={() => setSelectedLearnerId(l.id)} className="text-sm font-bold hover:underline">
+                    {l.name}
+                  </button>
                   <p className="mt-1.5 text-xs leading-relaxed text-white/70">{l.needsAttentionKo}</p>
                 </div>
               ))}
@@ -104,7 +116,7 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-line bg-white p-5">
+          <div className="rounded-2xl border border-line bg-white p-4">
             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-brand">코스 구성</p>
             <div className="flex flex-col gap-2.5">
               {sections.map((section) => (
@@ -122,6 +134,14 @@ export default function AdminView({ sections }: { sections: CourseSection[] }) {
           </div>
         </div>
       </div>
+
+      {selectedLearner && (
+        <LearnerDetailModal
+          learner={selectedLearner}
+          units={units}
+          onClose={() => setSelectedLearnerId(undefined)}
+        />
+      )}
     </div>
   );
 }

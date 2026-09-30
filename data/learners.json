@@ -1,7 +1,94 @@
 [
-  { "id": "l1", "name": "Maria Santos", "nationality": "필리핀", "level": "TOPIK 2급", "department": "내과", "wordsPracticed": 128, "avgAccuracy": 82, "lastActiveKo": "오늘" },
-  { "id": "l2", "name": "Nguyen Thi Lan", "nationality": "베트남", "level": "TOPIK 1급", "department": "외과", "wordsPracticed": 64, "avgAccuracy": 74, "lastActiveKo": "1일 전" },
-  { "id": "l3", "name": "Bat-Erdene", "nationality": "몽골", "level": "TOPIK 2급", "department": "내과", "wordsPracticed": 201, "avgAccuracy": 88, "lastActiveKo": "오늘" },
-  { "id": "l4", "name": "Sari Wulandari", "nationality": "인도네시아", "level": "TOPIK 1급", "department": "재활", "wordsPracticed": 37, "avgAccuracy": 65, "lastActiveKo": "3일 전", "needsAttentionKo": "4일간 미접속, 평균 65점. 진도가 멈췄습니다." },
-  { "id": "l5", "name": "Dawa Sherpa", "nationality": "네팔", "level": "TOPIK 2급", "department": "내과", "wordsPracticed": 95, "avgAccuracy": 79, "lastActiveKo": "2일 전", "needsAttentionKo": "받침 발음 점수가 기수 평균보다 낮습니다." }
+  {
+    "id": "l1",
+    "name": "Maria Santos",
+    "nationality": "필리핀",
+    "level": "TOPIK 2급",
+    "department": "내과",
+    "wordsPracticed": 128,
+    "avgAccuracy": 82,
+    "lastActiveKo": "오늘",
+    "weeklyScores": [64, 70, 74, 78, 80, 82],
+    "weakSounds": [
+      { "labelKo": "모음 ㅐ / ㅔ 구분", "value": 74, "warn": false },
+      { "labelKo": "받침 ㄹ / ㄴ", "value": 81, "warn": false },
+      { "labelKo": "경음 ㄲ / ㄸ", "value": 85, "warn": false },
+      { "labelKo": "문장 억양", "value": 79, "warn": false }
+    ],
+    "completedSituationIds": ["basic-situation-1", "basic-situation-2", "situation-1", "situation-2"]
+  },
+  {
+    "id": "l2",
+    "name": "Nguyen Thi Lan",
+    "nationality": "베트남",
+    "level": "TOPIK 1급",
+    "department": "외과",
+    "wordsPracticed": 64,
+    "avgAccuracy": 74,
+    "lastActiveKo": "1일 전",
+    "weeklyScores": [55, 60, 65, 68, 71, 74],
+    "weakSounds": [
+      { "labelKo": "모음 ㅐ / ㅔ 구분", "value": 58, "warn": true },
+      { "labelKo": "받침 ㄱ / ㄷ / ㅂ", "value": 63, "warn": true },
+      { "labelKo": "경음 ㄲ / ㄸ", "value": 72, "warn": false },
+      { "labelKo": "문장 억양", "value": 75, "warn": false }
+    ],
+    "completedSituationIds": ["basic-situation-1", "situation-1"]
+  },
+  {
+    "id": "l3",
+    "name": "Bat-Erdene",
+    "nationality": "몽골",
+    "level": "TOPIK 2급",
+    "department": "내과",
+    "wordsPracticed": 201,
+    "avgAccuracy": 88,
+    "lastActiveKo": "오늘",
+    "weeklyScores": [72, 76, 80, 83, 86, 88],
+    "weakSounds": [
+      { "labelKo": "모음 ㅚ / ㅙ 구분", "value": 76, "warn": false },
+      { "labelKo": "받침 ㄹ / ㄴ", "value": 84, "warn": false },
+      { "labelKo": "경음 ㄲ / ㄸ", "value": 89, "warn": false },
+      { "labelKo": "문장 억양", "value": 90, "warn": false }
+    ],
+    "completedSituationIds": ["basic-situation-1", "basic-situation-2", "situation-1", "situation-2", "situation-3"]
+  },
+  {
+    "id": "l4",
+    "name": "Sari Wulandari",
+    "nationality": "인도네시아",
+    "level": "TOPIK 1급",
+    "department": "재활",
+    "wordsPracticed": 37,
+    "avgAccuracy": 65,
+    "lastActiveKo": "3일 전",
+    "needsAttentionKo": "4일간 미접속, 평균 65점. 진도가 멈췄습니다.",
+    "weeklyScores": [70, 68, 66, 64, 65, 65],
+    "weakSounds": [
+      { "labelKo": "모음 ㅐ / ㅔ 구분", "value": 52, "warn": true },
+      { "labelKo": "받침 ㄱ / ㄷ / ㅂ", "value": 58, "warn": true },
+      { "labelKo": "경음 ㄲ / ㄸ", "value": 61, "warn": true },
+      { "labelKo": "문장 억양", "value": 67, "warn": false }
+    ],
+    "completedSituationIds": ["basic-situation-1"]
+  },
+  {
+    "id": "l5",
+    "name": "Dawa Sherpa",
+    "nationality": "네팔",
+    "level": "TOPIK 2급",
+    "department": "내과",
+    "wordsPracticed": 95,
+    "avgAccuracy": 79,
+    "lastActiveKo": "2일 전",
+    "needsAttentionKo": "받침 발음 점수가 기수 평균보다 낮습니다.",
+    "weeklyScores": [68, 72, 75, 77, 78, 79],
+    "weakSounds": [
+      { "labelKo": "받침 ㄹ / ㄴ", "value": 59, "warn": true },
+      { "labelKo": "받침 ㄱ / ㄷ / ㅂ", "value": 62, "warn": true },
+      { "labelKo": "모음 ㅐ / ㅔ 구분", "value": 81, "warn": false },
+      { "labelKo": "경음 ㄲ / ㄸ", "value": 85, "warn": false }
+    ],
+    "completedSituationIds": ["basic-situation-1", "basic-situation-2", "situation-1"]
+  }
 ]

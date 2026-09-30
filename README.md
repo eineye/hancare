@@ -39,23 +39,32 @@ npm run dev       # http://localhost:3000
 이 로그인은 실제 서버 인증이 아닌 `localStorage` 기반 데모 인증입니다(`lib/auth.ts`).
 
 로그인 후에는 상단바(로고·언어 선택·알림·프로필) + 좌측 사이드바 메뉴 셸
-(`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 학습 /
-XR실습 / 영상학습 / 역할극 / 단어장 / 리포트 / 실습 일지 / 알림 / 설정이고, 관리자 메뉴는
+(`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 기초한글 /
+실습한글 / XR실습 / 영상학습 / 역할극 / 리포트 / 실습 일지 / 알림 / 설정이고, 관리자 메뉴는
 전체 현황 / 알림 및 면담입니다.
 
-진도관리(`/courses`)에서는 학습 단계를 기초한글 / 실습한글 / XR실습 3개 분류로
-고를 수 있습니다. 셋 다 `content/*.json` 파일의 실제 콘텐츠로 연결되어 있습니다.
+기초한글(`/basic-hangul`)은 기초한글 유닛의 상황별 학습 목록과 단어장(용어 듣기·
+검색·"학습함" 구분, 기초한글+실습한글 전체 용어)을 한 화면에 통합해 보여줍니다
+(`components/BasicHangulView.tsx`, 단어장 부분은 `components/VocabView.tsx` 재사용).
+실습한글은 `한글학습`에서 이름을 바꾼 것으로, 실습한글 유닛의 상황별 학습(`/learn/
+[unitId]/[situationId]`)으로 바로 이어집니다. 진도관리(`/courses`)에서는 실습한글 /
+XR실습 2개 분류로 고를 수 있습니다(기초한글은 위 전용 메뉴로 옮겼습니다). 콘텐츠는
+전부 `content/*.json` 파일의 실제 데이터로 연결되어 있습니다.
 XR실습(`/xr`)은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)의 Phase 1
 (화면 흐름·상호작용 셸)까지 구현되어 있으며, 실제 3D 뷰어·물리 엔진은 아직 없고
-와이어프레임 미리보기와 목데이터 인터랙션 결과로 대체되어 있습니다.
+와이어프레임 미리보기와 목데이터 인터랙션 결과로 대체되어 있습니다. 5개 모듈 중
+1번 "활력징후 및 기초사정"은 Three.js 3D 뷰포트가 실제로 동작하는 독립 프로토타입
+[`public/xr/vital-signs.html`](public/xr/vital-signs.html)(`/xr/vital-signs.html`로
+정적 서빙, 다른 사이트에 `<iframe>`으로 임베드 가능)로 먼저 검증했으며, 아직 위
+`/xr` 메뉴에는 연결되어 있지 않습니다(자세한 내용은 `docs/XR_MODULE_DESIGN.md` §7.1 참고).
 
-### 새 화면 (역할극 · 단어장 · 리포트 · 실습 일지 · 알림 · 설정 · 관리자 알림)
+### 새 화면 (역할극 · 기초한글 단어장 · 리포트 · 실습 일지 · 알림 · 설정 · 관리자 알림)
 
 | 화면 | 실제로 동작하는 부분 | 아직 목데이터인 부분 |
 |---|---|---|
 | `/video`, `/video/[videoId]` | 자체 MP4 영상 + 자막 동기화, 자막 단어를 누르면 자동 정지 후 Gemini(`/api/video-qa`)가 그 장면 대사를 근거로 뜻·문법·예문 설명, 이어보기(2초 전부터)·구간 반복·속도, 시청 위치 저장, 단어장 담기 | 샘플 영상 파일은 저장소에 없어 **자막 연습 모드**로 동작(`public/videos/README.md`에 MP4를 넣으면 실제 영상 재생) |
 | `/roleplay/[unitId]/[situationId]` | Gemini API(`/api/chat`)로 실제 대화하는 역할극. 마이크로 말하면 STT로 인식해 전송 | — |
-| `/vocab` | `content/*.json`의 실제 용어 전체를 모은 단어장, 듣기·검색·"학습함" 구분 | 시안에 있던 가짜 발음 점수 숫자는 빼고, 실제로 들어봤는지만 표시 |
+| `/basic-hangul` | 기초한글 상황별 학습 목록 + `content/*.json`의 실제 용어 전체를 모은 단어장, 듣기·검색·"학습함" 구분 | 시안에 있던 가짜 발음 점수 숫자는 빼고, 실제로 들어봤는지만 표시 |
 | `/report` | 평균 발음 점수·학습 문장 수·유닛별 용어 학습 현황은 실제 누적 기록 | 주차별 추이 그래프, 약한 발음 요소 분석은 예시 데이터(음소 단위 분석 미구현) |
 | `/journal` | 실습 일지 작성·저장·조회가 이 브라우저에 실제로 됨(`localStorage`) | 지도자 확인·의견 기능은 실제 멘토 계정이 없어 아직 없음 |
 | `/notices` | 읽음/안읽음 처리는 실제로 저장됨 | 알림 목록 자체는 발송 서버가 없어 예시 데이터 |
@@ -79,6 +88,10 @@ XR실습(`/xr`)은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)의 Pha
 | `content/practice-hangul.json` | 실습한글 |
 | `content/basic-hangul.json` | 기초한글 |
 
+JSON을 직접 고치는 대신 관리자 메뉴 **실습내용 편집**(`/admin/library-editor`)의
+실습내용 편집기(`public/hancare-library-editor.html`)로 편집할 수도 있습니다. 편집 내용은
+`/api/hangul-library`를 통해 위 파일에 바로 자동 저장됩니다.
+
 ### LLM 대화 기능 활성화 (선택)
 
 대화창(영역 6)의 LLM 대화는 [Gemini API](https://aistudio.google.com/app/apikey)로
@@ -97,16 +110,25 @@ cp .env.example .env.local
 - **STT/TTS**: 브라우저 내장 Web Speech API (Chrome 권장, 마이크 권한 필요)
 - **발음 채점**: 실제 음성 신호 기반 채점이 아닌, 인식된 텍스트와 목표 문장을
   비교하는 **텍스트 유사도 근사치**입니다 (`lib/scoring.ts`)
-- **아바타**: 직접 그린 2D 일러스트 얼굴(`components/Avatar2D.tsx`, 독립 실행형
-  `hangulcare.html`에도 동일하게 포함)이 말하는 동안(`speaking` 상태) 자체 타이머로
-  일정한 리듬마다 음소 그룹별 입모양(닫힘/크게 벌림/오므림/이 보임/미소/F·V) 중
-  하나를 무작위로 보여줍니다 — 실제 발음을 분석해 고르는 게 아니라 근사치입니다.
-  브라우저는 합성 음성 오디오를 Web Audio API로 분석할 방법을 제공하지 않고
-  (음소 타이밍을 알 수 없음), TTS의 단어 경계(`onBoundary`) 이벤트도 브라우저·음성
-  조합에 따라(특히 일부 한국어 음성) 아예 발생하지 않을 수 있어 입모양 전환을
-  그 이벤트에 의존하지 않고 `speaking` 상태 동안 스스로 스케줄링하는 타이머로
-  구현했습니다. 진짜 음소 단위 립싱크는 비seme 타이밍을 제공하는 유료 TTS 서버가
-  있어야 가능합니다.
+- **아바타 (한글학습 화면의 AI 아바타 선생님)**: 외부에서 받은 Canvas 2D 벡터 캐릭터
+  엔진(원본 `character2d-canvas.js`)을 씁니다. 문장을 초성·중성·종성으로 분해해
+  입모양(비셈) 타임라인을 만들고, 브라우저 TTS의 단어 경계(`onboundary`) 이벤트로
+  타이밍을 보정하며 재생합니다 — 실제 음성 파형을 분석한 게 아니라 텍스트 기반
+  타임라인이라, 브라우저·음성 조합에 따라 완벽히 일치하지 않을 수 있습니다.
+  호흡·눈 깜빡임·시선 추적 애니메이션도 함께 포함되어 있습니다.
+  - Next.js 앱: `lib/teacher2d/character2d-canvas.js` + React 래퍼
+    `components/TeacherAvatar.tsx`.
+  - `hangulcare.html`: 같은 엔진의 전역 스크립트판(`character2d-canvas.global.js`,
+    저장소 루트)을 `<script>` 태그로 불러와 씁니다. 이 파일은 상태가 바뀔 때마다
+    화면 전체를 `innerHTML`로 다시 그리는데, 캔버스 엔진은 계속 살아있는
+    애니메이션 인스턴스라 매번 새로 만들면 안 돼서 인스턴스를 하나만 만들어 두고
+    다시 그릴 때마다 캔버스만 새 컨테이너로 옮겨 붙이는 방식(`mountTeacherAvatar()`)을
+    씁니다.
+  - 역할극(`/roleplay`) 화면의 "AI 환자" 아바타도 같은 엔진을 쓰되, `palette`만
+    바꿔 남자 노인 인상(흰/회색 머리·눈썹·콧수염, 저채도 입술, 환자복 색, 배지
+    없음 — `lib/teacher2d/palettes.ts`의 `ELDERLY_MAN_PALETTE`)을 표현합니다.
+    실제 TTS 음성은 재생하지 않고(대화가 텍스트로만 오가므로) 답변 전체 텍스트가
+    도착하면 `playText()`로 무음 입모양 타임라인만 재생합니다.
 - **사용자 통계**: 이 브라우저의 `localStorage`에만 저장되는 데모 값(다른 기기와 공유되지 않음)
 - **로그인/관리자 화면**: 실제 서버 인증·다중 사용자 DB가 아닌 데모 계정 + 목데이터
   (`lib/auth.ts`, `data/learners.json`) 기반 UX 프로토타입입니다

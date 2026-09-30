@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { ChatMessage, FeedbackItem, JournalEntry, Lang, ScoreResult } from './types';
+import type { ChatMessage, FeedbackItem, JournalEntry, ScoreResult } from './types';
 import { safeLocalStorage } from './storage';
 
 // 학습 사이클 상태머신. docs/PROGRAM_DESIGN.md §3.3 참고:
@@ -12,7 +12,6 @@ export type RecordingState = 'idle' | 'recording' | 'scoring' | 'result';
 export type AvatarState = 'idle' | 'speaking' | 'listening';
 
 interface LessonState {
-  lang: Lang;
   sentenceIndex: number;
   recordingState: RecordingState;
   avatarState: AvatarState;
@@ -21,7 +20,6 @@ interface LessonState {
   chatMessages: ChatMessage[];
   isChatStreaming: boolean;
 
-  setLang: (lang: Lang) => void;
   setSentenceIndex: (index: number) => void;
   setAvatarState: (state: AvatarState) => void;
   beginRecording: () => void;
@@ -35,7 +33,6 @@ interface LessonState {
 }
 
 export const useLessonStore = create<LessonState>((set) => ({
-  lang: 'ko',
   sentenceIndex: 0,
   recordingState: 'idle',
   avatarState: 'idle',
@@ -44,7 +41,6 @@ export const useLessonStore = create<LessonState>((set) => ({
   chatMessages: [],
   isChatStreaming: false,
 
-  setLang: (lang) => set({ lang }),
   setSentenceIndex: (index) => set({ sentenceIndex: index, recordingState: 'idle', lastScore: undefined, lastFeedback: [] }),
   setAvatarState: (avatarState) => set({ avatarState }),
   beginRecording: () => set({ recordingState: 'recording' }),
@@ -207,7 +203,7 @@ interface PracticedTermsState {
   markPracticed: (termId: string) => void;
 }
 
-/** 단어장(/vocab)의 "학습함" 구분에 쓰는 실제 기록 — 학습 화면에서 용어 발음을
+/** 단어장(기초한글 화면(/basic-hangul))의 "학습함" 구분에 쓰는 실제 기록 — 학습 화면에서 용어 발음을
  * 들으면 그 용어 id가 여기 쌓인다. 점수화된 숙련도가 아니라 "들어봤는지"만
  * 구분하는 단순한 실제 신호다. */
 export const usePracticedTermsStore = create<PracticedTermsState>()(
