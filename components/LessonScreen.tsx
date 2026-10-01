@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import SituationCard from './SituationCard';
 import KeyTermsGrid from './KeyTermsGrid';
 import RepeatAfterMe from './RepeatAfterMe';
-import AvatarTeacher from './AvatarTeacher';
 import PronunciationScore from './PronunciationScore';
 import AIFeedback from './AIFeedback';
 import { useLessonStore, useProgressStore } from '@/lib/store';
@@ -55,32 +54,26 @@ export default function LessonScreen({ unit, situation, prevHref, nextHref, prog
         ← 커리큘럼으로
       </Link>
 
-      <div className="flex flex-wrap items-start gap-3.5">
-        <div className="min-w-0 flex-[1_1_520px] space-y-4">
-          <SituationCard
-            situation={situation}
-            current={progress.current}
-            total={progress.total}
-            onPrev={() => goToSituation(-1)}
-            onNext={() => goToSituation(1)}
-            canPrev={!!prevHref}
-            canNext={!!nextHref}
+      <div className="max-w-[720px] space-y-4">
+        <SituationCard
+          situation={situation}
+          current={progress.current}
+          total={progress.total}
+          onPrev={() => goToSituation(-1)}
+          onNext={() => goToSituation(1)}
+          canPrev={!!prevHref}
+          canNext={!!nextHref}
+        />
+        <KeyTermsGrid terms={situation.terms} />
+        <RepeatAfterMe sentence={sentence} />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <PronunciationScore />
+          <AIFeedback
+            onFocusPractice={resetRecording}
+            onNextSentence={handleNextSentence}
+            hasNextSentence={sentenceIndex + 1 < situation.sentences.length}
           />
-          <KeyTermsGrid terms={situation.terms} />
-          <RepeatAfterMe sentence={sentence} />
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <PronunciationScore />
-            <AIFeedback
-              onFocusPractice={resetRecording}
-              onNextSentence={handleNextSentence}
-              hasNextSentence={sentenceIndex + 1 < situation.sentences.length}
-            />
-          </div>
-        </div>
-
-        <div className="min-w-0 flex-[1_1_320px] max-w-[400px] space-y-4">
-          <AvatarTeacher sentence={sentence} />
         </div>
       </div>
     </div>
