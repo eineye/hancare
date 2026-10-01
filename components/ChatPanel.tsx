@@ -3,6 +3,7 @@
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useLessonStore } from '@/lib/store';
 import type { ChatMessage } from '@/lib/types';
+import { apiErrorMessage } from '@/lib/auth';
 
 export interface ChatPanelHandle {
   startRoleplay: () => void;
@@ -51,6 +52,7 @@ const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(({ situationTitleK
         }),
       });
 
+      if (!res.ok) throw new Error(await apiErrorMessage(res));
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
       if (reader) {
@@ -61,8 +63,8 @@ const ChatPanel = forwardRef<ChatPanelHandle, ChatPanelProps>(({ situationTitleK
           appendToMessage(assistantId, decoder.decode(value, { stream: true }));
         }
       }
-    } catch {
-      appendToMessage(assistantId, '메시지를 가져오지 못했습니다. 잠시 후 다시 시도해주세요.');
+    } catch (err) {
+      appendToMessage(assistantId, err instanceof Error && err.message ? err.message : '메시지를 가져오지 못했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setChatStreaming(false);
     }

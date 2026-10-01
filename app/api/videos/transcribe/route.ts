@@ -2,6 +2,7 @@ import { readFile, stat } from 'node:fs/promises';
 import { GoogleGenerativeAI, SchemaType, type Part, type ResponseSchema } from '@google/generative-ai';
 import { FileState, GoogleAIFileManager } from '@google/generative-ai/server';
 import { NextResponse, type NextRequest } from 'next/server';
+import { DAY, HOUR, clientIp, getSessionUser, rateLimited } from '@/lib/apiAuth';
 import { normalizeCues, type RawCue } from '@/lib/videoCaptions';
 import { resolveLocalVideo, videoMime } from '@/lib/videoFiles';
 
@@ -59,6 +60,13 @@ const SCHEMA: ResponseSchema = {
 };
 
 export async function POST(req: NextRequest) {
+  // 영상 분석은 비용이 커서 더 엄격하게 제한한다 (docs/SECURITY.md)
+  const user = await getSessionUser(req);
+  const limited = rateLimited(user?.id ?? clientIp(req) ?? 'anonymous', [
+    { name: 'transcribe-hour', limit: 20, windowMs: HOUR },
+    { name: 'transcribe-day', limit: 60, windowMs: DAY },
+  ]);
+  if (limited) return limited;
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
@@ -112,6 +120,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ cues, durationSec, model: MODEL_NAME });
   } catch (err) {
     console.error('[videos/transcribe] 실패:', err);
-    return NextResponse.json({ error: `AI 자동 자막 생성에 실패했습니다: ${(err as Error).message}` }, { status: 502 });
+    // 외부 서비스의 원문 오류는 서버 로그에만 남기고 화면에는 일반 문구만 보낸다.
+    return NextResponse.json(
+      { error: 'AI 자동 자막 생성에 실패했습니다. 잠시 뒤 다시 시도하고, 계속되면 서버 로그를 확인하세요.' },
+      { status: 502 },
+    );
   }
 }

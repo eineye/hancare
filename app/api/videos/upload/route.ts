@@ -5,6 +5,7 @@ import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import type { ReadableStream as WebReadableStream } from 'node:stream/web';
 import { NextResponse, type NextRequest } from 'next/server';
+import { DAY, HOUR, clientIp, getSessionUser, rateLimited } from '@/lib/apiAuth';
 import { MAX_UPLOAD_BYTES, UPLOAD_DIR, UPLOAD_SRC_PREFIX, safeVideoName } from '@/lib/videoFiles';
 
 export const runtime = 'nodejs';
@@ -22,6 +23,12 @@ async function exists(file: string) {
 // 영상 에디터 업로드 — 요청 본문 = 영상 바이트, ?name=원래파일이름.mp4
 // uploads/videos/에 저장하고 { src, size }를 돌려준다. docs/VIDEO_EDITOR_DESIGN.md §5.
 export async function POST(req: NextRequest) {
+  const user = await getSessionUser(req);
+  const limited = rateLimited(user?.id ?? clientIp(req) ?? 'anonymous', [
+    { name: 'upload-hour', limit: 30, windowMs: HOUR },
+    { name: 'upload-day', limit: 100, windowMs: DAY },
+  ]);
+  if (limited) return limited;
   const original = req.nextUrl.searchParams.get('name') ?? '';
   const name = safeVideoName(original);
   if (!name) return NextResponse.json({ error: 'MP4·WebM·MOV·M4V 영상만 올릴 수 있습니다.' }, { status: 400 });

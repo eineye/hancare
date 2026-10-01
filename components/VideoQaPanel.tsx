@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/lib/store';
 import { startRecognition, isSttSupported } from '@/lib/speech';
 import type { ChatMessage, VideoCue } from '@/lib/types';
 import { formatTime } from './TranscriptList';
+import { apiErrorMessage } from '@/lib/auth';
 
 /** 질문 순간의 장면 정보. 부모(VideoLessonScreen)가 영상을 멈추면서 만들어 준다. */
 export interface AskContext {
@@ -98,6 +99,7 @@ export default function VideoQaPanel({
           displayLang,
         }),
       });
+      if (!res.ok) throw new Error(await apiErrorMessage(res));
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
       if (reader) {
@@ -108,8 +110,8 @@ export default function VideoQaPanel({
           append(decoder.decode(value, { stream: true }));
         }
       }
-    } catch {
-      append('답변을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.');
+    } catch (err) {
+      append(err instanceof Error && err.message ? err.message : '답변을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.');
     } finally {
       setStreaming(false);
     }

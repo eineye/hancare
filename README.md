@@ -29,7 +29,7 @@ npm install
 npm run dev       # http://localhost:3000
 ```
 
-`/`으로 접속하면 로그인 화면(`/login`)으로 이동합니다. 데모 계정으로 바로 시작할 수 있습니다.
+`/`으로 접속하면 로그인 화면(`/login`)으로 이동합니다. 개발 중(`npm run dev`)에는 데모 계정으로 바로 시작할 수 있습니다.
 
 | 역할 | 아이디 | 비밀번호 | 로그인 후 이동 |
 |---|---|---|---|
@@ -37,7 +37,10 @@ npm run dev       # http://localhost:3000
 | 관리자 | `admin` | `admin` | `/admin` (전체 현황) |
 
 `/login` 화면의 "학습자로 시작"/"관리자로 시작" 버튼으로 바로 로그인할 수도 있습니다.
-이 로그인은 실제 서버 인증이 아닌 `localStorage` 기반 데모 인증입니다(`lib/auth.ts`).
+로그인은 서버(`/api/auth/login`)가 확인하고 서명된 httpOnly 세션 쿠키를 발급하며, 모든 API와 관리자
+편집기는 서버(`middleware.ts`)가 세션·역할을 확인합니다. **운영 서버(`npm run start`)에서는 위 데모 비밀번호가
+쓰이지 않습니다** — `.env.local`에 `SESSION_SECRET`·`ADMIN_PASSWORD` 등을 설정해야 하며, Gemini API 키 보호·호출
+제한까지 [`docs/SECURITY.md`](docs/SECURITY.md)에 정리되어 있습니다.
 
 로그인 후에는 상단바(로고·언어 선택·알림·프로필) + 좌측 사이드바 메뉴 셸
 (`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 기초한글 /
