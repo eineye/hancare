@@ -54,7 +54,7 @@ export default function LessonScreen({ unit, situation, prevHref, nextHref, prog
         ← 커리큘럼으로
       </Link>
 
-      <div className="max-w-[720px] space-y-4">
+      <div className="space-y-4">
         <SituationCard
           situation={situation}
           current={progress.current}
