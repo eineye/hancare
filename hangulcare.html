@@ -239,6 +239,12 @@
   .modalGrid .col-left { flex: 1 1 320px; display: flex; flex-direction: column; gap: 14px; }
   .modalGrid .col-right { flex: 1 1 260px; }
 
+  .mediMask { position: fixed; inset: 0; background: rgba(18,36,31,.65); display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 40; }
+  .mediPanel { width: min(1400px,96vw); height: 94vh; background: #fff; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  .mediHeader { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--card-border); font-weight: 700; color: var(--brand-dark); font-size: .9rem; }
+  .mediClose { width: 30px; height: 30px; border: none; border-radius: 999px; background: var(--chip); color: var(--muted); font-size: 1rem; cursor: pointer; line-height: 1; }
+  .mediPanel iframe { flex: 1; border: 0; width: 100%; }
+
   /* ---------------- vocab / journal / notices / settings / admin-alerts ---------------- */
   .vocabCard { border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 16px; background: var(--card); }
   .tabPill { border-radius: 999px; padding: 8px 14px; font-size: .78rem; border: 1px solid var(--card-border); background: var(--card); color: var(--brand-dark); }
@@ -288,6 +294,7 @@
 <body>
 <div class="app" id="app"></div>
 <div class="modalMask" id="modalMask" hidden><div class="modal" id="modalBody"></div></div>
+<div class="mediMask" id="mediMask" hidden><div class="mediPanel"><div class="mediHeader"><span>메디쌤과 발화 연습</span><button class="mediClose" aria-label="닫기" onclick="App.closeMediSsam()">✕</button></div><iframe id="mediFrame" title="메디쌤과 발화 연습"></iframe></div></div>
 
 <script src="./character2d-canvas.global.js"></script>
 <script>
@@ -1474,7 +1481,7 @@
       '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px;">' +
         '<div><p class="eyebrow">기초한글 BASIC HANGUL</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글 자체를 처음부터 배우기</h1>' +
         '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고 연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.</p></div>' +
-        '<a class="btn btn-ghost" style="flex:none;white-space:nowrap;text-decoration:none;" href="./medi-ssam.html" target="_blank" rel="noopener noreferrer">메디쌤과 발화 연습 ↗</a>' +
+        '<button class="btn btn-ghost" style="flex:none;white-space:nowrap;" onclick="App.openMediSsam()">메디쌤과 발화 연습 ↗</button>' +
       '</div>' +
       situationsHtml;
 
@@ -2584,6 +2591,19 @@
   modalMask.addEventListener("click", function (e) { if (e.target === modalMask) modalMask.hidden = true; });
   var App_closeModal = function () { modalMask.hidden = true; };
 
+  /* ---------------- 메디쌤 팝업(전체화면에 가까운 크기, iframe) ---------------- */
+  var mediMask = document.getElementById("mediMask");
+  var mediFrame = document.getElementById("mediFrame");
+  var App_openMediSsam = function () {
+    mediFrame.src = "./medi-ssam.html";
+    mediMask.hidden = false;
+  };
+  var App_closeMediSsam = function () {
+    mediMask.hidden = true;
+    mediFrame.src = "about:blank"; // 닫으면 음성·애니메이션이 즉시 멈추도록 언로드한다
+  };
+  mediMask.addEventListener("click", function (e) { if (e.target === mediMask) App_closeMediSsam(); });
+
   /* ---------------- 실습생 세부현황 팝업 ---------------- */
   function App_learnerDetail(id) {
     var l = LEARNERS.filter(function (x) { return x.id === id; })[0];
@@ -2659,6 +2679,7 @@
     toggleRecording: App_toggleRecording, focusPractice: App_focusPractice, nextSentence: App_nextSentence,
     xrGoto: App_xrGoto, xrDismissDialogue: App_xrDismissDialogue, xrStart: App_xrStart, xrInteract: App_xrInteract, xrSubmit: App_xrSubmit, xrModal: App_xrModal,
     closeModal: App_closeModal, learnerDetail: App_learnerDetail,
+    openMediSsam: App_openMediSsam, closeMediSsam: App_closeMediSsam,
     toggleTopLang: App_toggleTopLang, toggleSettingsLang: App_toggleSettingsLang, setDisplayLang: App_setDisplayLang,
     setSpeechRate: App_setSpeechRate, setScoringStrictness: App_setScoringStrictness,
     vocabTab: App_vocabTab, vocabSearch: App_vocabSearch, vocabPlay: App_vocabPlay, vocabGroup: App_vocabGroup,

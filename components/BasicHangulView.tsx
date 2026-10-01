@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { speak } from '@/lib/speech';
 import { usePracticedTermsStore, useSettingsStore } from '@/lib/store';
@@ -39,6 +40,7 @@ function TermRow({ term }: { term: Term }) {
 
 export default function BasicHangulView({ units }: { units: Unit[] }) {
   const situations = units.flatMap((unit) => unit.situations.map((situation) => ({ unit, situation })));
+  const [mediOpen, setMediOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -53,15 +55,39 @@ export default function BasicHangulView({ units }: { units: Unit[] }) {
             연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.
           </p>
         </div>
-        <a
-          href="/medi-ssam.html"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => setMediOpen(true)}
           className="flex-none whitespace-nowrap rounded-[10px] border border-line bg-white px-4 py-2.5 text-sm font-medium text-brand-dark hover:bg-panel"
         >
           메디쌤과 발화 연습 ↗
-        </a>
+        </button>
       </div>
+
+      {mediOpen && (
+        <div
+          className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 p-3 sm:p-6"
+          onClick={() => setMediOpen(false)}
+        >
+          <div
+            className="flex h-[94vh] w-full max-w-[1400px] flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-none items-center justify-between border-b border-line px-4 py-2.5">
+              <p className="text-sm font-bold text-brand-dark">메디쌤과 발화 연습</p>
+              <button
+                type="button"
+                onClick={() => setMediOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-panel"
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+            <iframe src="/medi-ssam.html" title="메디쌤과 발화 연습" className="w-full flex-1 border-0" />
+          </div>
+        </div>
+      )}
 
       {situations.length === 0 ? (
         <p className="rounded-2xl border border-line bg-white p-8 text-center text-sm text-muted">
