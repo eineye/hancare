@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { NextRequest } from 'next/server';
+import { DAY, MINUTE, clientIp, getSessionUser, rateLimited } from '@/lib/apiAuth';
 import { ruleReply } from '@/lib/roleplay';
 import type { ChatMessage, RoleplayScenario } from '@/lib/types';
 
@@ -58,6 +59,13 @@ function buildSystemPrompt(body: ChatRequestBody): string {
 }
 
 export async function POST(req: NextRequest) {
+  // 키 남용 방지: 사용자당 호출 횟수 제한 (docs/SECURITY.md)
+  const user = await getSessionUser(req);
+  const limited = rateLimited(user?.id ?? clientIp(req) ?? 'anonymous', [
+    { name: 'chat-min', limit: 15, windowMs: MINUTE },
+    { name: 'chat-day', limit: 400, windowMs: DAY },
+  ]);
+  if (limited) return limited;
   const apiKey = process.env.GEMINI_API_KEY;
   const body = (await req.json()) as ChatRequestBody;
 

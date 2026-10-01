@@ -1,10 +1,11 @@
 // 한글케어 PWA용 최소 서비스워커. 무거운 workbox 빌드 툴체인(빌드 시점 의존성
 // 취약점 우려) 대신 손으로 작성한 가벼운 캐시 전략을 사용한다.
 // - 앱 셸(정적 자산)은 캐시 우선(cache-first)
-// - 그 외 요청(HTML 페이지, API)은 네트워크 우선(network-first) 후 캐시 폴백
+// - 그 외 요청(HTML 페이지)은 네트워크 우선(network-first) 후 캐시 폴백
+// - /api/ 요청은 로그인한 사람만 받는 데이터라 캐시하지 않는다(docs/SECURITY.md)
 // 오프라인에서도 마지막으로 방문한 학습 화면을 다시 열 수 있게 하는 것이 목적이다.
 
-const CACHE_NAME = 'hangulcare-v2';
+const CACHE_NAME = 'hangulcare-v3';
 const APP_SHELL = ['/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -26,6 +27,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
+  if (new URL(request.url).pathname.startsWith('/api/')) return;
 
   event.respondWith(
     fetch(request)

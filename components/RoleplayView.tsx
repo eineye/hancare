@@ -7,6 +7,7 @@ import { ELDERLY_MAN_PALETTE } from '@/lib/teacher2d/palettes';
 import { isSttSupported, startRecognition } from '@/lib/speech';
 import { useSettingsStore, type AvatarState } from '@/lib/store';
 import type { ChatMessage, RoleplayScenario, Term } from '@/lib/types';
+import { apiErrorMessage } from '@/lib/auth';
 
 let idCounter = 0;
 function nextId() {
@@ -63,6 +64,7 @@ export default function RoleplayView({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: trimmed, history, situationTitleKo, terms, roleplay: scenario }),
       });
+      if (!res.ok) throw new Error(await apiErrorMessage(res));
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
       if (reader) {
@@ -75,11 +77,10 @@ export default function RoleplayView({
           setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + chunk } : m)));
         }
       }
-    } catch {
+    } catch (err) {
       fullText = '';
-      setMessages((prev) =>
-        prev.map((m) => (m.id === assistantId ? { ...m, content: '메시지를 가져오지 못했습니다.' } : m)),
-      );
+      const msg = err instanceof Error && err.message ? err.message : '메시지를 가져오지 못했습니다.';
+      setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: msg } : m)));
     } finally {
       setStreaming(false);
       if (fullText.trim()) {
