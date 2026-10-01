@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import SituationCard from './SituationCard';
@@ -9,7 +9,6 @@ import RepeatAfterMe from './RepeatAfterMe';
 import AvatarTeacher from './AvatarTeacher';
 import PronunciationScore from './PronunciationScore';
 import AIFeedback from './AIFeedback';
-import ChatPanel, { type ChatPanelHandle } from './ChatPanel';
 import { useLessonStore, useProgressStore } from '@/lib/store';
 import type { Situation, Unit } from '@/lib/types';
 
@@ -24,7 +23,6 @@ interface LessonScreenProps {
 
 export default function LessonScreen({ unit, situation, prevHref, nextHref, progress }: LessonScreenProps) {
   const router = useRouter();
-  const chatRef = useRef<ChatPanelHandle>(null);
 
   const sentenceIndex = useLessonStore((s) => s.sentenceIndex);
   const setSentenceIndex = useLessonStore((s) => s.setSentenceIndex);
@@ -43,11 +41,6 @@ export default function LessonScreen({ unit, situation, prevHref, nextHref, prog
   function goToSituation(direction: 1 | -1) {
     const href = direction === 1 ? nextHref : prevHref;
     if (href) router.push(href);
-  }
-
-  function handleStartConversation() {
-    document.getElementById('chat-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    chatRef.current?.startRoleplay();
   }
 
   function handleNextSentence() {
@@ -87,12 +80,7 @@ export default function LessonScreen({ unit, situation, prevHref, nextHref, prog
         </div>
 
         <div className="min-w-0 flex-[1_1_320px] max-w-[400px] space-y-4">
-          <AvatarTeacher
-            sentence={sentence}
-            onStartConversation={handleStartConversation}
-            roleplayHref={`/roleplay/${unit.id}/${situation.id}`}
-          />
-          <ChatPanel ref={chatRef} situationTitleKo={situation.titleKo} terms={situation.terms} />
+          <AvatarTeacher sentence={sentence} />
         </div>
       </div>
     </div>

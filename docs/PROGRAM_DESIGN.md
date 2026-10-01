@@ -136,11 +136,17 @@ graph TB
      ├─ <AIFeedback>                   // 6. AI 피드백
      │    ├─ feedbackItems[] (경고/성공 카드)
      │    └─ actions: [집중 연습, 다음 문장]
-     └─ <ChatPanel>                    // 6. LLM 대화창
+     └─ <ChatPanel>                    // 6. LLM 대화창(이후 제거됨, 아래 보강 참고)
           ├─ messages[]
           ├─ quickActions: [예문 더 보기, 역할극 시작]
           └─ <ChatInput placeholder="모국어로 질문 가능" />
 ```
+
+> **보강**: `<AvatarTeacher>`의 "대화 시작"(이 화면에서 대화)과 `<ChatPanel>`은 이후
+> 제거됐다. 둘 다 왼쪽 메뉴의 전용 "역할극"(`/roleplay`, Gemini API로 실제 대화)과
+> 기능이 겹쳐 화면이 혼란스러웠기 때문이다 — 역할극은 하나의 화면(`/roleplay`)에서만
+> 하도록 정리했다. `<AvatarTeacher>`는 "다시 듣기"/"입모양 보기"(발음 연습 전용)만
+> 남았다.
 
 ### 3.3 학습 사이클 상태 머신
 

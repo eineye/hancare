@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import Link from 'next/link';
 import { useLessonStore, useSettingsStore } from '@/lib/store';
 import TeacherAvatar, { type TeacherAvatarHandle } from './TeacherAvatar';
 import type { Sentence } from '@/lib/types';
@@ -12,15 +11,7 @@ const STATE_LABEL: Record<string, string> = {
   listening: '● 듣는 중',
 };
 
-export default function AvatarTeacher({
-  sentence,
-  onStartConversation,
-  roleplayHref,
-}: {
-  sentence: Sentence;
-  onStartConversation: () => void;
-  roleplayHref: string;
-}) {
+export default function AvatarTeacher({ sentence }: { sentence: Sentence }) {
   const avatarState = useLessonStore((s) => s.avatarState);
   const setAvatarState = useLessonStore((s) => s.setAvatarState);
   const displayLang = useSettingsStore((s) => s.displayLang);
@@ -74,19 +65,6 @@ export default function AvatarTeacher({
         </button>
         <button type="button" onClick={handleCloseup} className="rounded-[10px] bg-white/15 px-3.5 py-2 hover:bg-white/25">
           👄 입모양 보기
-        </button>
-        <Link
-          href={roleplayHref}
-          className="rounded-[10px] bg-white px-3.5 py-2 font-semibold text-brand hover:bg-white/90"
-        >
-          💬 역할극
-        </Link>
-        <button
-          type="button"
-          onClick={onStartConversation}
-          className="rounded-[10px] border border-white/25 px-3.5 py-2 hover:bg-white/10"
-        >
-          {displayLang === 'ko' ? '이 화면에서 대화' : 'Chat here'}
         </button>
       </div>
     </section>

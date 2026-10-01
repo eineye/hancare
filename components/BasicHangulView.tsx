@@ -42,15 +42,25 @@ export default function BasicHangulView({ units }: { units: Unit[] }) {
 
   return (
     <div className="flex flex-col gap-3.5">
-      <div>
-        <p className="text-[11.5px] font-bold tracking-wide text-brand">기초한글 BASIC HANGUL</p>
-        <h1 className="mt-2.5 text-[28px] font-black tracking-tight text-brand-dark sm:text-[30px]">
-          한글 자체를 처음부터 배우기
-        </h1>
-        <p className="mt-2 text-sm text-muted">
-          자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고
-          연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-[11.5px] font-bold tracking-wide text-brand">기초한글 BASIC HANGUL</p>
+          <h1 className="mt-2.5 text-[28px] font-black tracking-tight text-brand-dark sm:text-[30px]">
+            한글 자체를 처음부터 배우기
+          </h1>
+          <p className="mt-2 text-sm text-muted">
+            자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고
+            연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.
+          </p>
+        </div>
+        <a
+          href="/medi-ssam.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-none whitespace-nowrap rounded-[10px] border border-line bg-white px-4 py-2.5 text-sm font-medium text-brand-dark hover:bg-panel"
+        >
+          메디쌤과 발화 연습 ↗
+        </a>
       </div>
 
       {situations.length === 0 ? (

@@ -98,7 +98,7 @@ JSON을 직접 고치는 대신 관리자 메뉴 **실습내용 편집**(`/admin
 
 ### LLM 대화 기능 활성화 (선택)
 
-대화창(영역 6)의 LLM 대화는 [Gemini API](https://aistudio.google.com/app/apikey)로
+역할극(`/roleplay`) 화면의 LLM 대화는 [Gemini API](https://aistudio.google.com/app/apikey)로
 연동되어 있습니다(비용 고려 — 무료 테스트 티어가 있는 `gemini-1.5-flash` 사용). 키가
 없어도 앱은 정상 동작하며, 이 경우 채팅창에 환경변수 설정 안내가 표시됩니다.
 
@@ -133,6 +133,12 @@ cp .env.example .env.local
     없음 — `lib/teacher2d/palettes.ts`의 `ELDERLY_MAN_PALETTE`)을 표현합니다.
     실제 TTS 음성은 재생하지 않고(대화가 텍스트로만 오가므로) 답변 전체 텍스트가
     도착하면 `playText()`로 무음 입모양 타임라인만 재생합니다.
+  - 기초한글(`/basic-hangul`) 화면 우측 상단 **메디쌤과 발화 연습** 버튼은 같은
+    엔진을 내장한 독립 페이지(`public/medi-ssam.html`, `hangulcare.html`과 같은
+    저장소 루트의 `medi-ssam.html`)를 새 창으로 엽니다. 원하는 문장을 자유롭게
+    입력해 실제 브라우저 TTS + 입모양으로 들어볼 수 있고(속도 조절, 소리 없이
+    입모양만 재생하는 옵션 포함), 표정·개별 입모양을 직접 눌러볼 수도 있습니다 —
+    학습 화면에 내장된 것이 아니라 완전히 독립된 연습 도구입니다.
 - **사용자 통계**: 이 브라우저의 `localStorage`에만 저장되는 데모 값(다른 기기와 공유되지 않음)
 - **로그인/관리자 화면**: 실제 서버 인증·다중 사용자 DB가 아닌 데모 계정 + 목데이터
   (`lib/auth.ts`, `data/learners.json`) 기반 UX 프로토타입입니다
