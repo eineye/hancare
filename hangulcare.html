@@ -785,13 +785,6 @@
   }
 
   /* ============================== CHAT (규칙 기반 목데이터 응답) ============================== */
-  function mockChatReply(situation, message) {
-    var term = situation.terms.filter(function (t) { return message.indexOf(t.hangul) !== -1; })[0];
-    if (term) return "'" + term.hangul + "'는 " + term.glossEn + " 라는 뜻이에요. [" + term.romanization + "]로 발음합니다.";
-    if (message.indexOf("예문") !== -1) { var s2 = situation.sentences[1] || situation.sentences[0]; return "다른 표현 예: \"" + s2.textKo + "\" (" + s2.textEn + ")"; }
-    if (message.indexOf("역할") !== -1) return "좋아요, 제가 환자 역할을 해볼게요. \"" + situation.descriptionKo + "\" 상황이에요. 편하게 말을 걸어보세요.";
-    return "질문 감사합니다! 이 화면은 정적 데모라 미리 정해진 답변만 드려요. 실제 앱에서는 Gemini API가 상황에 맞춰 답합니다.";
-  }
   // 관리자 "역할극 편집"의 시나리오(첫 대사·규칙 응답·기본 대사)를 먼저 적용한다. lib/roleplay.ts ruleReply()와 같은 순서.
   function mockPatientOpening(scenario) { return (scenario && scenario.openingKo) || "안녕하세요."; }
   function mockPatientReply(situation, message, scenario) {
@@ -850,7 +843,7 @@
       state.lesson = {
         unitId: found.unit.id, situationId: found.situation.id,
         sentenceIndex: 0, recordingState: "idle",
-        lastScore: null, lastFeedback: [], chatMessages: [], recErr: null
+        lastScore: null, lastFeedback: [], recErr: null
       };
       state.avatar = { state: "idle" };
       if (teacherEngine) teacherEngine.stop();
@@ -1241,10 +1234,6 @@
       return '<div class="feedbackItem ' + f.tone + '"><strong>' + esc(f.titleKo) + "</strong><div style=\"opacity:.85;margin-top:2px;\">" + esc(f.detailKo) + "</div></div>";
     }).join("");
 
-    var chatHtml = L.chatMessages.length === 0
-      ? '<p style="color:var(--faint);font-size:.84rem;">궁금한 표현을 물어보거나, 역할극으로 대화를 연습해보세요.</p>'
-      : L.chatMessages.map(function (m) { return '<div class="chatMsg ' + m.role + '">' + esc(m.content) + "</div>"; }).join("");
-
     var situationHeader =
       '<div class="card" style="padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
         '<span class="eyebrow">상황 SITUATION</span><span style="flex:1;height:1px;background:var(--line);"></span>' +
@@ -1269,16 +1258,7 @@
         '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">' +
           '<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(1,true)">🔁 다시 듣기</button>' +
           '<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(0.5,true)">👄 입모양 보기</button>' +
-          '<button class="btn" style="background:#fff;color:var(--brand);" onclick="App.openRoleplay(\'' + unit.id + "','" + situation.id + '\')">💬 역할극</button>' +
-          '<button class="btn" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="App.startRoleplay()">' + (bilingual ? "Chat here" : "이 화면에서 대화") + '</button>' +
         '</div>' +
-      '</div>';
-
-    var chatCardHtml =
-      '<div class="card" id="chat-panel" style="padding:14px;display:flex;flex-direction:column;min-height:260px;"><p class="eyebrow">AI 대화 CHAT</p><p style="font-size:.7rem;color:var(--faint);margin-top:4px;">질문은 모국어로 해도 됩니다 (정적 데모: 규칙 기반 응답)</p>' +
-        '<div id="chatLog" style="flex:1;display:flex;flex-direction:column;gap:6px;margin-top:10px;overflow-y:auto;max-height:220px;">' + chatHtml + "</div>" +
-        '<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;"><button class="btn btn-ghost" style="font-size:.74rem;padding:6px 10px;" onclick="App.sendChat(\'예문 더 보기\')">예문 더 보기</button><button class="btn btn-ghost" style="font-size:.74rem;padding:6px 10px;" onclick="App.sendChat(\'역할극 시작\')">역할극 시작</button></div>' +
-        '<form style="display:flex;gap:6px;margin-top:10px;" onsubmit="App.submitChat(event)"><input id="chatInput" placeholder="메시지를 입력하세요…" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:var(--card);color:var(--text);" /><button class="btn btn-primary" type="submit">↑</button></form>' +
       '</div>';
 
     var mainHtml =
@@ -1303,7 +1283,7 @@
               '<div style="display:flex;gap:8px;margin-top:14px;"><button class="btn btn-primary" style="flex:1;" ' + (L.recordingState !== "result" ? "disabled" : "") + ' onclick="App.focusPractice()">집중 연습</button><button class="btn btn-ghost" style="flex:1;" ' + (L.recordingState !== "result" || L.sentenceIndex + 1 >= situation.sentences.length ? "disabled" : "") + ' onclick="App.nextSentence()">다음 문장 →</button></div></div>' +
           "</div>" +
         "</div>" +
-        '<div class="stack">' + avatarHtml + chatCardHtml + "</div>" +
+        '<div class="stack">' + avatarHtml + "</div>" +
       "</div>";
 
     el.innerHTML = shell(mainHtml, isPracticeUnit(unit.id) ? "learn" : "basic-hangul");
@@ -1357,25 +1337,6 @@
       renderLesson();
     }
   };
-  var App_sendChat = function (text) {
-    var found = findSituation(state.lesson.unitId, state.lesson.situationId);
-    state.lesson.chatMessages.push({ role: "user", content: text });
-    state.lesson.chatMessages.push({ role: "assistant", content: mockChatReply(found.situation, text) });
-    renderLesson();
-  };
-  var App_submitChat = function (ev) {
-    ev.preventDefault();
-    var input = document.getElementById("chatInput");
-    var val = input.value.trim();
-    if (!val) return;
-    App_sendChat(val);
-  };
-  var App_startRoleplay = function () {
-    var panel = document.getElementById("chat-panel");
-    if (panel && panel.scrollIntoView) panel.scrollIntoView({ behavior: "smooth", block: "start" });
-    App_sendChat("환자 역할을 맡아서 저와 대화를 시작해 주세요.");
-  };
-
   function barRow(label, value) {
     return '<div style="margin-bottom:7px;"><div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);"><span>' + label + "</span><span>" + value + '%</span></div><div class="barTrack"><div class="barFill" style="width:' + value + '%"></div></div></div>';
   }
@@ -1510,8 +1471,11 @@
     }).join("");
 
     var mainHtml =
-      '<p class="eyebrow">기초한글 BASIC HANGUL</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글 자체를 처음부터 배우기</h1>' +
-      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고 연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.</p>' +
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px;">' +
+        '<div><p class="eyebrow">기초한글 BASIC HANGUL</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글 자체를 처음부터 배우기</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고 연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.</p></div>' +
+        '<a class="btn btn-ghost" style="flex:none;white-space:nowrap;text-decoration:none;" href="./medi-ssam.html" target="_blank" rel="noopener noreferrer">메디쌤과 발화 연습 ↗</a>' +
+      '</div>' +
       situationsHtml;
 
     el.innerHTML = shell(mainHtml, "basic-hangul");
@@ -2693,7 +2657,6 @@
     openLesson: App_openLesson, openXr: App_openXr, openRoleplay: App_openRoleplay,
     gotoSituation: App_gotoSituation, speakText: App_speakText, speakSentence: App_speakSentence,
     toggleRecording: App_toggleRecording, focusPractice: App_focusPractice, nextSentence: App_nextSentence,
-    sendChat: App_sendChat, submitChat: App_submitChat, startRoleplay: App_startRoleplay,
     xrGoto: App_xrGoto, xrDismissDialogue: App_xrDismissDialogue, xrStart: App_xrStart, xrInteract: App_xrInteract, xrSubmit: App_xrSubmit, xrModal: App_xrModal,
     closeModal: App_closeModal, learnerDetail: App_learnerDetail,
     toggleTopLang: App_toggleTopLang, toggleSettingsLang: App_toggleSettingsLang, setDisplayLang: App_setDisplayLang,

@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { ChatMessage, FeedbackItem, JournalEntry, ScoreResult } from './types';
+import type { FeedbackItem, JournalEntry, ScoreResult } from './types';
 import { safeLocalStorage } from './storage';
 
 // 학습 사이클 상태머신. docs/PROGRAM_DESIGN.md §3.3 참고:
@@ -17,8 +17,6 @@ interface LessonState {
   avatarState: AvatarState;
   lastScore?: ScoreResult;
   lastFeedback: FeedbackItem[];
-  chatMessages: ChatMessage[];
-  isChatStreaming: boolean;
 
   setSentenceIndex: (index: number) => void;
   setAvatarState: (state: AvatarState) => void;
@@ -26,9 +24,6 @@ interface LessonState {
   beginScoring: () => void;
   setResult: (score: ScoreResult, feedback: FeedbackItem[]) => void;
   resetRecording: () => void;
-  addChatMessage: (message: ChatMessage) => void;
-  appendToMessage: (id: string, chunk: string) => void;
-  setChatStreaming: (streaming: boolean) => void;
   resetForSituation: () => void;
 }
 
@@ -38,8 +33,6 @@ export const useLessonStore = create<LessonState>((set) => ({
   avatarState: 'idle',
   lastScore: undefined,
   lastFeedback: [],
-  chatMessages: [],
-  isChatStreaming: false,
 
   setSentenceIndex: (index) => set({ sentenceIndex: index, recordingState: 'idle', lastScore: undefined, lastFeedback: [] }),
   setAvatarState: (avatarState) => set({ avatarState }),
@@ -47,14 +40,7 @@ export const useLessonStore = create<LessonState>((set) => ({
   beginScoring: () => set({ recordingState: 'scoring' }),
   setResult: (lastScore, lastFeedback) => set({ recordingState: 'result', lastScore, lastFeedback }),
   resetRecording: () => set({ recordingState: 'idle', lastScore: undefined, lastFeedback: [] }),
-  addChatMessage: (message) => set((s) => ({ chatMessages: [...s.chatMessages, message] })),
-  appendToMessage: (id, chunk) =>
-    set((s) => ({
-      chatMessages: s.chatMessages.map((m) => (m.id === id ? { ...m, content: m.content + chunk } : m)),
-    })),
-  setChatStreaming: (isChatStreaming) => set({ isChatStreaming }),
-  resetForSituation: () =>
-    set({ sentenceIndex: 0, recordingState: 'idle', lastScore: undefined, lastFeedback: [], chatMessages: [] }),
+  resetForSituation: () => set({ sentenceIndex: 0, recordingState: 'idle', lastScore: undefined, lastFeedback: [] }),
 }));
 
 interface StatsState {
