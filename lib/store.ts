@@ -2,63 +2,43 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { ChatMessage, FeedbackItem, JournalEntry, Lang, ScoreResult } from './types';
+import type { FeedbackItem, JournalEntry, ScoreResult } from './types';
 import { safeLocalStorage } from './storage';
 
 // 학습 사이클 상태머신. docs/PROGRAM_DESIGN.md §3.3 참고:
 // 상황제시 -> 용어학습 -> 아바타시범 -> 녹음중 -> 채점중 -> 결과표시
 // -> (집중연습 -> 녹음중) 또는 (대화학습 -> 결과표시)
 export type RecordingState = 'idle' | 'recording' | 'scoring' | 'result';
+// 역할극(RoleplayView)의 AI 환자 아바타 상태 표시에 쓰는 타입. 학습 화면에는 더 이상
+// 아바타가 없어(메디쌤과 중복) useLessonStore에는 avatarState 필드가 없다.
 export type AvatarState = 'idle' | 'speaking' | 'listening';
 
 interface LessonState {
-  lang: Lang;
   sentenceIndex: number;
   recordingState: RecordingState;
-  avatarState: AvatarState;
   lastScore?: ScoreResult;
   lastFeedback: FeedbackItem[];
-  chatMessages: ChatMessage[];
-  isChatStreaming: boolean;
 
-  setLang: (lang: Lang) => void;
   setSentenceIndex: (index: number) => void;
-  setAvatarState: (state: AvatarState) => void;
   beginRecording: () => void;
   beginScoring: () => void;
   setResult: (score: ScoreResult, feedback: FeedbackItem[]) => void;
   resetRecording: () => void;
-  addChatMessage: (message: ChatMessage) => void;
-  appendToMessage: (id: string, chunk: string) => void;
-  setChatStreaming: (streaming: boolean) => void;
   resetForSituation: () => void;
 }
 
 export const useLessonStore = create<LessonState>((set) => ({
-  lang: 'ko',
   sentenceIndex: 0,
   recordingState: 'idle',
-  avatarState: 'idle',
   lastScore: undefined,
   lastFeedback: [],
-  chatMessages: [],
-  isChatStreaming: false,
 
-  setLang: (lang) => set({ lang }),
   setSentenceIndex: (index) => set({ sentenceIndex: index, recordingState: 'idle', lastScore: undefined, lastFeedback: [] }),
-  setAvatarState: (avatarState) => set({ avatarState }),
   beginRecording: () => set({ recordingState: 'recording' }),
   beginScoring: () => set({ recordingState: 'scoring' }),
   setResult: (lastScore, lastFeedback) => set({ recordingState: 'result', lastScore, lastFeedback }),
   resetRecording: () => set({ recordingState: 'idle', lastScore: undefined, lastFeedback: [] }),
-  addChatMessage: (message) => set((s) => ({ chatMessages: [...s.chatMessages, message] })),
-  appendToMessage: (id, chunk) =>
-    set((s) => ({
-      chatMessages: s.chatMessages.map((m) => (m.id === id ? { ...m, content: m.content + chunk } : m)),
-    })),
-  setChatStreaming: (isChatStreaming) => set({ isChatStreaming }),
-  resetForSituation: () =>
-    set({ sentenceIndex: 0, recordingState: 'idle', lastScore: undefined, lastFeedback: [], chatMessages: [] }),
+  resetForSituation: () => set({ sentenceIndex: 0, recordingState: 'idle', lastScore: undefined, lastFeedback: [] }),
 }));
 
 interface StatsState {
@@ -103,7 +83,7 @@ export type ScoringStrictness = 'beginner' | 'intermediate';
 
 interface SettingsState {
   displayLang: DisplayLang;
-  /** 아바타/원어민 발음 재생 속도 배수 (0.5~1.5). RepeatAfterMe·AvatarTeacher가 참조한다. */
+  /** 원어민 발음 재생 속도 배수 (0.5~1.5). RepeatAfterMe가 참조한다. */
   speechRate: number;
   scoringStrictness: ScoringStrictness;
   autoPlayRecording: boolean;
@@ -207,7 +187,7 @@ interface PracticedTermsState {
   markPracticed: (termId: string) => void;
 }
 
-/** 단어장(/vocab)의 "학습함" 구분에 쓰는 실제 기록 — 학습 화면에서 용어 발음을
+/** 단어장(기초한글 화면(/basic-hangul))의 "학습함" 구분에 쓰는 실제 기록 — 학습 화면에서 용어 발음을
  * 들으면 그 용어 id가 여기 쌓인다. 점수화된 숙련도가 아니라 "들어봤는지"만
  * 구분하는 단순한 실제 신호다. */
 export const usePracticedTermsStore = create<PracticedTermsState>()(

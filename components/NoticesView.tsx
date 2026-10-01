@@ -12,7 +12,7 @@ export default function NoticesView() {
   const groups = Array.from(new Set(NOTICES.map((n) => n.groupKo)));
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-[11.5px] font-bold tracking-wide text-brand">알림 NOTIFICATIONS</p>

@@ -171,7 +171,7 @@ interface XrModule {
 |---|---|---|
 | **Phase 0** | 콘텐츠 스키마·진도관리 메뉴 연동(5개 모듈명·법정시간 노출) | ✅ 완료 |
 | **Phase 1** | `/xr`, `/xr/[moduleId]` 화면 셸 구현 — §4 UI를 실제 컴포넌트로, 인터랙션 버튼 클릭 시 `content`의 목데이터 결과 표시(3D 없이 텍스트/게이지만) | ✅ 완료 — `components/XrModuleGrid.tsx`, `components/XrPracticeScreen.tsx`, `lib/xrStore.ts`. 독립 HTML 프로토타입(claude.ai 아티팩트)으로 먼저 검증한 뒤 동일 로직을 그대로 이식했다 |
-| **Phase 2** | 모듈 1(활력징후)에 실제 Three.js/WebGL 뷰포트 도입 — 절차적 3D 병상·환자 모형 + Raycaster 클릭 히트박스(청진기/상완동맥 등) + Web Audio 합성음(청진음) + Canvas 게이지 | 예정 |
+| **Phase 2** | 모듈 1(활력징후)에 실제 Three.js/WebGL 뷰포트 도입 — 절차적 3D 병상·환자 모형 + Raycaster 클릭 히트박스(청진기/상완동맥 등) + Web Audio 합성음(청진음) + Canvas 게이지 | 🟡 독립 프로토타입 완료 — `public/xr/vital-signs.html`. Next.js 컴포넌트 이식은 예정 |
 | **Phase 3** | 모듈 2~5에 각 모듈 고유 기술 적용 — GLSL 멸균 경계 셰이더, Cannon-es 충돌, Spatial Audio, IK 골격 트래킹. 실제 3D 에셋(glTF) 제작·튜닝 필요 | 예정(3D 에셋 확보 후) |
 | **Phase 4** | Whisper 기반 STT, 다국어 TTS(현재 앱은 ko/en만 지원 — 몽골어/베트남어/미얀마어는 `textXx` 필드 추가로 스키마 확장 가능), LMS 연동(진도 데이터 내보내기), Unity 인터랙션 콘텐츠 임베드 | 예정 |
 
@@ -179,6 +179,34 @@ Phase 2~4는 3D 에셋 제작, 물리 파라미터 튜닝, 실제 STT 모델 서
 세션만으로는 끝낼 수 없는 별도 리소스(디자이너/3D 아티스트, GPU 서빙)가 필요하다.
 Phase 0~1은 지금 코드베이스 패턴(content 핫리로드, Zustand 상태머신, AuthGuard)
 그대로 확장하면 되므로 다음 작업으로 바로 진행 가능하다.
+
+### 7.1 모듈 1 심화 프로토타입 — `public/xr/vital-signs.html`
+
+Phase 1이 5개 모듈 공통 셸(인터랙션 버튼 → 목데이터 결과)이었다면, 이 파일은
+모듈 1 "활력징후 및 기초사정"만을 위한 별도 심화 시나리오 프로토타입이다.
+`/xr/vital-signs.html`로 정적 서빙되어(Next.js `public/` 폴더) 재빌드 없이
+브라우저에서 바로 열리고, 헤더의 **[임베드 코드]** 버튼으로 다른 웹사이트에
+`<iframe>`으로 바로 삽입할 수 있다. 원본 스펙은 PDF
+「간호조무사 실습 콘텐츠 시나리오 — 활력징후(V/S) 및 기초사정」을 그대로 따른다.
+
+- **8단계 임상 워크플로우**: 환자 확인(개방형 질문·ID밴드 대조, 미수행 시 경고) →
+  손위생(펌핑 + WHO 6단계 타이머) → 체온(고막 체온계 전원·프로브 커버·삽입·36.7℃) →
+  맥박·호흡(요골동맥 30초 타이머 + 심박 비프음, 76/16) → 혈압(팔오금 위 2~3cm
+  커프, 손목 오류 테스트, 가압 160→118/76mmHg) → SpO₂(검지 클립, 98%) →
+  기초사정(의식/호흡/피부색/통증 + AI 질문) → 기록·보고(EMR 자동 불러오기 +
+  구두 보고 + 100점 만점 AI 채점 리포트)
+- **Three.js(r128, CDN) 3D 뷰포트**: 호흡·눈깜박임 애니메이션 환자 모형,
+  요골동맥 맥동 링, 체온계/혈압계 커프/SpO₂ 클립 장비 애니메이션, 카메라
+  프리셋(전체 조망/환자 두부/오른팔/장비 카트)
+- **AI 지도교사 "김수련" 패널**: 단계별 팁 + Web Speech API TTS 표준 발음 듣기,
+  키워드 매칭 기반 FAQ·자유 질문 QnA 모달
+- **실시간 모니터 & EMR**: Canvas 기반 ECG 파형(HR과 동기화) + HR/SpO₂/NIBP/BT/RR,
+  EMR 기록지 자동 불러오기·수기 입력
+- **4개 국어 용어 툴팁**(한국어/English/Tiếng Việt/Tagalog), 전체화면/효과음/초기화 토글
+
+React 이식 시 `components/XrPracticeScreen.tsx` 확장 또는 모듈 1 전용
+`components/XrVitalSignsScene.tsx` 신설, 상태머신은 `lib/xrStore.ts` 확장을
+권장한다(§5 상태 필드에 이 프로토타입의 `S` 객체 구조를 참고).
 
 ---
 
