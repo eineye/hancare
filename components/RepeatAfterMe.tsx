@@ -13,7 +13,6 @@ export default function RepeatAfterMe({ sentence }: { sentence: Sentence }) {
   const beginScoring = useLessonStore((s) => s.beginScoring);
   const setResult = useLessonStore((s) => s.setResult);
   const resetRecording = useLessonStore((s) => s.resetRecording);
-  const setAvatarState = useLessonStore((s) => s.setAvatarState);
   const recordPractice = useStatsStore((s) => s.recordPractice);
   const speechRate = useSettingsStore((s) => s.speechRate);
   const scoringStrictness = useSettingsStore((s) => s.scoringStrictness);
@@ -37,7 +36,6 @@ export default function RepeatAfterMe({ sentence }: { sentence: Sentence }) {
       const feedback = generateFeedback(sentence, score, scoringStrictness);
       setResult(score, feedback);
       recordPractice(score.overall);
-      setAvatarState('idle');
     }, 500);
   }
 
@@ -49,13 +47,11 @@ export default function RepeatAfterMe({ sentence }: { sentence: Sentence }) {
     setError(undefined);
     resetRecording();
     beginRecording();
-    setAvatarState('listening');
     stopFnRef.current = startRecognition({
       onResult: (text) => finishWithResult(text),
       onError: (message) => {
         setError(message);
         resetRecording();
-        setAvatarState('idle');
       },
     });
   }

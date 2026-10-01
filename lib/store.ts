@@ -9,17 +9,17 @@ import { safeLocalStorage } from './storage';
 // 상황제시 -> 용어학습 -> 아바타시범 -> 녹음중 -> 채점중 -> 결과표시
 // -> (집중연습 -> 녹음중) 또는 (대화학습 -> 결과표시)
 export type RecordingState = 'idle' | 'recording' | 'scoring' | 'result';
+// 역할극(RoleplayView)의 AI 환자 아바타 상태 표시에 쓰는 타입. 학습 화면에는 더 이상
+// 아바타가 없어(메디쌤과 중복) useLessonStore에는 avatarState 필드가 없다.
 export type AvatarState = 'idle' | 'speaking' | 'listening';
 
 interface LessonState {
   sentenceIndex: number;
   recordingState: RecordingState;
-  avatarState: AvatarState;
   lastScore?: ScoreResult;
   lastFeedback: FeedbackItem[];
 
   setSentenceIndex: (index: number) => void;
-  setAvatarState: (state: AvatarState) => void;
   beginRecording: () => void;
   beginScoring: () => void;
   setResult: (score: ScoreResult, feedback: FeedbackItem[]) => void;
@@ -30,12 +30,10 @@ interface LessonState {
 export const useLessonStore = create<LessonState>((set) => ({
   sentenceIndex: 0,
   recordingState: 'idle',
-  avatarState: 'idle',
   lastScore: undefined,
   lastFeedback: [],
 
   setSentenceIndex: (index) => set({ sentenceIndex: index, recordingState: 'idle', lastScore: undefined, lastFeedback: [] }),
-  setAvatarState: (avatarState) => set({ avatarState }),
   beginRecording: () => set({ recordingState: 'recording' }),
   beginScoring: () => set({ recordingState: 'scoring' }),
   setResult: (lastScore, lastFeedback) => set({ recordingState: 'result', lastScore, lastFeedback }),
@@ -85,7 +83,7 @@ export type ScoringStrictness = 'beginner' | 'intermediate';
 
 interface SettingsState {
   displayLang: DisplayLang;
-  /** 아바타/원어민 발음 재생 속도 배수 (0.5~1.5). RepeatAfterMe·AvatarTeacher가 참조한다. */
+  /** 원어민 발음 재생 속도 배수 (0.5~1.5). RepeatAfterMe가 참조한다. */
   speechRate: number;
   scoringStrictness: ScoringStrictness;
   autoPlayRecording: boolean;

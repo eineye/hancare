@@ -119,7 +119,7 @@ export default function SettingsView() {
         <div className="flex flex-col gap-3.5">
           <div>
             <div className="mb-2 flex justify-between text-[13.5px]">
-              <span className="text-brand-dark">아바타 말하기 속도</span>
+              <span className="text-brand-dark">말하기 속도</span>
               <span className="text-muted">{speechRate.toFixed(1)}배</span>
             </div>
             <input

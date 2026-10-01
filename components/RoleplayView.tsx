@@ -84,7 +84,7 @@ export default function RoleplayView({
     } finally {
       setStreaming(false);
       if (fullText.trim()) {
-        // 실제 음성 없이(무음) 문장 길이에 맞춘 입모양 타임라인만 재생한다 — AvatarTeacher와 같은 방식.
+        // 실제 음성 없이(무음) 문장 길이에 맞춘 입모양 타임라인만 재생한다 — TeacherAvatar(Character2DCanvas)의 playText() 사용.
         patientRef.current?.playText(fullText);
       }
     }
