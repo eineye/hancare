@@ -125,7 +125,7 @@ window.addEventListener('error', e => {
     </div>
     <div class="row" id="presets"></div>
     <div class="row opts">
-      <label>음성 <select id="voice"><option value="">자동 선택</option></select></label>
+      <label>브라우저 음성(Gemini 실패 시) <select id="voice"><option value="">자동 선택</option></select></label>
       <label>속도 <input id="rate" type="range" min="0.7" max="1.4" step="0.05" value="1"> <span id="rateV">1.0</span></label>
       <label><input id="silent" type="checkbox"> 소리 없이 입모양만</label>
       <span id="msg"></span>
@@ -1200,8 +1200,41 @@ PRESETS.forEach(t => { const b = document.createElement('button'); b.className =
 Character2DCanvas.voicesReady().then(() => {
   const vs = Character2DCanvas.getVoices('ko');
   vs.forEach(v => { const o = document.createElement('option'); o.value = v.name; o.textContent = v.name; voiceSel.appendChild(o); });
-  if (!vs.length) msg.textContent = '이 브라우저에는 한국어 음성이 없어 입모양만 재생됩니다.';
+  if (!vs.length) msg.textContent = '이 브라우저에는 한국어 음성이 없어 Gemini 음성 호출에 실패하면 입모양만 재생됩니다.';
 });
+
+// ===== Gemini TTS(서버 /api/tts, 관리자가 /admin/voice-settings에서 고른 음색) =====
+// 이 페이지는 한글케어 Next.js 서버가 정적으로 서빙하므로(같은 origin), 저장소 루트의
+// medi-ssam.html(hangulcare.html용, 서버 없음)과 달리 안전하게 /api/tts를 호출할 수 있다.
+// 키가 없거나 호출이 실패하면 기존처럼 브라우저 내장 음성(teacher.speak())으로 대체된다.
+function pcm16ToWavBlob(base64Pcm, sampleRateHz) {
+  const binary = atob(base64Pcm);
+  const pcmBytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) pcmBytes[i] = binary.charCodeAt(i);
+  const numChannels = 1, bitsPerSample = 16;
+  const byteRate = sampleRateHz * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const buffer = new ArrayBuffer(44 + pcmBytes.length);
+  const view = new DataView(buffer);
+  const writeStr = (offset, s) => { for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i)); };
+  writeStr(0, 'RIFF'); view.setUint32(4, 36 + pcmBytes.length, true); writeStr(8, 'WAVE');
+  writeStr(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRateHz, true); view.setUint32(28, byteRate, true); view.setUint16(32, blockAlign, true); view.setUint16(34, bitsPerSample, true);
+  writeStr(36, 'data'); view.setUint32(40, pcmBytes.length, true);
+  new Uint8Array(buffer, 44).set(pcmBytes);
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+async function fetchGeminiAudioEl(text, playbackRate) {
+  try {
+    const res = await fetch('/api/tts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
+    const json = await res.json();
+    if (!res.ok || !json.audioBase64) return null;
+    const blob = pcm16ToWavBlob(json.audioBase64, json.sampleRateHz || 24000);
+    const audio = new Audio(URL.createObjectURL(blob));
+    audio.playbackRate = playbackRate;
+    return audio;
+  } catch (e) { return null; }
+}
 rate.oninput = () => document.getElementById('rateV').textContent = (+rate.value).toFixed(2);
 teacher.on('warning', w => { msg.textContent = w.message; });
 
@@ -1218,8 +1251,10 @@ async function run() {
   text = say.value.trim(); if (!text) return;
   msg.textContent = '';
   cap.textContent = text;
-  if (document.getElementById('silent').checked) await teacher.playText(text, { msPerSyllable: 165 / +rate.value });
-  else await teacher.speak(text, { rate: +rate.value, voiceName: voiceSel.value || null });
+  if (document.getElementById('silent').checked) { await teacher.playText(text, { msPerSyllable: 165 / +rate.value }); return; }
+  const audioEl = await fetchGeminiAudioEl(text, +rate.value);
+  if (audioEl) { await teacher.speakAudio(audioEl, text); return; }
+  await teacher.speak(text, { rate: +rate.value, voiceName: voiceSel.value || null });
 }
 document.getElementById('go').onclick = run;
 document.getElementById('halt').onclick = () => teacher.stop();

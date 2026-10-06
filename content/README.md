@@ -122,8 +122,9 @@ JSON을 손으로 고치지 않고 표/폼 화면으로 편집하려면 관리�
 ## 음성 설정 (hancare-voice-settings)
 
 관리자 메뉴 **음성 설정**(`/admin/voice-settings`, `components/AdminVoiceSettings.tsx`)에서
-학습 화면 전체(따라 읽기 · 단어 듣기 · 단어장 · 영상 자막, `lib/speech.ts`의 `speak()`)가
-재생하는 "원어민 발음" 음색을 고릅니다. 다른 편집기들과 달리 이 화면은 단독 HTML
+학습 화면 전체(따라 읽기 · 단어 듣기 · 단어장 · 영상 자막, `lib/speech.ts`의 `speak()`)와
+역할극 "AI 환자" 아바타·메디쌤 팝업(`public/medi-ssam.html`)이 재생하는 "원어민 발음"
+음색을 고릅니다. 다른 편집기들과 달리 이 화면은 단독 HTML
 편집기가 아니라 일반 React 페이지입니다(편집할 내용이 값 하나뿐이라 iframe JSON
 편집기 없이 바로 구현). 고르는 즉시 `content/ttsSettings.json`에 자동 저장됩니다
 (`GET/PUT /api/tts-settings`, `lib/ttsSettings.ts`, PUT은 관리자만 — `middleware.ts`).
@@ -144,11 +145,17 @@ JSON을 손으로 고치지 않고 표/폼 화면으로 편집하려면 관리�
   음성(Web Speech API)으로 대체됩니다(`lib/speech.ts`) — 이 화면에서 무엇을 고르고
   저장해도 키가 없으면 적용되지 않는다는 안내 배너가 뜹니다.
 - 역할극의 "AI 환자"·메디쌤 팝업(`character2d-canvas` 엔진, 위 "아바타" 관련 내용은
-  README.md 참고)은 입모양(비셈) 타이밍 때문에 별도의 Web Speech 기반 엔진을 그대로
-  쓰며, 이 설정의 영향을 받지 않습니다.
+  README.md 참고)도 이 설정을 반영합니다 — 엔진의 `speakAudio()`(오디오 재생과 함께
+  입모양을 구동, "가장 정확한 방식"으로 엔진 자체가 권장하는 방법)로 Gemini 음성을
+  재생하고, 실패하면 엔진 자체의 Web Speech 폴백(`speak()`, 그마저 안 되면 무음
+  입모양만 재생하는 `playText()`)으로 넘어갑니다. 단, 메디쌤 팝업은 `public/
+  medi-ssam.html`(Next.js 서버가 서빙, 같은 origin이라 `/api/tts` 호출 가능)에만
+  해당하고, `hangulcare.html`과 같은 저장소 루트의 `medi-ssam.html`은 서버가 없어
+  계속 브라우저 음성만 씁니다.
 - 단일 파일판 `hangulcare.html`은 서버가 없어 `GEMINI_API_KEY`를 안전하게 보관할 수
-  없으므로(클라이언트 코드에 키가 노출됨) 이 Gemini 음색 설정과는 연동되지 않습니다.
-  대신 같은 관리자 메뉴 위치에 **브라우저 내장 음성(Web Speech API) 중에서 고르는**
+  없으므로(클라이언트 코드에 키가 노출됨) 학습 화면·역할극·메디쌤 팝업 모두 이
+  Gemini 음색 설정과는 연동되지 않습니다. 대신 같은 관리자 메뉴 위치에 **브라우저
+  내장 음성(Web Speech API) 중에서 고르는**
   별도의 "음성 설정" 화면이 있습니다 — 이 브라우저에 설치된 음성 목록(`getVoices()`)을
   보여주고, 고른 `voiceURI`를 `hc-voice-settings`에 저장해 `pickKoreanVoice()`가
   그 음성을 우선 쓰게 합니다(없으면 기존처럼 첫 한국어 음성 자동 선택). 음색

@@ -157,8 +157,9 @@ export default function AdminVoiceSettings({
         <p className="mt-4 text-xs leading-relaxed text-muted">
           음색 미리듣기 예문: &ldquo;{TTS_PREVIEW_TEXT_KO}&rdquo;. 재생 속도(느리게 듣기 등)는 학습자의{' '}
           <span className="font-medium text-brand-dark">설정 → 말하기 속도</span>에서 조절됩니다. 역할극의
-          &ldquo;AI 환자&rdquo;와 메디쌤 팝업은 입모양 연동을 위해 별도의 음성 엔진을 쓰므로 이 설정의
-          영향을 받지 않습니다.
+          &ldquo;AI 환자&rdquo;와 메디쌤 팝업(<code className="font-mono">/medi-ssam.html</code>)도 같은 음색을
+          씁니다. 단일 파일판 <code className="font-mono">hangulcare.html</code>은 서버가 없어 Gemini와 연동되지
+          않으며, 대신 브라우저 내장 음성 중에서 고르는 별도의 음성 설정 화면이 있습니다.
         </p>
       </section>
     </div>

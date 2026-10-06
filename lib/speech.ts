@@ -123,7 +123,10 @@ function cacheAudio(text: string, entry: { url: string; sampleRateHz: number }):
   audioCache.set(text, entry);
 }
 
-async function fetchGeminiAudio(text: string): Promise<{ url: string; sampleRateHz: number } | undefined> {
+/** 텍스트 → Gemini TTS 오디오(object URL). speak() 내부와, 음성이 필요한 다른 곳
+ * (예: 역할극 "AI 환자" 아바타)에서 재사용한다. 실패하면 undefined — 호출 쪽에서
+ * Web Speech 등으로 대체한다. */
+export async function fetchGeminiAudio(text: string): Promise<{ url: string; sampleRateHz: number } | undefined> {
   const cached = audioCache.get(text);
   if (cached) return cached;
   try {
