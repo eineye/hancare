@@ -159,7 +159,7 @@ cp .env.example .env.local
     `speak()`(Web Speech)로, 그마저 안 되면 `playText()`(무음 입모양)로 넘어갑니다.
     `hangulcare.html`은 서버가 없어 Gemini를 쓸 수 없으므로 계속 `playText()`만
     씁니다(대화가 텍스트로만 오가며 무음).
-  - 기초한글(`/basic-hangul`) 화면 우측 상단 **메디쌤과 발화 연습** 버튼: 같은
+  - 기초한글(`/basic-hangul`) 화면 상단의 **메디쌤과 대화 연습** 버튼: 같은
     엔진을 내장한 독립 페이지를 화면 대부분을 채우는 팝업(iframe)으로 띄웁니다.
     `public/medi-ssam.html`(Next.js 서버가 정적으로 서빙 — 같은 origin이라 `/api/tts`를
     안전하게 호출할 수 있음)은 Gemini 음성을 우선 쓰고 실패하면 브라우저 TTS로
