@@ -1484,11 +1484,12 @@
     }).join("");
 
     var mainHtml =
-      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px;">' +
-        '<div><p class="eyebrow">기초한글 BASIC HANGUL</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글 자체를 처음부터 배우기</h1>' +
-        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고 연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.</p></div>' +
-        '<button class="btn btn-ghost" style="flex:none;white-space:nowrap;" onclick="App.openMediSsam()">메디쌤과 발화 연습 ↗</button>' +
-      '</div>' +
+      '<p class="eyebrow">기초한글 BASIC HANGUL</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글 자체를 처음부터 배우기</h1>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고 연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.</p>' +
+      '<button type="button" onclick="App.openMediSsam()" style="display:inline-flex;align-items:center;gap:14px;border:none;border-radius:16px;background:var(--brand-dark);padding:14px 18px;margin-top:14px;cursor:pointer;text-align:left;">' +
+        '<span style="flex:none;width:48px;height:48px;border-radius:999px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🩺</span>' +
+        '<span><span style="display:block;font-size:1rem;font-weight:700;color:#fff;">메디쌤과 발화 연습</span><span style="display:block;margin-top:2px;font-size:.78rem;color:rgba(255,255,255,.7);">AI 아바타와 실제 문장을 말해보세요 ↗</span></span>' +
+      '</button>' +
       situationsHtml;
 
     el.innerHTML = shell(mainHtml, "basic-hangul");
