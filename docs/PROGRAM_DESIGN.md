@@ -419,10 +419,16 @@ hancare/
   또박또박한 스타일 8종, `lib/ttsVoices.ts`)을 고르면 `content/ttsSettings.json`에
   저장되어 학습 화면 전체(따라 읽기·단어 듣기·단어장·영상 자막, `lib/speech.ts`의
   `speak()`)에 바로 적용된다. 키가 없거나 호출이 실패하면 기존 브라우저 내장 음성
-  (Web Speech API)으로 자동 대체된다. 역할극의 "AI 환자"·메디쌤 팝업은 아래 "아바타
-  입모양" 절의 별도 Canvas 2D 캐릭터 엔진이 입모양 타이밍 때문에 자체 Web Speech
-  음성을 그대로 쓰므로 이번 변경 범위 밖이다. 서버가 없어 `GEMINI_API_KEY`를 안전하게
-  둘 수 없는 단일 파일판 `hangulcare.html`도 Gemini와는 연동되지 않지만, 대신 같은
+  (Web Speech API)으로 자동 대체된다. 역할극의 "AI 환자" 아바타와 메디쌤 팝업
+  (`public/medi-ssam.html`)도 같은 음색을 쓴다 — 아래 "아바타 입모양" 절의 Canvas 2D
+  캐릭터 엔진이 이미 갖추고 있던 `speakAudio(src, text)`(오디오 재생 시각 + 가능하면
+  `AnalyserNode` 음량 분석으로 입모양을 구동하는, 엔진 스스로 "가장 정확한 방식"이라고
+  표시해 둔 메서드)에 Gemini가 합성한 오디오를 그대로 흘려보내는 식으로 연결했다
+  (`components/RoleplayView.tsx`의 `speakPatient()`, `public/medi-ssam.html`의
+  `fetchGeminiAudioEl()`). 실패하면 엔진 자체의 Web Speech 폴백(`speak()`, 그마저 안
+  되면 무음 입모양만 재생하는 `playText()`)으로 넘어간다. 서버가 없어
+  `GEMINI_API_KEY`를 안전하게 둘 수 없는 단일 파일판 `hangulcare.html`(학습 화면·역할극·
+  저장소 루트 `medi-ssam.html` 모두 포함)은 Gemini와는 연동되지 않지만, 대신 같은
   관리자 메뉴 자리에 브라우저 내장 음성(Web Speech API, `getVoices()`) 중에서 고르는
   별도의 "음성 설정" 화면을 둬(`hc-voice-settings`에 이 브라우저에만 저장) `/admin/
   voice-settings`와 같은 위치·구조로 기능 공백 없이 맞췄다 — 품질은 Gemini보다
@@ -497,6 +503,16 @@ viseme 시퀀스"는 두 가지 이유로 이번 프로토타입에서는 근사
 TTS로 교체되면 이 엔진의 텍스트 기반 타임라인 자리에 해당 API가 제공하는
 viseme 타이밍 이벤트를 연결해 무작위 선택 대신 실제 음소에 맞는 모양을
 고르도록 바꾸면 된다.
+
+**추가(Gemini TTS 연동 이후)**: Gemini 2.5 TTS는 Azure/Polly와 달리 viseme·스피치마크를
+반환하지 않는다. 대신 엔진이 처음부터 갖추고 있던 세 번째 재생 경로
+`speakAudio(src, text)`(§11 "학습 음성" 보강 참고 — 위 1번 문제였던 "speechSynthesis
+오디오는 AnalyserNode에 연결할 수 없다"는 제약이 **일반 `<audio>` 요소에는 적용되지
+않으므로**, Gemini가 합성한 WAV를 그 요소로 재생하면 실시간 음량을 읽어 입모양에 반영할
+수 있다)를 그대로 썼다 — 음소 단위 정확도는 아니지만, 텍스트 기반 추정(`playText`)보다
+한 단계 더 실제 발화에 가깝다. 진짜 viseme API(Azure Speech 등)로 교체할 때도 이
+`speakAudio()`가 이미 받는 `opts.visemes` 인자에 그 이벤트를 그대로 꽂으면 되므로,
+위 로드맵 설명은 여전히 유효하다.
 
 ### 로그인 · 진도관리(코스 선택) · 관리자 화면
 

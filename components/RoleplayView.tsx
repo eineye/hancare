@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import TeacherAvatar, { type TeacherAvatarHandle } from './TeacherAvatar';
 import { ELDERLY_MAN_PALETTE } from '@/lib/teacher2d/palettes';
-import { isSttSupported, startRecognition } from '@/lib/speech';
+import { fetchGeminiAudio, isSttSupported, startRecognition } from '@/lib/speech';
 import { useSettingsStore, type AvatarState } from '@/lib/store';
 import type { ChatMessage, RoleplayScenario, Term } from '@/lib/types';
 import { apiErrorMessage } from '@/lib/auth';
@@ -46,6 +46,19 @@ export default function RoleplayView({
     setSttSupported(isSttSupported());
   }, []);
 
+  /** "AI 환자" 아바타 발화 — Gemini TTS 오디오 + 실제 음량 기반 립싱크(engine.speakAudio())를
+   * 우선 쓰고, 키가 없거나 호출이 실패하면 아바타 엔진 자체의 Web Speech 폴백(engine.speak(),
+   * 그마저 안 되면 무음 입모양만)으로 넘어간다. */
+  async function speakPatient(text: string) {
+    if (!text.trim()) return;
+    const audio = await fetchGeminiAudio(text);
+    if (audio) {
+      patientRef.current?.speakAudio(audio.url, text);
+    } else {
+      patientRef.current?.speak(text);
+    }
+  }
+
   async function send(text: string, historyOverride?: ChatMessage[]) {
     const trimmed = text.trim();
     if (!trimmed || streaming) return;
@@ -83,10 +96,7 @@ export default function RoleplayView({
       setMessages((prev) => prev.map((m) => (m.id === assistantId ? { ...m, content: msg } : m)));
     } finally {
       setStreaming(false);
-      if (fullText.trim()) {
-        // 실제 음성 없이(무음) 문장 길이에 맞춘 입모양 타임라인만 재생한다 — TeacherAvatar(Character2DCanvas)의 playText() 사용.
-        patientRef.current?.playText(fullText);
-      }
+      if (fullText.trim()) speakPatient(fullText);
     }
   }
 
@@ -96,7 +106,7 @@ export default function RoleplayView({
     // 편집기에서 첫 대사를 정했으면 AI 호출 없이 그 대사로 시작한다.
     if (scenario.openingKo) {
       setMessages([{ id: nextId(), role: 'assistant', content: scenario.openingKo }]);
-      setTimeout(() => patientRef.current?.playText(scenario.openingKo ?? ''), 300);
+      setTimeout(() => speakPatient(scenario.openingKo ?? ''), 300);
       return;
     }
     send(
@@ -235,7 +245,9 @@ export default function RoleplayView({
             </div>
             <p className="mt-2.5 text-[11px] leading-relaxed text-white/70">
               Gemini API로 실제 대화하는 역할극입니다(API 키가 없으면 관리자가 정한 규칙 응답으로 대화합니다). 환자
-              대사는 실시간 생성되며, 실제 임상 판단이 필요한 질문에는 답하지 않도록 안내되어 있습니다. 아바타는 실제 음성 없이 대사 길이에 맞춘 입모양만 재생합니다.
+              대사는 실시간 생성되며, 실제 임상 판단이 필요한 질문에는 답하지 않도록 안내되어 있습니다. 아바타 음성도
+              Gemini TTS(관리자가 고른 음색)로 실제로 재생되며, 키가 없거나 호출이 실패하면 브라우저 내장 음성으로
+              대체됩니다.
             </p>
           </div>
 
