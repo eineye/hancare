@@ -9,7 +9,9 @@
 
 전체 시스템 아키텍처, 데이터 모델, API, AI/음성 파이프라인, 개발 로드맵은
 [`docs/PROGRAM_DESIGN.md`](docs/PROGRAM_DESIGN.md)를, XR실습(HnaCare XR) 구성
-지침은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)를 참고하세요.
+지침은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)를, 영상학습(멈추고
+질문하기) 설계는 [`docs/VIDEO_MODULE_DESIGN.md`](docs/VIDEO_MODULE_DESIGN.md)를, 영상을 올리고 AI 자동 자막으로
+편집하는 관리자 영상 에디터(관리자 메뉴 "영상 편집")는 [`docs/VIDEO_EDITOR_DESIGN.md`](docs/VIDEO_EDITOR_DESIGN.md)를 참고하세요.
 
 디자인은 claude.ai/design에서 만든 시안(웜 베이지 배경 · 다크 그린 `#12241F` ·
 포인트 틸 `#0E7C66`, Noto Sans KR + IBM Plex Mono, 상단바+좌측 사이드바 메뉴 구조)을
@@ -27,7 +29,7 @@ npm install
 npm run dev       # http://localhost:3000
 ```
 
-`/`으로 접속하면 로그인 화면(`/login`)으로 이동합니다. 데모 계정으로 바로 시작할 수 있습니다.
+`/`으로 접속하면 로그인 화면(`/login`)으로 이동합니다. 개발 중(`npm run dev`)에는 데모 계정으로 바로 시작할 수 있습니다.
 
 | 역할 | 아이디 | 비밀번호 | 로그인 후 이동 |
 |---|---|---|---|
@@ -35,30 +37,43 @@ npm run dev       # http://localhost:3000
 | 관리자 | `admin` | `admin` | `/admin` (전체 현황) |
 
 `/login` 화면의 "학습자로 시작"/"관리자로 시작" 버튼으로 바로 로그인할 수도 있습니다.
-이 로그인은 실제 서버 인증이 아닌 `localStorage` 기반 데모 인증입니다(`lib/auth.ts`).
+로그인은 서버(`/api/auth/login`)가 확인하고 서명된 httpOnly 세션 쿠키를 발급하며, 모든 API와 관리자
+편집기는 서버(`middleware.ts`)가 세션·역할을 확인합니다. **운영 서버(`npm run start`)에서는 위 데모 비밀번호가
+쓰이지 않습니다** — `.env.local`에 `SESSION_SECRET`·`ADMIN_PASSWORD` 등을 설정해야 하며, Gemini API 키 보호·호출
+제한까지 [`docs/SECURITY.md`](docs/SECURITY.md)에 정리되어 있습니다.
 
 로그인 후에는 상단바(로고·언어 선택·알림·프로필) + 좌측 사이드바 메뉴 셸
-(`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 학습 /
-XR실습 / 역할극 / 단어장 / 리포트 / 실습 일지 / 알림 / 설정이고, 관리자 메뉴는
-전체 현황 / 알림 및 면담입니다.
+(`components/AppShell.tsx`)로 이동합니다. 학습자 메뉴는 홈 / 커리큘럼 / 기초한글 /
+실습한글 / XR실습 / 영상학습 / 역할극 / 리포트 / 실습 일지 / 알림 / 설정이고, 관리자 메뉴는
+전체 현황 / 알림 및 면담 / 실습내용 편집 / 단어장 편집 / 영상 편집 / XR실습 편집 / 역할극 편집입니다.
 
-진도관리(`/courses`)에서는 학습 단계를 기초한글 / 실습한글 / XR실습 3개 분류로
-고를 수 있습니다. 셋 다 `content/*.json` 파일의 실제 콘텐츠로 연결되어 있습니다.
+기초한글(`/basic-hangul`)은 기초한글 유닛의 상황별 학습 목록과 단어장(용어 듣기·
+검색·"학습함" 구분, 기초한글+실습한글 전체 용어)을 한 화면에 통합해 보여줍니다
+(`components/BasicHangulView.tsx`, 단어장 부분은 `components/VocabView.tsx` 재사용).
+실습한글은 `한글학습`에서 이름을 바꾼 것으로, 실습한글 유닛의 상황별 학습(`/learn/
+[unitId]/[situationId]`)으로 바로 이어집니다. 진도관리(`/courses`)에서는 실습한글 /
+XR실습 2개 분류로 고를 수 있습니다(기초한글은 위 전용 메뉴로 옮겼습니다). 콘텐츠는
+전부 `content/*.json` 파일의 실제 데이터로 연결되어 있습니다.
 XR실습(`/xr`)은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)의 Phase 1
 (화면 흐름·상호작용 셸)까지 구현되어 있으며, 실제 3D 뷰어·물리 엔진은 아직 없고
-와이어프레임 미리보기와 목데이터 인터랙션 결과로 대체되어 있습니다.
+와이어프레임 미리보기와 목데이터 인터랙션 결과로 대체되어 있습니다. 5개 모듈 중
+1번 "활력징후 및 기초사정"은 Three.js 3D 뷰포트가 실제로 동작하는 독립 프로토타입
+[`public/xr/vital-signs.html`](public/xr/vital-signs.html)(`/xr/vital-signs.html`로
+정적 서빙, 다른 사이트에 `<iframe>`으로 임베드 가능)로 먼저 검증했으며, 아직 위
+`/xr` 메뉴에는 연결되어 있지 않습니다(자세한 내용은 `docs/XR_MODULE_DESIGN.md` §7.1 참고).
 
-### 새 화면 (역할극 · 단어장 · 리포트 · 실습 일지 · 알림 · 설정 · 관리자 알림)
+### 새 화면 (역할극 · 기초한글 단어장 · 리포트 · 실습 일지 · 알림 · 설정 · 관리자 알림)
 
 | 화면 | 실제로 동작하는 부분 | 아직 목데이터인 부분 |
 |---|---|---|
+| `/video`, `/video/[videoId]` | 자체 MP4 영상 + 자막 동기화, 자막 단어를 누르면 자동 정지 후 Gemini(`/api/video-qa`)가 그 장면 대사를 근거로 뜻·문법·예문 설명, 이어보기(2초 전부터)·구간 반복·속도, 시청 위치 저장, 단어장 담기 | 샘플 영상 파일은 저장소에 없어 **자막 연습 모드**로 동작(`public/videos/README.md`에 MP4를 넣으면 실제 영상 재생) 독립 실행형 `hangulcare.html`에도 같은 메뉴가 있으며, 거기서는 서버가 없어 AI 답변을 규칙 기반으로 대체 |
 | `/roleplay/[unitId]/[situationId]` | Gemini API(`/api/chat`)로 실제 대화하는 역할극. 마이크로 말하면 STT로 인식해 전송 | — |
-| `/vocab` | `content/*.json`의 실제 용어 전체를 모은 단어장, 듣기·검색·"학습함" 구분 | 시안에 있던 가짜 발음 점수 숫자는 빼고, 실제로 들어봤는지만 표시 |
+| `/basic-hangul` | 기초한글 상황별 학습 목록 + `content/*.json`의 실제 용어 전체를 모은 단어장, 듣기·검색·"학습함" 구분 | 시안에 있던 가짜 발음 점수 숫자는 빼고, 실제로 들어봤는지만 표시 |
 | `/report` | 평균 발음 점수·학습 문장 수·유닛별 용어 학습 현황은 실제 누적 기록 | 주차별 추이 그래프, 약한 발음 요소 분석은 예시 데이터(음소 단위 분석 미구현) |
 | `/journal` | 실습 일지 작성·저장·조회가 이 브라우저에 실제로 됨(`localStorage`) | 지도자 확인·의견 기능은 실제 멘토 계정이 없어 아직 없음 |
-| `/notices` | 읽음/안읽음 처리는 실제로 저장됨 | 알림 목록 자체는 발송 서버가 없어 예시 데이터 |
-| `/settings` | 표시 언어(한/영), 아바타 말하기 속도, 채점 엄격도는 실제로 다른 화면에 반영됨 | 녹음 자동 재생, 알림 토글은 화면 표시만(백엔드 없음) |
-| `/admin/alerts` | — | 면담 일정·확인 대기 일지·발송 이력 전부 목데이터(`lib/adminMock.ts`) |
+| `/notices` | 알림 목록 자체가 관리자가 작성해 `content/notices.json`에 저장한 실제 데이터(`/admin/alerts`에서 작성), 읽음/안읽음 처리도 실제로 저장됨 | 실제 발송 서버(푸시 등)는 없어 "이 목록에 나타남"으로 전달을 대신하며, 열람 여부는 각 학습자 브라우저에만 저장(관리자는 열람률을 볼 수 없음) |
+| `/settings` | 표시 언어(한/영), 말하기 속도, 채점 엄격도는 실제로 다른 화면에 반영됨 | 녹음 자동 재생, 알림 토글은 화면 표시만(백엔드 없음) |
+| `/admin/alerts` | **알림 작성**(제목·내용·대상)이 실제로 저장되어 모든 학습자의 `/notices`·알림 벨에 바로 반영됨(`GET/POST /api/notices`, `lib/notices.ts`) — 자세한 내용은 [`content/README.md`](content/README.md#알림-작성-hancare-admin-notices) 참고 | 면담 일정·확인 대기 일지는 목데이터(`lib/adminMock.ts`) |
 
 사이드바 언어 드롭다운은 시안처럼 7개 언어(한국어/영어/몽골어/베트남어/필리핀어/
 미얀마어/인도네시아어)를 보여주지만, 실제 뜻풀이 번역 콘텐츠가 있는 건 한국어/
@@ -77,34 +92,82 @@ XR실습(`/xr`)은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)의 Pha
 | `content/practice-hangul.json` | 실습한글 |
 | `content/basic-hangul.json` | 기초한글 |
 
-### LLM 대화 기능 활성화 (선택)
+JSON을 직접 고치는 대신 관리자 메뉴 **실습내용 편집**(`/admin/library-editor`)의
+실습내용 편집기(`public/hancare-library-editor.html`)로 편집할 수도 있습니다. 편집 내용은
+`/api/hangul-library`를 통해 위 파일에 바로 자동 저장됩니다.
 
-대화창(영역 6)의 LLM 대화는 [Gemini API](https://aistudio.google.com/app/apikey)로
-연동되어 있습니다(비용 고려 — 무료 테스트 티어가 있는 `gemini-1.5-flash` 사용). 키가
-없어도 앱은 정상 동작하며, 이 경우 채팅창에 환경변수 설정 안내가 표시됩니다.
+### LLM 대화 · 학습 음성(TTS) 기능 활성화 (선택)
+
+역할극(`/roleplay`) 화면의 LLM 대화와 학습 화면 전체(따라 읽기·단어 듣기·단어장·영상
+자막)의 "원어민 발음" 음성은 같은 [Gemini API](https://aistudio.google.com/app/apikey)
+키로 연동되어 있습니다 — 대화는 `gemini-1.5-flash`(비용 고려, 무료 테스트 티어),
+음성은 `gemini-2.5-flash-preview-tts`를 기본으로 씁니다. 키가 없어도 앱은 정상
+동작하며, 이 경우 채팅창에는 환경변수 설정 안내가, 학습 음성은 브라우저 기본 음성
+(Web Speech API)으로 자동 대체되어 재생됩니다.
 
 ```bash
 cp .env.example .env.local
 # .env.local에 GEMINI_API_KEY=발급받은키 입력
 ```
 
+학습 음성의 음색(성별 느낌 × 표준 아나운서/친근한 대화체/안내방송톤/또박또박한 스타일
+8종)은 관리자 메뉴 **음성 설정**(`/admin/voice-settings`)에서 미리듣기로 들어보고
+고르면 바로 저장되어 모든 학습자 화면에 적용됩니다(`content/ttsSettings.json`,
+자세한 내용은 [`content/README.md`](content/README.md#음성-설정-hancare-voice-settings)
+참고).
+
 ### 프로토타입 범위 안내
 
 - **콘텐츠**: `content/*.json`의 로컬 목데이터(유닛/상황/용어/문장) — 재빌드 없이
   파일 교체만으로 갱신 가능 (위 "실습내용(콘텐츠) 수정하기" 참고)
-- **STT/TTS**: 브라우저 내장 Web Speech API (Chrome 권장, 마이크 권한 필요)
+- **STT(음성 인식)**: 브라우저 내장 Web Speech API (Chrome 권장, 마이크 권한 필요)
+- **TTS(학습 음성)**: [Gemini 2.5 TTS](https://aistudio.google.com/app/apikey)로 실제 음성을
+  합성합니다(`app/api/tts/route.ts`, `lib/speech.ts`). 관리자가 `/admin/voice-settings`에서
+  고른 음색이 적용되며, `GEMINI_API_KEY`가 없거나 호출이 실패하면 브라우저 내장 음성으로
+  자동 대체됩니다. 역할극 "AI 환자" 아바타와 메디쌤 팝업(아래 "아바타" 항목 참고)도 같은
+  Gemini 음성을 씁니다 — Canvas 2D 캐릭터 엔진의 `speakAudio()`(실제 오디오 재생 + 음량
+  기반 립싱크)로 연결했고, 실패하면 엔진 자체의 Web Speech 폴백(그마저 안 되면 무음
+  입모양)으로 넘어갑니다. 단일 파일판 `hangulcare.html`은 서버가 없어 API 키를 안전하게
+  쓸 수 없으므로 학습 화면·역할극·`medi-ssam.html`(저장소 루트 사본) 모두 Gemini와
+  연동되지 않습니다. 대신 관리자 메뉴의 같은 자리에 **브라우저 내장 음성(Web Speech API)
+  중에서 고르는** 별도의 "음성 설정" 화면이 있어(`hc-voice-settings`에 이 브라우저에만
+  저장), Gemini만큼 다양하지는 않아도 기본값("자동", 첫 한국어 음성)보다 더 나은 음성이
+  설치돼 있으면 그걸 고를 수 있습니다.
 - **발음 채점**: 실제 음성 신호 기반 채점이 아닌, 인식된 텍스트와 목표 문장을
   비교하는 **텍스트 유사도 근사치**입니다 (`lib/scoring.ts`)
-- **아바타**: 직접 그린 2D 일러스트 얼굴(`components/Avatar2D.tsx`, 독립 실행형
-  `hangulcare.html`에도 동일하게 포함)이 말하는 동안(`speaking` 상태) 자체 타이머로
-  일정한 리듬마다 음소 그룹별 입모양(닫힘/크게 벌림/오므림/이 보임/미소/F·V) 중
-  하나를 무작위로 보여줍니다 — 실제 발음을 분석해 고르는 게 아니라 근사치입니다.
-  브라우저는 합성 음성 오디오를 Web Audio API로 분석할 방법을 제공하지 않고
-  (음소 타이밍을 알 수 없음), TTS의 단어 경계(`onBoundary`) 이벤트도 브라우저·음성
-  조합에 따라(특히 일부 한국어 음성) 아예 발생하지 않을 수 있어 입모양 전환을
-  그 이벤트에 의존하지 않고 `speaking` 상태 동안 스스로 스케줄링하는 타이머로
-  구현했습니다. 진짜 음소 단위 립싱크는 비seme 타이밍을 제공하는 유료 TTS 서버가
-  있어야 가능합니다.
+- **아바타 (Canvas 2D 캐릭터 엔진)**: 외부에서 받은 Canvas 2D 벡터 캐릭터 엔진(원본
+  `character2d-canvas.js`)을 씁니다. 문장을 초성·중성·종성으로 분해해 입모양(비셈)
+  타임라인을 만듭니다. 음성은 엔진의 `speakAudio()`(오디오 재생 시각 + 가능하면
+  `AnalyserNode` 음량 분석으로 입모양을 구동, "가장 정확한 방식"으로 엔진 자체가
+  권장하는 방법)와 `speak()`(브라우저 TTS, `onboundary` 이벤트로 타이밍 보정, 이벤트가
+  없는 조합도 있어 근사치) 두 경로를 쓰는 화면에 따라 나눠 씁니다. 호흡·눈 깜빡임·시선
+  추적 애니메이션도 함께 포함되어 있습니다. 한글학습(`/learn`) 화면 자체에는 더
+  이상 아바타가 없습니다(메디쌤과 기능이 겹쳐 제거 — 아래 참고). 이 엔진을 쓰는
+  곳은 두 군데입니다:
+  - 역할극(`/roleplay`) 화면의 "AI 환자" 아바타: Next.js 앱은
+    `lib/teacher2d/character2d-canvas.js` + React 래퍼 `components/TeacherAvatar.tsx`,
+    `hangulcare.html`은 같은 엔진의 전역 스크립트판(`character2d-canvas.global.js`,
+    저장소 루트)을 `<script>` 태그로 불러와 씁니다. `hangulcare.html`은 상태가
+    바뀔 때마다 화면 전체를 `innerHTML`로 다시 그리는데, 캔버스 엔진은 계속
+    살아있는 애니메이션 인스턴스라 매번 새로 만들면 안 돼서 인스턴스를 하나만
+    만들어 두고 다시 그릴 때마다 캔버스만 새 컨테이너로 옮겨 붙이는 방식
+    (`mountPatientAvatar()`)을 씁니다. `palette`만 바꿔 남자 노인 인상(흰/회색
+    머리·눈썹·콧수염, 저채도 입술, 환자복 색, 배지 없음 —
+    `lib/teacher2d/palettes.ts`의 `ELDERLY_MAN_PALETTE`)을 표현합니다. Next.js 앱은
+    환자 대사가 도착하면 `/api/tts`로 Gemini 음성을 가져와 `speakAudio()`로 실제
+    재생하고(`components/RoleplayView.tsx`의 `speakPatient()`), 실패하면 엔진의
+    `speak()`(Web Speech)로, 그마저 안 되면 `playText()`(무음 입모양)로 넘어갑니다.
+    `hangulcare.html`은 서버가 없어 Gemini를 쓸 수 없으므로 계속 `playText()`만
+    씁니다(대화가 텍스트로만 오가며 무음).
+  - 기초한글(`/basic-hangul`) 화면 상단의 **메디쌤과 대화 연습** 버튼: 같은
+    엔진을 내장한 독립 페이지를 화면 대부분을 채우는 팝업(iframe)으로 띄웁니다.
+    `public/medi-ssam.html`(Next.js 서버가 정적으로 서빙 — 같은 origin이라 `/api/tts`를
+    안전하게 호출할 수 있음)은 Gemini 음성을 우선 쓰고 실패하면 브라우저 TTS로
+    대체되며, `hangulcare.html`과 같은 저장소 루트의 `medi-ssam.html`(서버 없음)은
+    계속 브라우저 TTS만 씁니다. 두 버전 다 원하는 문장을 자유롭게 입력해 입모양과
+    함께 들어볼 수 있고(속도 조절, 소리 없이 입모양만 재생하는 옵션 포함), 표정·개별
+    입모양을 직접 눌러볼 수도 있습니다 — 학습 화면에 내장된 것이 아니라 완전히
+    독립된 연습 도구입니다.
 - **사용자 통계**: 이 브라우저의 `localStorage`에만 저장되는 데모 값(다른 기기와 공유되지 않음)
 - **로그인/관리자 화면**: 실제 서버 인증·다중 사용자 DB가 아닌 데모 계정 + 목데이터
   (`lib/auth.ts`, `data/learners.json`) 기반 UX 프로토타입입니다

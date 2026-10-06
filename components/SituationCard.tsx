@@ -1,6 +1,6 @@
 'use client';
 
-import { useLessonStore } from '@/lib/store';
+import { useSettingsStore } from '@/lib/store';
 import type { Situation } from '@/lib/types';
 
 interface SituationCardProps {
@@ -22,11 +22,11 @@ export default function SituationCard({
   canPrev,
   canNext,
 }: SituationCardProps) {
-  const lang = useLessonStore((s) => s.lang);
-  const setLang = useLessonStore((s) => s.setLang);
+  const displayLang = useSettingsStore((s) => s.displayLang);
+  const bilingual = displayLang !== 'ko';
 
   return (
-    <section className="rounded-2xl border border-line bg-white p-5">
+    <section className="rounded-2xl border border-line bg-white p-4">
       <div className="mb-3.5 flex items-center gap-2.5">
         <span className="text-[11px] font-bold tracking-wide text-brand">상황 SITUATION</span>
         <span className="h-px flex-1 bg-line" />
@@ -53,30 +53,14 @@ export default function SituationCard({
             →
           </button>
         </div>
-        <div className="flex overflow-hidden rounded-lg border border-line text-[11px]">
-          <button
-            type="button"
-            onClick={() => setLang('ko')}
-            className={`px-2 py-1 ${lang === 'ko' ? 'bg-brand-dark text-white' : 'text-muted'}`}
-          >
-            한국어
-          </button>
-          <button
-            type="button"
-            onClick={() => setLang('en')}
-            className={`px-2 py-1 ${lang === 'en' ? 'bg-brand-dark text-white' : 'text-muted'}`}
-          >
-            EN
-          </button>
-        </div>
       </div>
 
       <h1 className="text-[22px] font-bold leading-[1.35] tracking-tight text-brand-dark sm:text-[25px]">
-        {lang === 'ko' ? situation.titleKo : situation.titleEn}
+        {situation.titleKo}
       </h1>
-      <p className="mt-2 text-sm leading-relaxed text-muted">
-        {lang === 'ko' ? situation.descriptionKo : situation.descriptionEn}
-      </p>
+      {bilingual && <p className="mt-1 text-sm text-muted">{situation.titleEn}</p>}
+      <p className="mt-2 text-sm leading-relaxed text-muted">{situation.descriptionKo}</p>
+      {bilingual && <p className="mt-1 text-xs leading-relaxed text-faint">{situation.descriptionEn}</p>}
       <div className="mt-3.5 flex flex-wrap gap-2">
         {[situation.placeTag, situation.formalityTag].map((tag) => (
           <span key={tag} className="rounded-full border border-chipBorder bg-chip px-3 py-1.5 text-xs font-medium text-brand">

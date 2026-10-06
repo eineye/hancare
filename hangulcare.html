@@ -153,8 +153,6 @@
   .itemBtn.disabled:hover { border-color: var(--card-border); background: var(--panel); }
 
   /* ---------------- lesson screen ---------------- */
-  .lessonGrid { display: grid; grid-template-columns: minmax(0,1fr) 380px; gap: 14px; margin-top: 12px; align-items: flex-start; }
-  @media (max-width: 980px) { .lessonGrid { grid-template-columns: 1fr; } }
   .stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
   .tagRow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .tag { background: var(--chip); border: 1px solid var(--chip-border); color: var(--brand); border-radius: 999px; padding: 5px 12px; font-size: .72rem; font-weight: 500; }
@@ -232,7 +230,18 @@
   td { padding: 10px 8px; border-bottom: 1px solid var(--card-border); white-space: nowrap; }
 
   .modalMask { position: fixed; inset: 0; background: rgba(18,36,31,.5); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 30; }
-  .modal { width: min(440px,100%); background: var(--card); border-radius: 16px; padding: 18px; max-height: 84vh; overflow-y: auto; }
+  .modal { width: min(440px,100%); background: var(--card); border-radius: 16px; padding: 18px; max-height: 84vh; overflow-y: auto; position: relative; }
+  .modal.wide { width: min(1040px,96vw); max-height: min(640px,80vh); }
+  .modalCloseX { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border: none; border-radius: 999px; background: var(--chip); color: var(--muted); font-size: 1rem; cursor: pointer; line-height: 1; }
+  .modalGrid { display: flex; flex-wrap: wrap; gap: 16px; }
+  .modalGrid .col-left { flex: 1 1 320px; display: flex; flex-direction: column; gap: 14px; }
+  .modalGrid .col-right { flex: 1 1 260px; }
+
+  .mediMask { position: fixed; inset: 0; background: rgba(18,36,31,.65); display: flex; align-items: center; justify-content: center; padding: 14px; z-index: 40; }
+  .mediPanel { width: min(1400px,96vw); height: 94vh; background: #fff; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  .mediHeader { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--card-border); font-weight: 700; color: var(--brand-dark); font-size: .9rem; }
+  .mediClose { width: 30px; height: 30px; border: none; border-radius: 999px; background: var(--chip); color: var(--muted); font-size: 1rem; cursor: pointer; line-height: 1; }
+  .mediPanel iframe { flex: 1; border: 0; width: 100%; }
 
   /* ---------------- vocab / journal / notices / settings / admin-alerts ---------------- */
   .vocabCard { border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 16px; background: var(--card); }
@@ -241,12 +250,51 @@
   .journalCard { border: 1px solid var(--card-border); border-radius: 14px; padding: 16px; background: var(--card); }
   .toggle { width: 40px; height: 22px; border-radius: 999px; position: relative; flex: none; border: none; }
   .toggle .knob { position: absolute; top: 3px; width: 16px; height: 16px; border-radius: 999px; background: #fff; }
+
+  /* ---------------- 영상학습 (video) ---------------- */
+  .vidGrid { display: grid; grid-template-columns: minmax(0,1fr) 380px; grid-template-areas: "main qa" "script qa"; gap: 14px; margin-top: 14px; align-items: start; }
+  .vidMain { grid-area: main; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .vidQa { grid-area: qa; position: sticky; top: 76px; height: calc(100vh - 100px); min-height: 440px; display: flex; flex-direction: column; padding: 18px; }
+  .vidScript { grid-area: script; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  @media (max-width: 980px) {
+    .vidGrid { grid-template-columns: 1fr; grid-template-areas: "main" "qa" "script"; }
+    .vidQa { position: static; height: auto; }
+  }
+  .vidScreen { position: relative; aspect-ratio: 16 / 9; width: 100%; border-radius: 16px; overflow: hidden; background: var(--brand-dark); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+  .vidScreen video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
+  .vidScreen .badge { position: absolute; left: 12px; top: 12px; border-radius: 999px; background: rgba(255,255,255,.1); padding: 4px 10px; font-size: .68rem; color: rgba(255,255,255,.7); }
+  .vidScreen .foot { position: absolute; left: 0; right: 0; bottom: 10px; font-size: .66rem; color: rgba(255,255,255,.4); padding: 0 12px; }
+  @media (max-width: 600px) {
+    .vidScreen { aspect-ratio: auto; min-height: 210px; padding: 40px 16px 44px; }
+    .vidScreen video { position: static; height: auto; aspect-ratio: 16 / 9; }
+    .vidScreen:has(video) { padding: 0; min-height: 0; }
+    #vidOverlay p:nth-child(2) { font-size: 1.1rem !important; }
+  }
+  .vidCtl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; }
+  .vidCtl .ctl { border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--brand-dark); padding: 8px 11px; font-size: .74rem; }
+  .vidCtl .ctl.on { border-color: var(--warnAccent); background: var(--warnBg); color: var(--warn); }
+  .vidCtl .rates { display: flex; overflow: hidden; border-radius: 10px; border: 1px solid var(--line); }
+  .vidCtl .rates button { border: none; background: var(--card); color: var(--brand-dark); padding: 8px 10px; font-size: .74rem; }
+  .vidCtl .rates button.on { background: var(--brand-dark); color: #fff; }
+  .vidCtl input[type=range] { width: 100%; accent-color: var(--brand); }
+  .capWord { border: none; background: none; padding: 0 2px; border-radius: 6px; font-weight: 700; color: var(--brand-dark); }
+  .capWord:hover { background: var(--panel); }
+  .capWord.term { text-decoration: underline; text-decoration-color: var(--brand); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+  .capWord.sel { background: var(--brand); color: #fff; text-decoration: none; }
+  .scriptList { max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+  .scriptRow { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; border: none; background: none; border-radius: 10px; padding: 8px 10px; font-size: .84rem; color: var(--brand-dark); }
+  .scriptRow:hover { background: var(--panel); }
+  .scriptRow.on { background: var(--chip); font-weight: 700; }
+  .qaChip { border-radius: 999px; border: 1px solid rgba(18,36,31,.2); background: var(--card); color: var(--brand-dark); padding: 5px 10px; font-size: .74rem; }
+  .qaChip:hover { background: var(--chip); }
 </style>
 </head>
 <body>
 <div class="app" id="app"></div>
 <div class="modalMask" id="modalMask" hidden><div class="modal" id="modalBody"></div></div>
+<div class="mediMask" id="mediMask" hidden><div class="mediPanel"><div class="mediHeader"><span>메디쌤과 대화 연습</span><button class="mediClose" aria-label="닫기" onclick="App.closeMediSsam()">✕</button></div><iframe id="mediFrame" title="메디쌤과 대화 연습"></iframe></div></div>
 
+<script src="./character2d-canvas.global.js"></script>
 <script>
 (function () {
   "use strict";
@@ -257,10 +305,14 @@
   var PRACTICE_UNITS = [{"id":"unit-1","category":"practice","titleKo":"간호조무 실습 한국어","titleEn":"Korean for nursing-assistant trainees","situations":[{"id":"situation-1","menuLabelKo":"혈압·체온 측정","menuLabelEn":"Vital signs","titleKo":"아침 회진 전, 환자의 혈압을 측정합니다.","titleEn":"Before morning rounds, you measure the patient's blood pressure.","descriptionKo":"환자에게 인사하고, 무엇을 할지 설명한 뒤 동의를 구하세요.","descriptionEn":"Greet the patient, explain what you'll do, then ask for consent.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 2","terms":[{"id":"term-bp","hangul":"혈압","romanization":"hyeol-ap","glossEn":"blood pressure"},{"id":"term-temp","hangul":"체온","romanization":"che-on","glossEn":"body temperature"},{"id":"term-pulse","hangul":"맥박","romanization":"maek-bak","glossEn":"pulse"},{"id":"term-injection","hangul":"주사","romanization":"ju-sa","glossEn":"injection"}],"sentences":[{"id":"sentence-1-1","textKo":"혈압 좀 재겠습니다.","textEn":"I'll take your blood pressure now.","romanization":"hyeol-ap jom jae-get-seum-ni-da","syllables":["혈","압","좀","재","겠","습","니","다"]},{"id":"sentence-1-2","textKo":"팔을 조금만 올려 주세요.","textEn":"Please raise your arm a little.","romanization":"pal-eul jo-geum-man ol-lyeo ju-se-yo","syllables":["팔","을","조","금","만","올","려","주","세","요"]},{"id":"sentence-1-3","textKo":"체온도 같이 확인하겠습니다.","textEn":"I'll also check your temperature.","romanization":"che-on-do gat-i hwak-in-ha-get-seum-ni-da","syllables":["체","온","도","같","이","확","인","하","겠","습","니","다"]}]},{"id":"situation-2","menuLabelKo":"투약 시간 안내","menuLabelEn":"Medication time","titleKo":"식후 투약 시간을 안내합니다.","titleEn":"You let the patient know it's time for their medicine after a meal.","descriptionKo":"약의 이름과 복용 방법을 설명하고, 부작용이 있는지 확인하세요.","descriptionEn":"Explain the medicine's name and how to take it, then check for side effects.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 2","terms":[{"id":"term-medicine","hangul":"약","romanization":"yak","glossEn":"medicine"},{"id":"term-pill","hangul":"알약","romanization":"al-yak","glossEn":"pill"},{"id":"term-prescription","hangul":"처방전","romanization":"cheo-bang-jeon","glossEn":"prescription"},{"id":"term-side-effect","hangul":"부작용","romanization":"bu-jag-yong","glossEn":"side effect"}],"sentences":[{"id":"sentence-2-1","textKo":"지금 약 드실 시간이에요.","textEn":"It's time to take your medicine now.","romanization":"ji-geum yak deu-sil si-gan-i-e-yo","syllables":["지","금","약","드","실","시","간","이","에","요"]},{"id":"sentence-2-2","textKo":"물과 함께 드세요.","textEn":"Please take it with water.","romanization":"mul-gwa ham-kke deu-se-yo","syllables":["물","과","함","께","드","세","요"]}]},{"id":"situation-3","menuLabelKo":"통증 호소 응대","menuLabelEn":"Patient in pain","titleKo":"환자가 통증을 호소합니다.","titleEn":"The patient reports feeling pain.","descriptionKo":"어디가 아픈지, 얼마나 아픈지 물어보고 담당 간호사에게 전달하세요.","descriptionEn":"Ask where it hurts and how much, then relay it to the nurse in charge.","placeTag":"병실 · Patient room","formalityTag":"존댓말 · Polite form","difficultyTag":"난이도 초급 1","terms":[{"id":"term-pain","hangul":"통증","romanization":"tong-jeung","glossEn":"pain"},{"id":"term-hurt","hangul":"아프다","romanization":"a-peu-da","glossEn":"to hurt"},{"id":"term-dizzy","hangul":"어지럽다","romanization":"eo-ji-reop-da","glossEn":"dizzy"},{"id":"term-uncomfortable","hangul":"불편하다","romanization":"bul-pyeon-ha-da","glossEn":"uncomfortable"}],"sentences":[{"id":"sentence-3-1","textKo":"어디가 아프세요?","textEn":"Where does it hurt?","romanization":"eo-di-ga a-peu-se-yo","syllables":["어","디","가","아","프","세","요"]},{"id":"sentence-3-2","textKo":"간호사 선생님을 불러 드릴게요.","textEn":"I'll call the nurse for you.","romanization":"gan-ho-sa seon-saeng-nim-eul bul-leo deu-ril-ge-yo","syllables":["간","호","사","선","생","님","을","불","러","드","릴","게","요"]}]}]}];
 
   var ALL_UNITS = BASIC_UNITS.concat(PRACTICE_UNITS);
+  var DEFAULT_BASIC_UNITS = BASIC_UNITS, DEFAULT_PRACTICE_UNITS = PRACTICE_UNITS;
 
   var XR_MODULES = [{"id":"xr-vital-signs","order":1,"titleKo":"활력징후 및 기초사정","titleEn":"Vital Signs & Basic Assessment","legalHours":20,"patientNameKo":"김진수","situationKo":"숨이 조금 차고 열나는것 같은데 저좀 봐주시겠어요?","situationEn":"I feel a bit short of breath and warm — could you check on me?","techNoteKo":"Web Audio 오디오 노드, Raycaster 좌표 추적, Canvas 게이지","interactions":[{"id":"stethoscope","labelKo":"가상 청진기","resultKo":"청진 완료 — 호흡음 정상, 미세한 수포음 감지"},{"id":"brachial-contact","labelKo":"상완동맥접촉","resultKo":"상완동맥 위치 확인 완료 — 맥박 68회/분"},{"id":"bp-cuff","labelKo":"혈압계 사용","resultKo":"혈압 137/82 mmHg 측정 완료"},{"id":"glucose","labelKo":"혈당 채혈","resultKo":"혈당 108 mg/dL 측정 완료"}]},{"id":"xr-asepsis","order":2,"titleKo":"무균술 및 상처관리","titleEn":"Aseptic Technique & Wound Care","legalHours":25,"patientNameKo":"이영희","situationKo":"상처 소독을 도와주시겠어요? 조금 아파요.","situationEn":"Could you help disinfect my wound? It hurts a little.","techNoteKo":"GLSL 오버레이 셰이더, Cannon-es 정밀 바운딩 충돌체","interactions":[{"id":"sterile-drape","labelKo":"멸균포 개봉","resultKo":"멸균포 개봉 완료 — 오염 없음"},{"id":"forceps-transfer","labelKo":"핀셋 기구 전달","resultKo":"기구 전달 완료 — 멸균 유지"},{"id":"sterile-boundary","labelKo":"멸균 경계면 확인","resultKo":"경고: 멸균 구역 5cm 침범 감지"}]},{"id":"xr-nutrition-elimination","order":3,"titleKo":"영양 및 배설 보조","titleEn":"Nutrition & Elimination Assistance","legalHours":20,"patientNameKo":"박민수","situationKo":"속이 더부룩하고 소변줄이 불편해요.","situationEn":"My stomach feels bloated and the catheter is uncomfortable.","techNoteKo":"Spatial Audio PannerNode, 중력 벡터 판정 알고리즘","interactions":[{"id":"l-tube-air","labelKo":"L-tube 공기 주입음 청취","resultKo":"위내 공기음 확인 — 튜브 위치 정상"},{"id":"catheter-fixation","labelKo":"도뇨관 고정","resultKo":"도뇨관 고정 완료"},{"id":"bag-height","labelKo":"소변백 높이 조정","resultKo":"소변백 높이 적절 — 역류 위험 없음"}]},{"id":"xr-medication-suction","order":4,"titleKo":"투약 및 기도흡인","titleEn":"Medication & Airway Suction","legalHours":20,"patientNameKo":"최수진","situationKo":"인슐린 주사랑 가래 흡인 좀 도와주세요.","situationEn":"Could you help with my insulin shot and clearing my airway?","techNoteKo":"3D 벡터 각도 연산, 정밀 인터벌 타이머 엔진","interactions":[{"id":"insulin-injection","labelKo":"인슐린 피하주사","resultKo":"주사 각도 62도 — 적정 범위(45~90도) 내 판정"},{"id":"suction-catheter","labelKo":"석션 카테터 삽입","resultKo":"흡인 시간 12초 — 권장 범위 내"}]},{"id":"xr-positioning-safety","order":5,"titleKo":"체위변경 및 안전","titleEn":"Position Change & Safety","legalHours":15,"patientNameKo":"정하늘","situationKo":"몸을 좀 돌려 눕혀 주시겠어요? 왼쪽이 잘 안 움직여요.","situationEn":"Could you help turn me over? My left side doesn't move well.","techNoteKo":"Three.js IK(역운동학), 골격 조인트 트래킹","interactions":[{"id":"support-point","labelKo":"지지점 선정","resultKo":"지지점 선정 완료 — 편마비측 보호됨"},{"id":"reposition","labelKo":"체위 변경 시행","resultKo":"체위 변경 완료 — 욕창 위험 부위 압력 해제"},{"id":"wheelchair-brake","labelKo":"휠체어 브레이크 확인","resultKo":"브레이크 잠금 확인 완료"}]}];
 
-  var LEARNERS = [{"id":"l1","name":"Maria Santos","nationality":"필리핀","level":"TOPIK 2급","department":"내과","wordsPracticed":128,"avgAccuracy":82,"lastActiveKo":"오늘"},{"id":"l2","name":"Nguyen Thi Lan","nationality":"베트남","level":"TOPIK 1급","department":"외과","wordsPracticed":64,"avgAccuracy":74,"lastActiveKo":"1일 전"},{"id":"l3","name":"Bat-Erdene","nationality":"몽골","level":"TOPIK 2급","department":"내과","wordsPracticed":201,"avgAccuracy":88,"lastActiveKo":"오늘"},{"id":"l4","name":"Sari Wulandari","nationality":"인도네시아","level":"TOPIK 1급","department":"재활","wordsPracticed":37,"avgAccuracy":65,"lastActiveKo":"3일 전","needsAttentionKo":"4일간 미접속, 평균 65점. 진도가 멈췄습니다."},{"id":"l5","name":"Dawa Sherpa","nationality":"네팔","level":"TOPIK 2급","department":"내과","wordsPracticed":95,"avgAccuracy":79,"lastActiveKo":"2일 전","needsAttentionKo":"받침 발음 점수가 기수 평균보다 낮습니다."}];
+  // 영상학습 목록 — content/videos.json과 같은 내용(docs/VIDEO_MODULE_DESIGN.md §5).
+  var VIDEOS = [{"id":"video-nursing-assistant","order":1,"titleKo":"나는 누구일까요? — 간호조무사 소개","titleEn":"Who am I? — Meet the nursing assistant","descriptionKo":"간호조무사가 병원에서 하는 일(활력징후 확인, 진료 보조, 간호, 수술실 보조)을 반말 독백으로 소개하는 대한간호조무사협회 홍보 영상입니다.","src":"/videos/nursing-assistant.mp4","poster":"","durationSec":89,"levelTag":"초급 2","related":{"unitId":"unit-1","situationId":"situation-1","labelKo":"혈압·체온 측정"},"cues":[{"id":"na-1","start":2.5,"end":4.0,"speakerKo":"간호조무사","textKo":"내가 누구냐고?","textEn":"Who am I, you ask?","terms":[{"hangul":"누구냐고","glossEn":"(you ask) who — quoting a question"}]},{"id":"na-2","start":4.0,"end":6.0,"speakerKo":"간호조무사","textKo":"그럼 이제 맞춰봐!","textEn":"Then go ahead and guess!","terms":[{"hangul":"맞춰봐","glossEn":"try guessing (standard form: 맞혀 봐)"}]},{"id":"na-3","start":7.0,"end":11.0,"textKo":"당신을 위해 건강을 잇다","textEn":"Connecting health, for you.","terms":[{"hangul":"위해","glossEn":"for (the sake of)"},{"hangul":"잇다","glossEn":"to connect, to continue"}]},{"id":"na-4","start":18.0,"end":21.0,"speakerKo":"간호조무사","textKo":"병원에 들어서면 아마 나를 제일 먼저 보게 될 거야","textEn":"When you walk into a hospital, I'm probably the first person you'll see.","terms":[{"hangul":"들어서면","glossEn":"when you step in"},{"hangul":"제일 먼저","glossEn":"first of all"},{"hangul":"보게 될 거야","glossEn":"you will end up seeing"}]},{"id":"na-5","start":21.0,"end":23.0,"speakerKo":"간호조무사","textKo":"우리는 항상 여기 있거든","textEn":"Because we're always here.","terms":[{"hangul":"항상","glossEn":"always"},{"hangul":"있거든","glossEn":"(because) we are — giving a reason"}]},{"id":"na-6","start":25.0,"end":28.0,"speakerKo":"간호조무사","textKo":"우리는 바이탈 사인을 체크하지","textEn":"We check vital signs.","terms":[{"hangul":"바이탈 사인","glossEn":"vital signs (= 활력징후)"},{"hangul":"체크하지","glossEn":"we check (casual)"}]},{"id":"na-7","start":33.0,"end":35.5,"speakerKo":"간호조무사","textKo":"의사의 지도하에 진료를 보조하고","textEn":"We assist with medical care under a doctor's guidance,","terms":[{"hangul":"지도하에","glossEn":"under the guidance of"},{"hangul":"진료","glossEn":"medical care, treatment"},{"hangul":"보조하고","glossEn":"assist, and"}]},{"id":"na-8","start":40.0,"end":42.0,"speakerKo":"간호조무사","textKo":"우리는 직접 간호도 하지","textEn":"We also give nursing care ourselves.","terms":[{"hangul":"직접","glossEn":"directly, in person"},{"hangul":"간호","glossEn":"nursing care"}]},{"id":"na-9","start":46.0,"end":49.0,"speakerKo":"간호조무사","textKo":"수술실에서 어시스트도 하지","textEn":"We also assist in the operating room.","terms":[{"hangul":"수술실","glossEn":"operating room"},{"hangul":"어시스트","glossEn":"assist (= 보조)"}]},{"id":"na-10","start":52.0,"end":55.0,"speakerKo":"간호조무사","textKo":"내가 어디 있냐고?","textEn":"Where am I, you ask?","terms":[{"hangul":"어디 있냐고","glossEn":"(you ask) where I am"}]},{"id":"na-11","start":61.5,"end":63.5,"speakerKo":"간호조무사","textKo":"나는 항상 여기에 있어","textEn":"I'm always here.","terms":[{"hangul":"여기에 있어","glossEn":"am here"}]},{"id":"na-12","start":63.5,"end":66.5,"speakerKo":"간호조무사","textKo":"당신의 건강을 이어줄 수 있는 곳 어디든","textEn":"Anywhere I can help keep your health going.","terms":[{"hangul":"이어줄 수 있는","glossEn":"that can connect / keep going"},{"hangul":"어디든","glossEn":"anywhere"}]},{"id":"na-13","start":68.5,"end":70.5,"speakerKo":"간호조무사","textKo":"이제 내가 누군지 알겠어?","textEn":"Now do you know who I am?","terms":[{"hangul":"누군지","glossEn":"who (I am)"},{"hangul":"알겠어","glossEn":"do you get it?"}]},{"id":"na-14","start":70.5,"end":72.5,"speakerKo":"간호조무사","textKo":"나는 간호조무사야!","textEn":"I'm a nursing assistant!","terms":[{"hangul":"간호조무사","glossEn":"nursing assistant"}]},{"id":"na-15","start":73.0,"end":78.0,"textKo":"당신을 위해 건강을 잇다","textEn":"Connecting health, for you.","terms":[{"hangul":"위해","glossEn":"for (the sake of)"},{"hangul":"잇다","glossEn":"to connect, to continue"}]},{"id":"na-16","start":78.0,"end":85.5,"textKo":"간호조무사 보수교육과 자격신고, 더 든든한 대한민국의 시작입니다.","textEn":"Continuing education and license registration for nursing assistants — the start of a more reassuring Korea.","terms":[{"hangul":"보수교육","glossEn":"continuing (refresher) education"},{"hangul":"자격신고","glossEn":"license registration"},{"hangul":"든든한","glossEn":"reassuring, dependable"}]}]},{"id":"video-medication","order":2,"titleKo":"식후 투약 안내","titleEn":"After-meal medication","descriptionKo":"점심 식사 후 환자에게 약 먹을 시간을 알리고 복용 방법을 설명하는 장면입니다.","src":"/videos/medication.mp4","poster":"","durationSec":28,"levelTag":"초급 2","related":{"unitId":"unit-1","situationId":"situation-2","labelKo":"투약 시간 안내"},"cues":[{"id":"med-1","start":0,"end":4,"speakerKo":"실습생","textKo":"점심 맛있게 드셨어요?","textEn":"Did you enjoy your lunch?","terms":[{"hangul":"드셨어요","glossEn":"did you eat (honorific)"}]},{"id":"med-2","start":4,"end":8,"speakerKo":"실습생","textKo":"지금 약 드실 시간이에요.","textEn":"It's time to take your medicine now.","terms":[{"hangul":"약","glossEn":"medicine"},{"hangul":"드실 시간","glossEn":"time to take (honorific)"}]},{"id":"med-3","start":8,"end":12,"speakerKo":"환자","textKo":"이 알약은 몇 개 먹어요?","textEn":"How many of these pills do I take?","terms":[{"hangul":"알약","glossEn":"pill"}]},{"id":"med-4","start":12,"end":16,"speakerKo":"실습생","textKo":"처방전대로 두 알 드시면 돼요.","textEn":"Take two pills, as prescribed.","terms":[{"hangul":"처방전","glossEn":"prescription"},{"hangul":"드시면 돼요","glossEn":"you can take (it's fine to take)"}]},{"id":"med-5","start":16,"end":20,"speakerKo":"실습생","textKo":"물과 함께 드세요.","textEn":"Please take it with water.","terms":[{"hangul":"물과 함께","glossEn":"with water"}]},{"id":"med-6","start":20,"end":24,"speakerKo":"환자","textKo":"어제 먹고 속이 좀 안 좋았어요.","textEn":"My stomach felt a bit upset after taking it yesterday.","terms":[{"hangul":"속이 좀 안 좋았어요","glossEn":"(my) stomach felt a bit upset"}]},{"id":"med-7","start":24,"end":28,"speakerKo":"실습생","textKo":"부작용일 수 있으니 간호사 선생님께 바로 알려 드릴게요.","textEn":"It could be a side effect, so I'll let the nurse know right away.","terms":[{"hangul":"부작용","glossEn":"side effect"},{"hangul":"알려 드릴게요","glossEn":"I will let (them) know"}]}]}];
+
+  var LEARNERS = [{"id":"l1","name":"Maria Santos","nationality":"필리핀","level":"TOPIK 2급","department":"내과","wordsPracticed":128,"avgAccuracy":82,"lastActiveKo":"오늘","weeklyScores":[64,70,74,78,80,82],"weakSounds":[{"labelKo":"모음 ㅐ / ㅔ 구분","value":74,"warn":false},{"labelKo":"받침 ㄹ / ㄴ","value":81,"warn":false},{"labelKo":"경음 ㄲ / ㄸ","value":85,"warn":false},{"labelKo":"문장 억양","value":79,"warn":false}],"completedSituationIds":["basic-situation-1","basic-situation-2","situation-1","situation-2"]},{"id":"l2","name":"Nguyen Thi Lan","nationality":"베트남","level":"TOPIK 1급","department":"외과","wordsPracticed":64,"avgAccuracy":74,"lastActiveKo":"1일 전","weeklyScores":[55,60,65,68,71,74],"weakSounds":[{"labelKo":"모음 ㅐ / ㅔ 구분","value":58,"warn":true},{"labelKo":"받침 ㄱ / ㄷ / ㅂ","value":63,"warn":true},{"labelKo":"경음 ㄲ / ㄸ","value":72,"warn":false},{"labelKo":"문장 억양","value":75,"warn":false}],"completedSituationIds":["basic-situation-1","situation-1"]},{"id":"l3","name":"Bat-Erdene","nationality":"몽골","level":"TOPIK 2급","department":"내과","wordsPracticed":201,"avgAccuracy":88,"lastActiveKo":"오늘","weeklyScores":[72,76,80,83,86,88],"weakSounds":[{"labelKo":"모음 ㅚ / ㅙ 구분","value":76,"warn":false},{"labelKo":"받침 ㄹ / ㄴ","value":84,"warn":false},{"labelKo":"경음 ㄲ / ㄸ","value":89,"warn":false},{"labelKo":"문장 억양","value":90,"warn":false}],"completedSituationIds":["basic-situation-1","basic-situation-2","situation-1","situation-2","situation-3"]},{"id":"l4","name":"Sari Wulandari","nationality":"인도네시아","level":"TOPIK 1급","department":"재활","wordsPracticed":37,"avgAccuracy":65,"lastActiveKo":"3일 전","needsAttentionKo":"4일간 미접속, 평균 65점. 진도가 멈췄습니다.","weeklyScores":[70,68,66,64,65,65],"weakSounds":[{"labelKo":"모음 ㅐ / ㅔ 구분","value":52,"warn":true},{"labelKo":"받침 ㄱ / ㄷ / ㅂ","value":58,"warn":true},{"labelKo":"경음 ㄲ / ㄸ","value":61,"warn":true},{"labelKo":"문장 억양","value":67,"warn":false}],"completedSituationIds":["basic-situation-1"]},{"id":"l5","name":"Dawa Sherpa","nationality":"네팔","level":"TOPIK 2급","department":"내과","wordsPracticed":95,"avgAccuracy":79,"lastActiveKo":"2일 전","needsAttentionKo":"받침 발음 점수가 기수 평균보다 낮습니다.","weeklyScores":[68,72,75,77,78,79],"weakSounds":[{"labelKo":"받침 ㄹ / ㄴ","value":59,"warn":true},{"labelKo":"받침 ㄱ / ㄷ / ㅂ","value":62,"warn":true},{"labelKo":"모음 ㅐ / ㅔ 구분","value":81,"warn":false},{"labelKo":"경음 ㄲ / ㄸ","value":85,"warn":false}],"completedSituationIds":["basic-situation-1","basic-situation-2","situation-1"]}];
 
   var DEMO_ACCOUNTS = [
     { id: "student", password: "1234", name: "Maria Santos", role: "user" },
@@ -278,13 +330,7 @@
   ];
   var SUPPORTED_LANGS = ["ko", "en"];
 
-  var NOTICES = [
-    { id: "n1", group: "오늘", title: "복습 세트가 준비되었습니다", detail: "발음 점수가 낮은 용어 위주로 골랐습니다", time: "07:00", unread: true },
-    { id: "n2", group: "오늘", title: "XR실습 새 모듈이 열렸습니다", detail: "새 모듈이 추가되면 자동으로 노출됩니다", time: "08:30", unread: true },
-    { id: "n3", group: "이번 주", title: "9월 23일 중간 평가가 예정되어 있습니다", detail: "회화 실기 · 실습교육실", time: "9월 16일", unread: true }
-  ];
-
-  var ADMIN_OVERVIEW = { pendingJournals: 7, pendingJournalsOverdueCount: 2, upcomingMeetings: 3, unreachedLearners: 3, sentNoticesLast7Days: 12, sentNoticesReadRate: 83 };
+  var ADMIN_OVERVIEW = { pendingJournals: 7, pendingJournalsOverdueCount: 2, upcomingMeetings: 3, unreachedLearners: 3 };
   var UPCOMING_MEETINGS = [
     { date: "9월 19일 금 14:00", title: "Aung Kyaw · 학습 부진 면담", detail: "4일 미접속, 평균 64점 · 통역 필요", urgent: true },
     { date: "9월 22일 월 10:30", title: "Sok Chan · 발음 보충 상담", detail: "받침 발음 기수 평균 대비 낮음", urgent: false },
@@ -294,11 +340,6 @@
     { name: "Maria Santos", dept: "내과", submitted: "9월 15일", days: 3 },
     { name: "Sari Wulandari", dept: "재활", submitted: "9월 16일", days: 2 },
     { name: "Nguyen Thi Lan", dept: "외과", submitted: "9월 17일", days: 1 }
-  ];
-  var RECENT_NOTICES_SENT = [
-    { title: "중간 평가 일정 안내", meta: "9월 16일 · 5명 · 열람 4명" },
-    { title: "복습 세트 독려 알림", meta: "9월 14일 · 2명 · 열람 1명" },
-    { title: "일지 제출 안내", meta: "9월 11일 · 5명 · 열람 5명" }
   ];
 
   /* ============================== STORAGE ============================== */
@@ -312,6 +353,174 @@
   var STORE = ls();
   function readJSON(key, fallback) { try { var v = STORE.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
   function writeJSON(key, val) { try { STORE.setItem(key, JSON.stringify(val)); } catch (e) {} }
+
+  /* ---- 실습내용(라이브러리): 관리자 "실습내용 편집"에서 고친 유닛을 이 브라우저에 보관해
+     위 기본 콘텐츠 대신 쓴다. 편집기(public/hancare-library-editor.html)와는 postMessage로 연결. */
+  var LIBRARY_KEY = "hc-library-units";
+  function applyLibrary(units) {
+    var basic = units.filter(function (u) { return u.category === "basic"; });
+    var practice = units.filter(function (u) { return u.category !== "basic"; });
+    // 화면 곳곳이 각 분류의 첫 유닛을 전제로 하므로, 한 분류가 비면 기본 콘텐츠를 쓴다.
+    BASIC_UNITS = basic.length ? basic : DEFAULT_BASIC_UNITS;
+    PRACTICE_UNITS = practice.length ? practice : DEFAULT_PRACTICE_UNITS;
+    ALL_UNITS = BASIC_UNITS.concat(PRACTICE_UNITS);
+  }
+  function getLibraryUnits() {
+    var saved = readJSON(LIBRARY_KEY, null);
+    return Array.isArray(saved) ? saved : DEFAULT_BASIC_UNITS.concat(DEFAULT_PRACTICE_UNITS);
+  }
+  function setLibraryUnits(units) {
+    writeJSON(LIBRARY_KEY, units);
+    applyLibrary(units);
+  }
+  if (Array.isArray(readJSON(LIBRARY_KEY, null))) applyLibrary(getLibraryUnits());
+  window.addEventListener("message", function (e) {
+    var frame = document.getElementById("libraryEditorFrame");
+    var d = e.data;
+    if (!frame || e.source !== frame.contentWindow || !d || d.hcLib !== "req") return;
+    var reply = function (ok, data, error) { e.source.postMessage({ hcLib: "res", id: d.id, ok: ok, data: data, error: error }, "*"); };
+    var auth = getAuth();
+    if (!auth || auth.role !== "admin") return reply(false, null, "관리자만 편집할 수 있습니다.");
+    try {
+      var units = getLibraryUnits();
+      if (d.op === "list") return reply(true, units);
+      if (d.op === "save") {
+        var u = d.payload || {};
+        if (!u.id || (u.category !== "basic" && u.category !== "practice") || !Array.isArray(u.situations)) {
+          return reply(false, null, "유닛 형식이 올바르지 않습니다.");
+        }
+        var clean = { id: u.id, category: u.category, titleKo: u.titleKo, titleEn: u.titleEn, situations: u.situations };
+        var idx = -1;
+        units.forEach(function (x, i) { if (x.id === clean.id) idx = i; });
+        if (idx >= 0) units[idx] = clean; else units.push(clean);
+        setLibraryUnits(units);
+        return reply(true, null);
+      }
+      if (d.op === "delete") {
+        setLibraryUnits(units.filter(function (x) { return x.id !== d.payload; }));
+        return reply(true, null);
+      }
+      reply(false, null, "알 수 없는 요청");
+    } catch (err) { reply(false, null, String(err)); }
+  });
+
+  /* ---- 영상학습: 관리자 "영상 편집"에서 고친 영상 목록을 이 브라우저에 보관해 위 기본 VIDEOS 대신
+     쓴다. 편집기(public/hancare-video-editor.html)와는 postMessage(hcVid)로 연결.
+     docs/VIDEO_EDITOR_DESIGN.md §6 */
+  var VIDEO_LIST_KEY = "hc-videos";
+  var DEFAULT_VIDEOS = VIDEOS;
+  function applyVideos(list) {
+    // 화면이 영상이 하나 이상 있다고 전제하므로, 비어 있으면 기본 영상을 쓴다.
+    VIDEOS = Array.isArray(list) && list.length ? list.slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); }) : DEFAULT_VIDEOS;
+  }
+  applyVideos(readJSON(VIDEO_LIST_KEY, null));
+  window.addEventListener("message", function (e) {
+    var frame = document.getElementById("videoEditorFrame");
+    var d = e.data;
+    if (!frame || e.source !== frame.contentWindow || !d || d.hcVid !== "req") return;
+    var reply = function (ok, data, error) { e.source.postMessage({ hcVid: "res", id: d.id, ok: ok, data: data, error: error }, "*"); };
+    var auth = getAuth();
+    if (!auth || auth.role !== "admin") return reply(false, null, "관리자만 편집할 수 있습니다.");
+    if (d.op === "list") return reply(true, VIDEOS);
+    // 편집기의 "관련 학습" 선택지 — 기초한글·실습한글 유닛(편집한 내용 포함)
+    if (d.op === "units") return reply(true, ALL_UNITS);
+    if (d.op === "save") {
+      var list = d.payload;
+      var ok = Array.isArray(list) && list.every(function (v) { return v && typeof v.id === "string" && v.id && Array.isArray(v.cues); });
+      if (!ok) return reply(false, null, "영상 목록 형식이 올바르지 않습니다.");
+      writeJSON(VIDEO_LIST_KEY, list);
+      applyVideos(list);
+      return reply(true, null);
+    }
+    reply(false, null, "알 수 없는 요청");
+  });
+
+  /* ---- XR실습: 관리자 "XR실습 편집"에서 고친 모듈 배열을 이 브라우저에 보관해 위 기본 모듈 대신 쓴다 ---- */
+  var XR_KEY = "hc-xr-modules";
+  var DEFAULT_XR_MODULES = XR_MODULES;
+  function applyXrModules(list) {
+    // 화면이 모듈이 하나 이상 있다고 전제하므로, 비어 있으면 기본 모듈을 쓴다.
+    XR_MODULES = Array.isArray(list) && list.length ? list.slice().sort(function (a, b) { return a.order - b.order; }) : DEFAULT_XR_MODULES;
+  }
+  applyXrModules(readJSON(XR_KEY, null));
+  window.addEventListener("message", function (e) {
+    var frame = document.getElementById("xrEditorFrame");
+    var d = e.data;
+    if (!frame || e.source !== frame.contentWindow || !d || d.hcXr !== "req") return;
+    var reply = function (ok, data, error) { e.source.postMessage({ hcXr: "res", id: d.id, ok: ok, data: data, error: error }, "*"); };
+    var auth = getAuth();
+    if (!auth || auth.role !== "admin") return reply(false, null, "관리자만 편집할 수 있습니다.");
+    if (d.op === "get") return reply(true, XR_MODULES);
+    if (d.op === "put") {
+      if (!Array.isArray(d.payload) || !d.payload.length) return reply(false, null, "모듈이 하나 이상 있어야 합니다.");
+      var ids = {};
+      for (var i = 0; i < d.payload.length; i++) {
+        var m = d.payload[i];
+        if (!m || !m.id || ids[m.id] || !Array.isArray(m.interactions)) return reply(false, null, "모듈 형식이 올바르지 않습니다: " + (m && m.id));
+        ids[m.id] = 1;
+      }
+      writeJSON(XR_KEY, d.payload);
+      applyXrModules(d.payload);
+      return reply(true, null);
+    }
+    reply(false, null, "알 수 없는 요청");
+  });
+
+  /* ---- 역할극: 관리자 "역할극 편집"의 시나리오 { scenarios: { "unitId/situationId": {...} } }를 이 브라우저에 보관 ---- */
+  var RP_KEY = "hc-roleplay-config";
+  function getRoleplayConfig() {
+    var c = readJSON(RP_KEY, null) || {};
+    return { scenarios: c.scenarios && typeof c.scenarios === "object" ? c.scenarios : {} };
+  }
+  function getRoleplayScenario(unitId, situationId) { return getRoleplayConfig().scenarios[unitId + "/" + situationId] || {}; }
+  window.addEventListener("message", function (e) {
+    var frame = document.getElementById("roleplayEditorFrame");
+    var d = e.data;
+    if (!frame || e.source !== frame.contentWindow || !d || d.hcRp !== "req") return;
+    var reply = function (ok, data, error) { e.source.postMessage({ hcRp: "res", id: d.id, ok: ok, data: data, error: error }, "*"); };
+    var auth = getAuth();
+    if (!auth || auth.role !== "admin") return reply(false, null, "관리자만 편집할 수 있습니다.");
+    if (d.op === "get") {
+      var situations = [];
+      ALL_UNITS.forEach(function (u) {
+        u.situations.forEach(function (s) {
+          situations.push({ unitId: u.id, unitTitleKo: u.titleKo, category: u.category, situationId: s.id, menuLabelKo: s.menuLabelKo, titleKo: s.titleKo,
+            terms: s.terms.map(function (t) { return { hangul: t.hangul, glossEn: t.glossEn }; }),
+            sentences: s.sentences.map(function (x) { return x.textKo; }) });
+        });
+      });
+      return reply(true, { situations: situations, config: getRoleplayConfig() });
+    }
+    if (d.op === "put") {
+      if (!d.payload || typeof d.payload.scenarios !== "object") return reply(false, null, "scenarios는 객체여야 합니다.");
+      writeJSON(RP_KEY, { scenarios: d.payload.scenarios });
+      return reply(true, null);
+    }
+    reply(false, null, "알 수 없는 요청");
+  });
+
+  /* ---- 단어장: 관리자 "단어장 편집"의 설정 { custom, lessonOverrides }을 이 브라우저에 보관 ---- */
+  var VOCAB_KEY = "hc-vocab-config";
+  function getVocabConfig() {
+    var c = readJSON(VOCAB_KEY, null) || {};
+    return { custom: Array.isArray(c.custom) ? c.custom : [], lessonOverrides: c.lessonOverrides && typeof c.lessonOverrides === "object" ? c.lessonOverrides : {} };
+  }
+  window.addEventListener("message", function (e) {
+    var frame = document.getElementById("vocabEditorFrame");
+    var d = e.data;
+    if (!frame || e.source !== frame.contentWindow || !d || d.hcVocab !== "req") return;
+    var reply = function (ok, data, error) { e.source.postMessage({ hcVocab: "res", id: d.id, ok: ok, data: data, error: error }, "*"); };
+    var auth = getAuth();
+    if (!auth || auth.role !== "admin") return reply(false, null, "관리자만 편집할 수 있습니다.");
+    if (d.op === "get") return reply(true, { lessonTerms: getLessonTerms(), config: getVocabConfig() });
+    if (d.op === "put") {
+      var c = d.payload || {};
+      if (!Array.isArray(c.custom)) return reply(false, null, "custom은 배열이어야 합니다.");
+      writeJSON(VOCAB_KEY, { custom: c.custom, lessonOverrides: c.lessonOverrides || {} });
+      return reply(true, null);
+    }
+    reply(false, null, "알 수 없는 요청");
+  });
 
   function getAuth() { return readJSON("hc-demo-auth", null); }
   function setAuth(a) { writeJSON("hc-demo-auth", a); }
@@ -340,14 +549,59 @@
   function getSettings() { return readJSON("hc-demo-settings", { displayLang: "ko", speechRate: 1, scoringStrictness: "beginner", autoPlayRecording: true }); }
   function setSettings(patch) { var s = getSettings(); for (var k in patch) { if (patch.hasOwnProperty(k)) s[k] = patch[k]; } writeJSON("hc-demo-settings", s); }
 
+  /* ---- 음성 설정: 관리자 "음성 설정"에서 고른 브라우저 내장(Web Speech API) 음성을 이 브라우저에
+     보관한다. Next.js 앱의 /admin/voice-settings(Gemini 음색)와는 별개 설정 — 이 파일판은 서버가
+     없어 GEMINI_API_KEY를 안전하게 둘 수 없으므로 브라우저 음성 중에서 고른다. */
+  function getVoiceSettings() { return readJSON("hc-voice-settings", { voiceURI: null }); }
+  function setVoiceSettings(patch) { var s = getVoiceSettings(); for (var k in patch) { if (patch.hasOwnProperty(k)) s[k] = patch[k]; } writeJSON("hc-voice-settings", s); }
+
   function getPracticedTerms() { return readJSON("hc-demo-practiced-terms", []); }
   function markTermPracticed(id) { var t = getPracticedTerms(); if (t.indexOf(id) === -1) { t.push(id); writeJSON("hc-demo-practiced-terms", t); } }
 
   function getJournalEntries() { return readJSON("hc-demo-journal", []); }
 
+  /* ---- 관리자 알림: 관리자 "알림 및 면담"에서 작성한 알림을 이 브라우저에 보관한다. Next.js
+     앱은 content/notices.json(서버, 모든 사용자가 공유)에 저장하지만, 이 단일 파일판은 서버가
+     없어 이 브라우저에만 저장된다(다른 기기·브라우저와 공유되지 않음). */
+  var NOTICES_KEY = "hc-admin-notices";
+  function defaultNotices() {
+    var now = Date.now();
+    return [
+      { id: "notice-seed-1", titleKo: "복습 세트가 준비되었습니다", detailKo: "발음 점수가 낮은 용어 위주로 골랐습니다. 단어장에서 확인해보세요.", audienceKo: "전체 학습자", createdAt: now - 2 * 3600000 },
+      { id: "notice-seed-2", titleKo: "중간 평가 일정 안내", detailKo: "9월 23일 수요일 11시, 실습교육실에서 회화 실기 중간 평가가 있습니다.", audienceKo: "전체 학습자", createdAt: now - 24 * 3600000 },
+      { id: "notice-seed-3", titleKo: "일지 제출 안내", detailKo: "이번 주 실습 일지를 아직 제출하지 않은 분들은 오늘 중으로 작성해주세요.", audienceKo: "미접속 3일 이상 3명", createdAt: now - 5 * 24 * 3600000 }
+    ];
+  }
+  function getAdminNotices() {
+    var list = readJSON(NOTICES_KEY, null);
+    if (!Array.isArray(list)) { list = defaultNotices(); writeJSON(NOTICES_KEY, list); }
+    return list.slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
+  }
+  function createAdminNotice(input) {
+    var notice = { id: "notice-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8), titleKo: input.titleKo, detailKo: input.detailKo, audienceKo: input.audienceKo || "전체 학습자", createdAt: Date.now() };
+    var list = getAdminNotices();
+    list.unshift(notice);
+    writeJSON(NOTICES_KEY, list);
+    return notice;
+  }
+  function deleteAdminNotice(id) { writeJSON(NOTICES_KEY, getAdminNotices().filter(function (n) { return n.id !== id; })); }
+  /* 작성 시각만으로 "오늘/이번 주/이전" 묶음과 표시용 시각 문구를 계산한다(components/NoticesView.tsx
+     의 describe()와 같은 로직) — 관리자가 알림을 작성할 때 분류를 따로 고르지 않아도 된다. */
+  function describeNoticeTime(createdAt, now) {
+    var d = new Date(createdAt);
+    var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    var dow = (now.getDay() + 6) % 7; // 월요일 시작 주
+    var weekStart = todayStart - dow * 86400000;
+    var groupKo = createdAt >= todayStart ? "오늘" : createdAt >= weekStart ? "이번 주" : "이전";
+    var timeKo = groupKo === "오늘"
+      ? String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0")
+      : (d.getMonth() + 1) + "월 " + d.getDate() + "일";
+    return { groupKo: groupKo, timeKo: timeKo };
+  }
+
   function getNoticesRead() { return readJSON("hc-demo-notices-read", []); }
   function markNoticeRead(id) { var r = getNoticesRead(); if (r.indexOf(id) === -1) { r.push(id); writeJSON("hc-demo-notices-read", r); } }
-  function markAllNoticesRead() { writeJSON("hc-demo-notices-read", NOTICES.map(function (n) { return n.id; })); }
+  function markAllNoticesRead() { writeJSON("hc-demo-notices-read", getAdminNotices().map(function (n) { return n.id; })); }
 
   function getLastSituation() { return readJSON("hc-demo-last-situation", null); }
   function setLastSituation(unitId, situationId) { writeJSON("hc-demo-last-situation", { unitId: unitId, situationId: situationId }); }
@@ -357,18 +611,47 @@
     var unit = PRACTICE_UNITS[0] || BASIC_UNITS[0];
     return { unitId: unit.id, situationId: unit.situations[0].id };
   }
+  /** "실습한글" 메뉴 전용 — 기초한글 상황을 마지막으로 봤다면(기초한글은 별도
+   * 메뉴) 무시하고 실습한글 기본 목적지로 되돌아간다. */
+  function isPracticeUnit(unitId) {
+    return PRACTICE_UNITS.some(function (u) { return u.id === unitId; });
+  }
+  function getContinuePracticeTarget() {
+    var last = getLastSituation();
+    if (last && isPracticeUnit(last.unitId)) return last;
+    var unit = PRACTICE_UNITS[0];
+    return { unitId: unit.id, situationId: unit.situations[0].id };
+  }
 
-  function getAllTerms() {
+  /** 모든 상황 용어(한글 기준 중복 제거). 단어장 편집기에도 이 목록을 넘긴다. */
+  function getLessonTerms() {
     var seen = {}; var out = [];
     ALL_UNITS.forEach(function (u) {
       u.situations.forEach(function (s) {
         s.terms.forEach(function (t) {
           if (!seen[t.hangul]) {
             seen[t.hangul] = 1;
-            out.push({ id: t.id, hangul: t.hangul, romanization: t.romanization, glossEn: t.glossEn, unitId: u.id, situationId: s.id, situationLabelKo: s.menuLabelKo });
+            out.push({ id: t.id, hangul: t.hangul, romanization: t.romanization, glossEn: t.glossEn, unitId: u.id, situationId: s.id, situationLabelKo: s.menuLabelKo, category: u.category });
           }
         });
       });
+    });
+    return out;
+  }
+  /** 단어장 = 상황 용어(숨김 제외, 분류·메모 적용) + 단어장 전용 단어. Next.js의 lib/vocab.ts와 같은 규칙. */
+  function getAllTerms() {
+    var cfg = getVocabConfig();
+    var seen = {}; var out = [];
+    getLessonTerms().forEach(function (t) {
+      var o = cfg.lessonOverrides[t.id] || {};
+      if (o.hidden) return;
+      seen[t.hangul] = 1;
+      out.push(Object.assign({}, t, { group: o.group || "", note: o.note || "" }));
+    });
+    cfg.custom.forEach(function (e) {
+      if (!e.hangul || seen[e.hangul]) return;
+      seen[e.hangul] = 1;
+      out.push({ id: e.id, hangul: e.hangul, romanization: e.romanization || "", glossEn: e.glossEn || "", group: e.group || "", note: e.note || "", custom: true });
     });
     out.sort(function (a, b) { return a.hangul.localeCompare(b.hangul, "ko"); });
     return out;
@@ -453,12 +736,17 @@
   function getRecognitionCtor() { return window.SpeechRecognition || window.webkitSpeechRecognition; }
   function isSttSupported() { return !!getRecognitionCtor(); }
   function isTtsSupported() { return "speechSynthesis" in window; }
-  var cachedVoice;
+  var cachedAutoVoice;
   function pickKoreanVoice() {
-    if (cachedVoice) return cachedVoice;
     var voices = window.speechSynthesis.getVoices();
-    cachedVoice = voices.filter(function (v) { return v.lang.indexOf("ko") === 0; })[0];
-    return cachedVoice;
+    var savedURI = getVoiceSettings().voiceURI;
+    if (savedURI) {
+      var picked = voices.filter(function (v) { return v.voiceURI === savedURI; })[0];
+      if (picked) return picked;
+    }
+    if (cachedAutoVoice) return cachedAutoVoice;
+    cachedAutoVoice = voices.filter(function (v) { return v.lang.indexOf("ko") === 0; })[0];
+    return cachedAutoVoice;
   }
   function speak(text, opts) {
     opts = opts || {};
@@ -470,6 +758,20 @@
     if (opts.onStart) u.onstart = opts.onStart;
     u.onend = function () { opts.onEnd && opts.onEnd(); };
     u.onerror = function () { opts.onEnd && opts.onEnd(); };
+    window.speechSynthesis.speak(u);
+  }
+  /* 관리자 "음성 설정" 미리듣기 전용 — 저장된 기본값과 무관하게 특정 음성으로 바로 말한다. */
+  function speakWithVoice(text, voiceURI, onEnd) {
+    if (!isTtsSupported()) { onEnd && onEnd(); return; }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "ko-KR";
+    if (voiceURI) {
+      var v = window.speechSynthesis.getVoices().filter(function (x) { return x.voiceURI === voiceURI; })[0];
+      if (v) u.voice = v;
+    }
+    u.onend = function () { onEnd && onEnd(); };
+    u.onerror = function () { onEnd && onEnd(); };
     window.speechSynthesis.speak(u);
   }
   function startRecognition(handlers) {
@@ -484,115 +786,59 @@
     return function () { try { rec.stop(); } catch (e) {} };
   }
 
-  /* ============================== AVATAR (2D 일러스트 + 음소 그룹별 입모양) ==============================
-     학습 화면과 역할극 화면이 공유하는 아바타 상태(state.avatar)를 그린다. Web Speech
-     API는 음소 타이밍을 주지 않아, 말하는 동안(state.avatar.state === "speaking")
-     스스로 일정한 리듬으로 6가지 입모양 중 하나를 무작위로 순환하는 근사치다.
-     TTS의 onBoundary(단어 경계) 이벤트에 맞춰봤지만 브라우저·음성 조합에 따라
-     아예 발생하지 않는 경우가 있어, 이벤트에 기대지 않는 자체 타이머로 구현했다. */
-  var AVATAR_LIP = "#b6534e";
-  var AVATAR_CAVITY = "#5b211d";
-  var AVATAR_MOUTH_SHAPES = ["wideOpen", "round", "teeth", "smile", "fv"];
-  var avatarMouthTimerRunning = false;
-  var avatarBlinkTimerRunning = false;
+  /* ============================== AI 아바타 (Character2DCanvas 공용 엔진) ==============================
+     학습 화면(renderLesson)에는 더 이상 아바타가 없다 — 기초한글의 "메디쌤과
+     대화 연습" 팝업과 기능이 겹쳐 제거했다(같은 엔진을 그 독립 페이지에서 쓴다).
+     이 엔진은 이제 역할극의 "AI 환자"에만 쓴다 — 자모 분해 기반 입모양(비셈)
+     타임라인을 텍스트 길이만으로(대화가 텍스트로만 오가 실제 음성이 없음)
+     playText()로 재생한다. palette만 바꿔 ELDERLY_MAN_PALETTE(흰/회색 짧은
+     머리·콧수염, 저채도 입술, 환자복 색, 배지 없음)로 남자 노인 인상을 준다.
+     renderRoleplay()는 상태가 바뀔 때마다 el.innerHTML을 통째로 다시 그리는데,
+     이 엔진은 자체 requestAnimationFrame 루프와 진행 중인 발화 타임라인을 가진
+     살아있는 인스턴스라 매번 새로 만들면 호흡·시선 애니메이션이 끊기고 말하는
+     도중 끊길 수 있다. 그래서 인스턴스를 딱 하나만 만들어 두고, 다시 그릴 때마다
+     캔버스만 새 컨테이너로 옮겨 붙인다(엔진 내부 상태는 그대로 유지됨). */
+  var ELDERLY_MAN_PALETTE = {
+    skin: "#e3c3a4", skinLight: "#f2ddc6", skinShade: "#c9a17d", skinDeep: "#ad8161",
+    hair: "#d6d6d2", hairMid: "#c2c2bc", hairLight: "#eeeeec", hairStyle: "short",
+    iris: "#5b6773", irisDark: "#2a323a", lash: "#8a8a86", brow: "#cccac4",
+    lipUpper: "#c99483", lipLower: "#d19c8b", lipLine: "#8f6152",
+    mouth: "#5c352d", teeth: "#f0ebe3", tongue: "#c48d84",
+    cloth: "#7c93a6", clothLight: "#9db2c2", collar: "#eef2f4",
+    badge: null, mustache: "#8c8c85"
+  };
 
-  function avatarMouthSvg(shape) {
-    switch (shape) {
-      case "wideOpen":
-        return '<path d="M72 120 Q100 106 128 120 Q126 158 100 160 Q74 158 72 120 Z" fill="' + AVATAR_CAVITY + '" />' +
-          '<rect x="80" y="116" width="40" height="9" rx="3.5" fill="#fff" />';
-      case "round":
-        return '<ellipse cx="100" cy="132" rx="13" ry="15" fill="' + AVATAR_CAVITY + '" stroke="' + AVATAR_LIP + '" stroke-width="6" />';
-      case "teeth":
-        return '<rect x="75" y="125" width="50" height="13" rx="6" fill="' + AVATAR_CAVITY + '" />' +
-          '<rect x="78" y="126" width="44" height="5" rx="2.5" fill="#fff" />';
-      case "smile":
-        return '<path d="M68 124 Q100 114 132 124 Q129 138 100 140 Q71 138 68 124 Z" fill="' + AVATAR_CAVITY + '" />' +
-          '<rect x="75" y="121" width="50" height="7" rx="3.5" fill="#fff" />';
-      case "fv":
-        return '<rect x="77" y="129" width="46" height="11" rx="5" fill="' + AVATAR_LIP + '" />' +
-          '<rect x="81" y="123" width="38" height="7" rx="3.5" fill="#fff" />';
-      case "closed":
-      default:
-        return '<rect x="78" y="130" width="44" height="7" rx="3.5" fill="' + AVATAR_LIP + '" />';
-    }
-  }
+  var patientEngine = null;
 
-  function avatarFaceSvg() {
-    var A = state.avatar;
-    if (!A) return "";
-    var listening = A.state === "listening";
-    var speaking = A.state === "speaking";
-    var eyeRy = A.blink ? 1.2 : 9;
-    return (
-      '<svg viewBox="0 0 200 200" role="img" aria-label="AI 아바타 얼굴">' +
-        (listening ? '<circle cx="100" cy="100" r="90" fill="none" stroke="#fff" stroke-width="3" opacity="0.5" style="animation:avatarPulse 1.6s ease-in-out infinite;" />' : "") +
-        '<circle cx="100" cy="100" r="80" fill="#faf7ef" />' +
-        '<ellipse cx="72" cy="88" rx="9" ry="' + eyeRy + '" fill="#0f2e24" style="transition:ry 90ms ease;" />' +
-        '<ellipse cx="128" cy="88" rx="9" ry="' + eyeRy + '" fill="#0f2e24" style="transition:ry 90ms ease;" />' +
-        avatarMouthSvg(speaking ? A.mouthShape : "closed") +
-      "</svg>"
-    );
-  }
-
-  function renderAvatarFace() {
-    var box = document.getElementById("avatarFaceBox");
-    if (!box) return false;
-    box.innerHTML = avatarFaceSvg();
-    return true;
-  }
-
-  function tickAvatarMouth() {
-    var A = state.avatar;
-    if (!A || !renderAvatarFace()) { avatarMouthTimerRunning = false; return; }
-    if (A.state !== "speaking") {
-      if (A.mouthShape !== "closed") { A.mouthShape = "closed"; renderAvatarFace(); }
-      setTimeout(tickAvatarMouth, 200);
+  function mountPatientAvatar() {
+    var box = document.getElementById("patientAvatarBox");
+    if (!box || typeof Character2DCanvas === "undefined") return;
+    if (!patientEngine) {
+      patientEngine = new Character2DCanvas({ container: box, palette: ELDERLY_MAN_PALETTE });
+      patientEngine.on("start", function () { state.avatar.state = "speaking"; renderRoleplay(); });
+      patientEngine.on("end", function () { state.avatar.state = "idle"; renderRoleplay(); });
       return;
     }
-    var prev = A.mouthShape;
-    var next = AVATAR_MOUTH_SHAPES[Math.floor(Math.random() * AVATAR_MOUTH_SHAPES.length)];
-    if (next === prev) next = AVATAR_MOUTH_SHAPES[(AVATAR_MOUTH_SHAPES.indexOf(next) + 1) % AVATAR_MOUTH_SHAPES.length];
-    A.mouthShape = next;
-    renderAvatarFace();
-    setTimeout(tickAvatarMouth, 110 + Math.random() * 130);
-  }
-  function ensureAvatarMouthTimer() {
-    if (avatarMouthTimerRunning) return;
-    avatarMouthTimerRunning = true;
-    tickAvatarMouth();
-  }
-
-  function tickAvatarBlink() {
-    var A = state.avatar;
-    if (!A || !renderAvatarFace()) { avatarBlinkTimerRunning = false; return; }
-    A.blink = true;
-    renderAvatarFace();
-    setTimeout(function () {
-      if (state.avatar) { state.avatar.blink = false; renderAvatarFace(); }
-    }, 130);
-    setTimeout(tickAvatarBlink, 2800 + Math.random() * 2000);
-  }
-  function ensureAvatarBlinkTimer() {
-    if (avatarBlinkTimerRunning) return;
-    avatarBlinkTimerRunning = true;
-    tickAvatarBlink();
+    box.appendChild(patientEngine.canvas);
+    patientEngine.o.container = box;
+    if (patientEngine._ro) { patientEngine._ro.disconnect(); patientEngine._ro.observe(box); }
+    patientEngine.resize();
   }
 
   /* ============================== CHAT (규칙 기반 목데이터 응답) ============================== */
-  function mockChatReply(situation, message) {
-    var term = situation.terms.filter(function (t) { return message.indexOf(t.hangul) !== -1; })[0];
-    if (term) return "'" + term.hangul + "'는 " + term.glossEn + " 라는 뜻이에요. [" + term.romanization + "]로 발음합니다.";
-    if (message.indexOf("예문") !== -1) { var s2 = situation.sentences[1] || situation.sentences[0]; return "다른 표현 예: \"" + s2.textKo + "\" (" + s2.textEn + ")"; }
-    if (message.indexOf("역할") !== -1) return "좋아요, 제가 환자 역할을 해볼게요. \"" + situation.descriptionKo + "\" 상황이에요. 편하게 말을 걸어보세요.";
-    return "질문 감사합니다! 이 화면은 정적 데모라 미리 정해진 답변만 드려요. 실제 앱에서는 Gemini API가 상황에 맞춰 답합니다.";
-  }
-  function mockPatientOpening() { return "안녕하세요."; }
-  function mockPatientReply(situation, message) {
+  // 관리자 "역할극 편집"의 시나리오(첫 대사·규칙 응답·기본 대사)를 먼저 적용한다. lib/roleplay.ts ruleReply()와 같은 순서.
+  function mockPatientOpening(scenario) { return (scenario && scenario.openingKo) || "안녕하세요."; }
+  function mockPatientReply(situation, message, scenario) {
+    var rules = (scenario && scenario.replies) || [];
+    for (var i = 0; i < rules.length; i++) {
+      var hit = (rules[i].keywords || []).some(function (k) { return k.trim() && message.indexOf(k.trim()) !== -1; });
+      if (hit && rules[i].replyKo) return rules[i].replyKo;
+    }
     var term = situation.terms.filter(function (t) { return message.indexOf(t.hangul) !== -1; })[0];
     if (term) return "네, " + term.hangul + " 확인 감사합니다.";
     if (message.indexOf("아프") !== -1 || message.indexOf("통증") !== -1) return "네, 조금 아파요. 잘 부탁드립니다.";
     if (message.indexOf("감사") !== -1) return "저도 감사합니다.";
+    if (scenario && scenario.fallbackKo) return scenario.fallbackKo;
     return "네, 알겠습니다. (이 화면은 정적 데모라 미리 정해진 답변만 드려요 — Next.js 앱에서는 Gemini API로 실제 대화합니다.)";
   }
 
@@ -601,7 +847,7 @@
   var state = {
     view: "login", params: {}, lesson: null, xr: null, roleplay: null, vocab: null, avatar: null,
     topLangOpen: false, topLangNotice: null, settingsLangOpen: false, settingsLangNotice: null,
-    roleplayRecording: false, adminAlertSent: false
+    roleplayRecording: false, voicePreviewing: null, noticeError: null
   };
 
   function findSituation(unitId, situationId) {
@@ -621,27 +867,32 @@
   }
 
   function navigate(view, params) {
+    if (state.view === "roleplay" && view !== "roleplay" && patientEngine) {
+      patientEngine.destroy();
+      patientEngine = null;
+    }
+    if (state.view === "video-lesson") leaveVideoLesson();
     state.view = view; state.params = params || {};
     state.topLangOpen = false;
+    if (view === "video-lesson") initVideoLesson(state.params.videoId, state.params.t);
     if (view === "learn") {
       var found = findSituation(state.params.unitId, state.params.situationId);
       state.lesson = {
-        unitId: found.unit.id, situationId: found.situation.id, lang: "ko",
+        unitId: found.unit.id, situationId: found.situation.id,
         sentenceIndex: 0, recordingState: "idle",
-        lastScore: null, lastFeedback: [], chatMessages: [], recErr: null
+        lastScore: null, lastFeedback: [], recErr: null
       };
-      state.avatar = { state: "idle", mouthShape: "closed", blink: false };
       setLastSituation(found.unit.id, found.situation.id);
     }
     if (view === "roleplay") {
       var foundRp = findSituation(state.params.unitId, state.params.situationId);
-      state.roleplay = { unitId: foundRp.unit.id, situationId: foundRp.situation.id, messages: [{ role: "assistant", content: mockPatientOpening(foundRp.situation) }] };
-      state.avatar = { state: "idle", mouthShape: "closed", blink: false };
+      state.roleplay = { unitId: foundRp.unit.id, situationId: foundRp.situation.id, messages: [{ role: "assistant", content: mockPatientOpening(getRoleplayScenario(foundRp.unit.id, foundRp.situation.id)) }], spokenIndex: -1 };
+      state.avatar = { state: "idle" };
       state.roleplayRecording = false;
     }
-    if (view === "vocab") state.vocab = { tab: "전체", query: "" };
+    if (view === "vocab") state.vocab = { tab: "전체", query: "", group: "" };
     if (view === "xr-practice") {
-      var idx = XR_MODULES.findIndex(function (m) { return m.id === state.params.moduleId; });
+      var idx = Math.max(0, XR_MODULES.findIndex(function (m) { return m.id === state.params.moduleId; }));
       var prog = getXrProgress()[state.params.moduleId] || { completed: [], submitted: false };
       state.xr = { moduleIndex: idx, started: false, dialogueDismissed: false, completed: prog.completed.slice(), reading: "대기 중…", sessionStart: Date.now() };
     }
@@ -656,7 +907,7 @@
     if (state.view === "login") return renderLogin();
     var auth = getAuth();
     if (!auth) { state.view = "login"; return renderLogin(); }
-    var adminViews = ["admin", "admin-alerts"];
+    var adminViews = ["admin", "admin-alerts", "admin-library", "admin-vocab", "admin-video", "admin-xr", "admin-roleplay", "admin-voice"];
     if (auth.role === "admin" && adminViews.indexOf(state.view) === -1) { state.view = "admin"; return renderAdmin(); }
     if (auth.role !== "admin" && adminViews.indexOf(state.view) !== -1) { state.view = "home"; return renderHome(); }
     if (state.view === "home") return renderHome();
@@ -664,7 +915,10 @@
     if (state.view === "learn") return renderLesson();
     if (state.view === "xr-list") return renderXrList();
     if (state.view === "xr-practice") return renderXrPractice();
+    if (state.view === "video-list") return renderVideoList();
+    if (state.view === "video-lesson") return renderVideoLesson();
     if (state.view === "roleplay") return renderRoleplay();
+    if (state.view === "basic-hangul") return renderBasicHangul();
     if (state.view === "vocab") return renderVocab();
     if (state.view === "report") return renderReport();
     if (state.view === "journal") return renderJournal();
@@ -672,6 +926,12 @@
     if (state.view === "settings") return renderSettings();
     if (state.view === "admin") return renderAdmin();
     if (state.view === "admin-alerts") return renderAdminAlerts();
+    if (state.view === "admin-library") return renderAdminLibrary();
+    if (state.view === "admin-vocab") return renderAdminVocab();
+    if (state.view === "admin-video") return renderAdminVideo();
+    if (state.view === "admin-xr") return renderAdminXr();
+    if (state.view === "admin-roleplay") return renderAdminRoleplay();
+    if (state.view === "admin-voice") return renderAdminVoice();
   }
 
   /* ============================== SHELL (topbar + sidebar) ============================== */
@@ -679,16 +939,24 @@
     if (role === "admin") {
       return [
         { id: "admin", ko: "전체 현황", en: "Overview" },
-        { id: "admin-alerts", ko: "알림 및 면담", en: "Alerts" }
+        { id: "admin-alerts", ko: "알림 및 면담", en: "Alerts" },
+        { id: "admin-library", ko: "실습내용 편집", en: "Content editor" },
+        { id: "admin-vocab", ko: "단어장 편집", en: "Vocab editor" },
+        { id: "admin-video", ko: "영상 편집", en: "Video editor" },
+        { id: "admin-xr", ko: "XR실습 편집", en: "XR editor" },
+        { id: "admin-roleplay", ko: "역할극 편집", en: "Role play editor" },
+        { id: "admin-voice", ko: "음성 설정", en: "Voice settings" }
       ];
     }
     return [
       { id: "home", ko: "홈", en: "Home" },
       { id: "courses", ko: "커리큘럼", en: "Units" },
-      { id: "learn", ko: "학습", en: "Learn" },
+      { id: "basic-hangul", ko: "기초한글", en: "Basics" },
+      { id: "vocab", ko: "단어장", en: "Vocabulary" },
+      { id: "learn", ko: "실습한글", en: "Practice" },
       { id: "xr-list", ko: "XR실습", en: "XR" },
+      { id: "video-list", ko: "영상학습", en: "Video" },
       { id: "roleplay", ko: "역할극", en: "Role play" },
-      { id: "vocab", ko: "단어장", en: "Words" },
       { id: "report", ko: "리포트", en: "Report" },
       { id: "journal", ko: "실습 일지", en: "Journal" },
       { id: "notices", ko: "알림", en: "Alerts" },
@@ -702,7 +970,7 @@
     var items = navItemsFor(auth.role);
     var settings = getSettings();
     var noticesRead = getNoticesRead();
-    var unread = NOTICES.filter(function (n) { return n.unread && noticesRead.indexOf(n.id) === -1; }).length;
+    var unread = getAdminNotices().filter(function (n) { return noticesRead.indexOf(n.id) === -1; }).length;
     var langRow = LANGS.filter(function (l) { return l.id === settings.displayLang; })[0] || LANGS[0];
     var langLabel = settings.displayLang === "ko" ? "한국어" : ("한국어 + " + langRow.native);
 
@@ -754,8 +1022,8 @@
   }
 
   var App_navItem = function (id) {
-    if (id === "learn") { var t = getContinueTarget(); navigate("learn", t); return; }
-    if (id === "roleplay") { var t2 = getContinueTarget(); navigate("roleplay", t2); return; }
+    if (id === "learn") { var t = getContinuePracticeTarget(); navigate("learn", t); return; }
+    if (id === "roleplay") { var t2 = getContinuePracticeTarget(); navigate("roleplay", t2); return; }
     navigate(id);
   };
   var App_toggleTopLang = function () { state.topLangOpen = !state.topLangOpen; render(); };
@@ -817,6 +1085,7 @@
 
   /* ============================== HOME ============================== */
   function renderHome() {
+    var bilingual = getSettings().displayLang !== "ko";
     var stats = getStats();
     var avgAcc = stats.accuracyCount ? Math.round(stats.accuracySum / stats.accuracyCount) : 0;
     var practiced = getPracticedTerms();
@@ -833,7 +1102,7 @@
         (found ? '<p style="font-size:.72rem;font-weight:700;letter-spacing:.04em;color:var(--brand-light);">' + esc(found.unit.titleKo) + ' · ' + esc(found.situation.titleKo) + '</p>' : "") +
         '<h1 style="margin-top:10px;font-size:1.7rem;font-weight:900;letter-spacing:-.01em;">안녕하세요, ' + esc(getAuth().name) + ' 님</h1>' +
         '<p style="margin-top:8px;font-size:.86rem;color:rgba(255,255,255,.65);line-height:1.6;">' + (stats.wordsPracticed > 0 ? ("지금까지 문장 " + stats.wordsPracticed + "개를 연습했습니다. 오늘도 이어서 연습해 보세요.") : "아직 연습 기록이 없습니다. 첫 문장을 따라 읽어보세요.") + '</p>' +
-        '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;"><a class="btn btn-primary" style="text-decoration:none;" href="#" onclick="App.navItem(\'learn\');return false;">학습 이어하기</a><a class="btn" style="background:rgba(255,255,255,.12);color:#fff;text-decoration:none;" href="#" onclick="App.navItem(\'roleplay\');return false;">역할극 연습</a></div>' +
+        '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;"><a class="btn btn-primary" style="text-decoration:none;" href="#" onclick="App.navItem(\'learn\');return false;">학습 이어하기</a><a class="btn" style="background:rgba(255,255,255,.12);color:#fff;text-decoration:none;" href="#" onclick="App.navItem(\'roleplay\');return false;">역할극 연습</a><a class="btn" style="background:rgba(255,255,255,.12);color:#fff;text-decoration:none;" href="#" onclick="App.navItem(\'video-list\');return false;">영상으로 배우기</a></div>' +
         '</div>' +
         '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
           '<div class="heroStat"><b>' + stats.wordsPracticed + '</b><small>학습 문장</small></div>' +
@@ -851,8 +1120,9 @@
     var reviewHtml = review.length === 0
       ? '<p style="font-size:.84rem;color:var(--muted);">' + (allTerms.length === 0 ? "아직 등록된 용어가 없습니다." : "등록된 용어를 모두 들어봤습니다 👏") + '</p>'
       : review.map(function (t) {
-          return '<a href="#" onclick="App.openLesson(\'' + t.unitId + "','" + t.situationId + '\');return false;" style="display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--panel);border-radius:12px;padding:10px 14px;text-decoration:none;color:inherit;">' +
-            '<span><b style="display:block;font-size:.9rem;color:var(--brand-dark);">' + esc(t.hangul) + '</b><small style="color:var(--muted);font-size:.72rem;">' + esc(t.glossEn) + '</small></span>' +
+          var go = t.custom ? "App.navItem('vocab')" : "App.openLesson('" + t.unitId + "','" + t.situationId + "')";
+          return '<a href="#" onclick="' + go + ';return false;" style="display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--panel);border-radius:12px;padding:10px 14px;text-decoration:none;color:inherit;">' +
+            '<span><b style="display:block;font-size:.9rem;color:var(--brand-dark);">' + esc(t.hangul) + '</b>' + (bilingual ? '<small style="color:var(--muted);font-size:.72rem;">' + esc(t.glossEn) + '</small>' : "") + '</span>' +
             '<span style="font-size:.72rem;color:var(--brand);">듣기 →</span></a>';
         }).join("");
 
@@ -864,9 +1134,9 @@
 
     var mainHtml = heroHtml +
       '<div class="widgetGrid">' +
-        '<div class="card" style="padding:18px;"><p class="eyebrow">주간 발음 추이 (예시)</p><div class="barChart" style="margin-top:14px;height:120px;">' + barsHtml + '</div><p style="margin-top:12px;font-size:.68rem;color:var(--faint);line-height:1.6;">* 실제 요일별 이력은 아직 저장하지 않아 예시 그래프입니다.</p></div>' +
-        '<div class="card" style="padding:18px;"><p class="eyebrow">복습이 필요한 용어</p><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">' + reviewHtml + '</div><a class="btn btn-primary" style="margin-top:14px;width:100%;text-align:center;display:block;text-decoration:none;" href="#" onclick="App.navItem(\'vocab\');return false;">단어장 전체 보기</a></div>' +
-        '<div class="card" style="padding:18px;"><div style="display:flex;justify-content:space-between;align-items:center;"><p class="eyebrow">최근 실습 일지</p><a href="#" onclick="App.navItem(\'journal\');return false;" style="font-size:.72rem;color:var(--brand);text-decoration:none;">일지 →</a></div><div style="margin-top:12px;">' + journalHtml + '</div></div>' +
+        '<div class="card" style="padding:14px;"><p class="eyebrow">주간 발음 추이 (예시)</p><div class="barChart" style="margin-top:14px;height:120px;">' + barsHtml + '</div><p style="margin-top:12px;font-size:.68rem;color:var(--faint);line-height:1.6;">* 실제 요일별 이력은 아직 저장하지 않아 예시 그래프입니다.</p></div>' +
+        '<div class="card" style="padding:14px;"><p class="eyebrow">복습이 필요한 용어</p><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">' + reviewHtml + '</div><a class="btn btn-primary" style="margin-top:14px;width:100%;text-align:center;display:block;text-decoration:none;" href="#" onclick="App.navItem(\'vocab\');return false;">단어장 전체 보기</a></div>' +
+        '<div class="card" style="padding:14px;"><div style="display:flex;justify-content:space-between;align-items:center;"><p class="eyebrow">최근 실습 일지</p><a href="#" onclick="App.navItem(\'journal\');return false;" style="font-size:.72rem;color:var(--brand);text-decoration:none;">일지 →</a></div><div style="margin-top:12px;">' + journalHtml + '</div></div>' +
       '</div>';
 
     el.innerHTML = shell(mainHtml, "home");
@@ -916,12 +1186,12 @@
     var avgAcc = Math.round(LEARNERS.reduce(function (s, l) { return s + l.avgAccuracy; }, 0) / LEARNERS.length);
     var attention = LEARNERS.filter(function (l) { return l.needsAttentionKo; });
     var rows = LEARNERS.map(function (l) {
-      return "<tr><td style=\"font-weight:600;color:var(--brand-dark);\">" + esc(l.name) + "<div style=\"font-size:.7rem;color:var(--muted);font-weight:400;\">" + esc(l.nationality) + " · " + esc(l.level) + "</div></td><td style=\"color:var(--muted);\">" + esc(l.department) + "</td><td style=\"font-weight:700;color:" + (l.avgAccuracy < 70 ? "var(--warn)" : "var(--brand-dark)") + ";\">" + l.avgAccuracy + "</td><td style=\"color:" + (l.lastActiveKo.indexOf("일 전") !== -1 ? "var(--warn)" : "var(--muted)") + ";\">" + esc(l.lastActiveKo) + "</td></tr>";
+      return "<tr><td style=\"font-weight:600;color:var(--brand-dark);\"><a href=\"#\" style=\"color:inherit;text-decoration:none;\" onmouseover=\"this.style.textDecoration='underline'\" onmouseout=\"this.style.textDecoration='none'\" onclick=\"App.learnerDetail('" + l.id + "');return false;\">" + esc(l.name) + "</a><div style=\"font-size:.7rem;color:var(--muted);font-weight:400;\">" + esc(l.nationality) + " · " + esc(l.level) + "</div></td><td style=\"color:var(--muted);\">" + esc(l.department) + "</td><td style=\"font-weight:700;color:" + (l.avgAccuracy < 70 ? "var(--warn)" : "var(--brand-dark)") + ";\">" + l.avgAccuracy + "</td><td style=\"color:" + (l.lastActiveKo.indexOf("일 전") !== -1 ? "var(--warn)" : "var(--muted)") + ";\">" + esc(l.lastActiveKo) + "</td></tr>";
     }).join("");
     var attentionHtml = attention.length === 0
       ? '<p style="font-size:.78rem;color:rgba(255,255,255,.65);">현재 없습니다.</p>'
       : attention.map(function (l) {
-          return '<div style="background:rgba(255,255,255,.1);border-radius:11px;padding:12px;margin-bottom:8px;"><p style="font-size:.84rem;font-weight:700;">' + esc(l.name) + '</p><p style="margin-top:5px;font-size:.72rem;color:rgba(255,255,255,.7);line-height:1.5;">' + esc(l.needsAttentionKo) + '</p></div>';
+          return '<div style="background:rgba(255,255,255,.1);border-radius:11px;padding:12px;margin-bottom:8px;"><a href="#" style="font-size:.84rem;font-weight:700;color:#fff;text-decoration:none;" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'" onclick="App.learnerDetail(\'' + l.id + '\');return false;">' + esc(l.name) + '</a><p style="margin-top:5px;font-size:.72rem;color:rgba(255,255,255,.7);line-height:1.5;">' + esc(l.needsAttentionKo) + '</p></div>';
         }).join("");
 
     var mainHtml =
@@ -956,12 +1226,11 @@
     var next = adjacentSituation(L.unitId, L.situationId, 1);
     var idx = unit.situations.findIndex(function (s) { return s.id === L.situationId; });
 
-    var lang = L.lang;
-    var title = lang === "ko" ? situation.titleKo : situation.titleEn;
-    var desc = lang === "ko" ? situation.descriptionKo : situation.descriptionEn;
+    var displayLang = getSettings().displayLang;
+    var bilingual = displayLang !== "ko";
 
     var termsHtml = situation.terms.map(function (t) {
-      return '<div class="termCard"><div><div class="word">' + esc(t.hangul) + '</div><div class="rom">[' + esc(t.romanization) + "] · " + esc(t.glossEn) + "</div></div>" +
+      return '<div class="termCard"><div><div class="word">' + esc(t.hangul) + '</div><div class="rom">[' + esc(t.romanization) + (bilingual ? " · " + esc(t.glossEn) : "") + "</div></div>" +
         '<button class="playBtn" onclick="App.speakText(\'' + t.id + "','" + esc(t.hangul).replace(/'/g, "\\'") + "')\">▶</button></div>";
     }).join("");
 
@@ -1002,93 +1271,59 @@
       return '<div class="feedbackItem ' + f.tone + '"><strong>' + esc(f.titleKo) + "</strong><div style=\"opacity:.85;margin-top:2px;\">" + esc(f.detailKo) + "</div></div>";
     }).join("");
 
-    var chatHtml = L.chatMessages.length === 0
-      ? '<p style="color:var(--faint);font-size:.84rem;">궁금한 표현을 물어보거나, 역할극으로 대화를 연습해보세요.</p>'
-      : L.chatMessages.map(function (m) { return '<div class="chatMsg ' + m.role + '">' + esc(m.content) + "</div>"; }).join("");
-
     var situationHeader =
-      '<div class="card" style="padding:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+      '<div class="card" style="padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
         '<span class="eyebrow">상황 SITUATION</span><span style="flex:1;height:1px;background:var(--line);"></span>' +
         '<span style="font-size:.72rem;color:var(--faint);">' + String(idx + 1).padStart(2, "0") + " / " + String(unit.situations.length).padStart(2, "0") + '</span>' +
         '<button style="border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--brand-dark);padding:5px 9px;font-size:.82rem;" ' + (prev ? "" : "disabled") + ' onclick="App.gotoSituation(-1)">←</button>' +
         '<button style="border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--brand-dark);padding:5px 9px;font-size:.82rem;" ' + (next ? "" : "disabled") + ' onclick="App.gotoSituation(1)">→</button>' +
-        '<div style="display:flex;overflow:hidden;border-radius:8px;border:1px solid var(--line);">' +
-          '<button style="padding:6px 11px;font-size:.72rem;border:none;background:' + (lang === "ko" ? "var(--brand-dark)" : "var(--card)") + ';color:' + (lang === "ko" ? "#fff" : "var(--muted)") + ';" onclick="App.setLang(\'ko\')">한국어</button>' +
-          '<button style="padding:6px 11px;font-size:.72rem;border:none;background:' + (lang === "en" ? "var(--brand-dark)" : "var(--card)") + ';color:' + (lang === "en" ? "#fff" : "var(--muted)") + ';" onclick="App.setLang(\'en\')">EN</button>' +
-        '</div>' +
       '</div>' +
-      '<div class="card" style="padding:18px;"><h2 style="font-size:1.15rem;color:var(--brand-dark);">' + esc(title) + "</h2>" +
-        '<p style="font-size:.86rem;color:var(--muted);margin-top:8px;line-height:1.6;">' + esc(desc) + "</p>" +
+      '<div class="card" style="padding:14px;"><h2 style="font-size:1.15rem;color:var(--brand-dark);">' + esc(situation.titleKo) + "</h2>" +
+        (bilingual ? '<p style="font-size:.82rem;color:var(--muted);margin-top:4px;">' + esc(situation.titleEn) + "</p>" : "") +
+        '<p style="font-size:.86rem;color:var(--muted);margin-top:8px;line-height:1.6;">' + esc(situation.descriptionKo) + "</p>" +
+        (bilingual ? '<p style="font-size:.76rem;color:var(--faint);margin-top:4px;line-height:1.6;">' + esc(situation.descriptionEn) + "</p>" : "") +
         '<div class="tagRow"><span class="tag">' + esc(situation.placeTag) + '</span><span class="tag">' + esc(situation.formalityTag) + '</span><span class="tag warn">' + esc(situation.difficultyTag) + "</span></div></div>";
-
-    var avatarHtml =
-      '<div class="avatarCard"><div style="display:flex;justify-content:space-between;"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 아바타 선생님</p><span class="pill" style="background:rgba(255,255,255,.15);">' + (state.avatar.state === "speaking" ? "● 말하는 중" : state.avatar.state === "listening" ? "● 듣는 중" : "대기 중") + "</span></div>" +
-        '<div class="avatarFace" id="avatarFaceBox" style="margin-top:10px;">' + avatarFaceSvg() + "</div>" +
-        '<p style="margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.5);">* 실제 발음 분석이 아닌, 말하는 동안 일정한 리듬으로 음소 그룹별 입모양 중 하나를 무작위로 보여주는 근사치입니다.</p>' +
-        '<div style="margin-top:12px;background:rgba(255,255,255,.1);border-radius:10px;padding:10px 12px;font-size:.84rem;">' + esc(sentence.textKo) + '<div style="font-size:.72rem;opacity:.75;margin-top:2px;">' + esc(sentence.textEn) + "</div></div>" +
-        '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">' +
-          '<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(1,true)">🔁 다시 듣기</button>' +
-          '<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;" onclick="App.speakSentence(0.5,true)">👄 입모양 보기</button>' +
-          '<button class="btn" style="background:#fff;color:var(--brand);" onclick="App.openRoleplay(\'' + unit.id + "','" + situation.id + '\')">💬 역할극</button>' +
-          '<button class="btn" style="background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.25);" onclick="App.startRoleplay()">이 화면에서 대화</button>' +
-        '</div>' +
-      '</div>';
-
-    var chatCardHtml =
-      '<div class="card" id="chat-panel" style="padding:18px;display:flex;flex-direction:column;min-height:260px;"><p class="eyebrow">AI 대화 CHAT</p><p style="font-size:.7rem;color:var(--faint);margin-top:4px;">질문은 모국어로 해도 됩니다 (정적 데모: 규칙 기반 응답)</p>' +
-        '<div id="chatLog" style="flex:1;display:flex;flex-direction:column;gap:6px;margin-top:10px;overflow-y:auto;max-height:220px;">' + chatHtml + "</div>" +
-        '<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;"><button class="btn btn-ghost" style="font-size:.74rem;padding:6px 10px;" onclick="App.sendChat(\'예문 더 보기\')">예문 더 보기</button><button class="btn btn-ghost" style="font-size:.74rem;padding:6px 10px;" onclick="App.sendChat(\'역할극 시작\')">역할극 시작</button></div>' +
-        '<form style="display:flex;gap:6px;margin-top:10px;" onsubmit="App.submitChat(event)"><input id="chatInput" placeholder="메시지를 입력하세요…" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:var(--card);color:var(--text);" /><button class="btn btn-primary" type="submit">↑</button></form>' +
-      '</div>';
 
     var mainHtml =
       '<a class="backlink" href="#" onclick="App.navItem(\'courses\');return false;">← 커리큘럼으로</a>' +
-      '<div class="lessonGrid" style="margin-top:10px;">' +
-        '<div class="stack">' +
+      '<div class="stack" style="margin-top:10px;">' +
           situationHeader +
-          '<div class="card" style="padding:18px;"><p class="eyebrow">오늘의 용어 KEY TERMS</p><div class="termGrid">' + termsHtml + "</div></div>" +
+          '<div class="card" style="padding:14px;"><p class="eyebrow">오늘의 용어 KEY TERMS</p><div class="termGrid">' + termsHtml + "</div></div>" +
           '<div class="repeatCard"><div style="display:flex;justify-content:space-between;align-items:center;">' +
             '<p class="eyebrow" style="color:rgba(255,255,255,.75);">따라 읽기 · REPEAT AFTER ME</p>' +
             '<div style="display:flex;gap:10px;font-size:.74rem;opacity:.8;"><button onclick="App.speakSentence(1)" style="background:none;border:none;color:#fff;">▶ 원어민 발음</button><button onclick="App.speakSentence(0.6)" style="background:none;border:none;color:#fff;">느리게</button></div>' +
           "</div>" +
           '<div class="syllables" style="margin-top:10px;">' + syllablesHtml + "</div>" +
-          '<p style="margin-top:8px;font-size:.78rem;color:rgba(255,255,255,.65);">[' + esc(sentence.romanization) + "] — " + esc(sentence.textEn) + "</p>" +
+          '<p style="margin-top:8px;font-size:.78rem;color:rgba(255,255,255,.65);">[' + esc(sentence.romanization) + "]" + (bilingual ? " — " + esc(sentence.textEn) : "") + "</p>" +
           '<button class="recordBtn ' + recBtnCls + '" ' + (L.recordingState === "scoring" ? "disabled" : "") + ' onclick="App.toggleRecording()">' + recBtnLabel + "</button>" +
           (L.recErr ? '<p style="margin-top:8px;font-size:.76rem;color:#fca5a5;">' + esc(L.recErr) + "</p>" : "") +
           (!isSttSupported() ? '<p style="margin-top:8px;font-size:.76rem;color:#fcd34d;">이 브라우저는 음성 인식을 지원하지 않습니다.</p>' : "") +
           "</div>" +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">' +
-            '<div class="card" style="padding:18px;"><p class="eyebrow">발음 정확도 PRONUNCIATION</p><div style="margin-top:12px;">' + scoreHtml + "</div></div>" +
-            '<div class="card" style="padding:18px;"><p class="eyebrow">AI 피드백 FEEDBACK</p><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">' + feedbackHtml + "</div>" +
+            '<div class="card" style="padding:14px;"><p class="eyebrow">발음 정확도 PRONUNCIATION</p><div style="margin-top:12px;">' + scoreHtml + "</div></div>" +
+            '<div class="card" style="padding:14px;"><p class="eyebrow">AI 피드백 FEEDBACK</p><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">' + feedbackHtml + "</div>" +
               '<div style="display:flex;gap:8px;margin-top:14px;"><button class="btn btn-primary" style="flex:1;" ' + (L.recordingState !== "result" ? "disabled" : "") + ' onclick="App.focusPractice()">집중 연습</button><button class="btn btn-ghost" style="flex:1;" ' + (L.recordingState !== "result" || L.sentenceIndex + 1 >= situation.sentences.length ? "disabled" : "") + ' onclick="App.nextSentence()">다음 문장 →</button></div></div>' +
           "</div>" +
-        "</div>" +
-        '<div class="stack">' + avatarHtml + chatCardHtml + "</div>" +
-      "</div>";
+        "</div>";
 
-    el.innerHTML = shell(mainHtml, "learn");
-    ensureAvatarMouthTimer();
-    ensureAvatarBlinkTimer();
+    el.innerHTML = shell(mainHtml, isPracticeUnit(unit.id) ? "learn" : "basic-hangul");
   }
 
-  var App_setLang = function (l) { state.lesson.lang = l; renderLesson(); };
   var App_gotoSituation = function (dir) {
     var target = adjacentSituation(state.lesson.unitId, state.lesson.situationId, dir);
     if (target) navigate("learn", target);
   };
   var App_speakText = function (id, text) { speak(text); markTermPracticed(id); };
-  var App_speakSentence = function (rate, isAvatar) {
+  var App_speakSentence = function (rate) {
     var settings = getSettings();
     var found = findSituation(state.lesson.unitId, state.lesson.situationId);
     var sentence = found.situation.sentences[Math.min(state.lesson.sentenceIndex, found.situation.sentences.length - 1)];
-    if (isAvatar) state.avatar.state = "speaking";
-    renderLesson();
-    speak(sentence.textKo, { rate: rate * settings.speechRate, onEnd: function () { if (isAvatar) { state.avatar.state = "idle"; renderLesson(); } } });
+    speak(sentence.textKo, { rate: rate * settings.speechRate });
   };
   var App_toggleRecording = function () {
     var L = state.lesson;
     if (L.recordingState === "recording") { App._stopRec && App._stopRec(); return; }
-    L.recordingState = "recording"; L.recErr = null; state.avatar.state = "listening"; L.lastScore = null; L.lastFeedback = [];
+    L.recordingState = "recording"; L.recErr = null; L.lastScore = null; L.lastFeedback = [];
     renderLesson();
     var found = findSituation(L.unitId, L.situationId);
     var sentence = found.situation.sentences[Math.min(L.sentenceIndex, found.situation.sentences.length - 1)];
@@ -1099,12 +1334,12 @@
           var settings = getSettings();
           var score = scoreSentence(sentence, text);
           var feedback = generateFeedback(sentence, score, settings.scoringStrictness);
-          L.recordingState = "result"; L.lastScore = score; L.lastFeedback = feedback; state.avatar.state = "idle";
+          L.recordingState = "result"; L.lastScore = score; L.lastFeedback = feedback;
           recordPractice(score.overall);
           renderLesson();
         }, 450);
       },
-      onError: function (msg) { L.recordingState = "idle"; state.avatar.state = "idle"; L.recErr = msg; renderLesson(); }
+      onError: function (msg) { L.recordingState = "idle"; L.recErr = msg; renderLesson(); }
     });
   };
   var App_focusPractice = function () { state.lesson.recordingState = "idle"; state.lesson.lastScore = null; state.lesson.lastFeedback = []; renderLesson(); };
@@ -1115,42 +1350,39 @@
       renderLesson();
     }
   };
-  var App_sendChat = function (text) {
-    var found = findSituation(state.lesson.unitId, state.lesson.situationId);
-    state.lesson.chatMessages.push({ role: "user", content: text });
-    state.lesson.chatMessages.push({ role: "assistant", content: mockChatReply(found.situation, text) });
-    renderLesson();
-  };
-  var App_submitChat = function (ev) {
-    ev.preventDefault();
-    var input = document.getElementById("chatInput");
-    var val = input.value.trim();
-    if (!val) return;
-    App_sendChat(val);
-  };
-  var App_startRoleplay = function () {
-    var panel = document.getElementById("chat-panel");
-    if (panel && panel.scrollIntoView) panel.scrollIntoView({ behavior: "smooth", block: "start" });
-    App_sendChat("환자 역할을 맡아서 저와 대화를 시작해 주세요.");
-  };
-
   function barRow(label, value) {
     return '<div style="margin-bottom:7px;"><div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);"><span>' + label + "</span><span>" + value + '%</span></div><div class="barTrack"><div class="barFill" style="width:' + value + '%"></div></div></div>';
   }
 
   /* ============================== ROLEPLAY ============================== */
   function renderRoleplay() {
+    var bilingual = getSettings().displayLang !== "ko";
     var R = state.roleplay;
     var found = findSituation(R.unitId, R.situationId);
     var situation = found.situation;
+    var scenario = getRoleplayScenario(R.unitId, R.situationId);
+    if (scenario.enabled === false) {
+      el.innerHTML = shell(
+        '<a class="backlink" href="#" onclick="App.openLesson(\'' + R.unitId + "','" + R.situationId + '\');return false;">← 학습 화면으로</a>' +
+        '<div class="card" style="margin-top:12px;padding:32px;text-align:center;"><p style="font-size:1.05rem;font-weight:700;color:var(--brand-dark);">' + esc(situation.titleKo) + '</p>' +
+        '<p style="margin-top:8px;font-size:.84rem;color:var(--muted);">이 상황은 아직 역할극이 준비되지 않았습니다.</p></div>', "roleplay");
+      return;
+    }
+    var patientLabel = [scenario.patientNameKo, scenario.patientProfileKo].filter(Boolean).join(" · ");
+    var hintsBlock = scenario.hintsKo && scenario.hintsKo.length
+      ? '<div class="card" style="padding:14px;"><p class="eyebrow">추천 표현 · 눌러서 입력</p><div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">' +
+          scenario.hintsKo.map(function (h, i) {
+            return '<button onclick="App.roleplayHint(' + i + ')" style="text-align:left;border:none;background:var(--panel);border-radius:10px;padding:9px 12px;font-size:.84rem;color:var(--brand-dark);cursor:pointer;">' + esc(h) + '</button>';
+          }).join("") + '</div></div>'
+      : "";
     var msgsHtml = R.messages.map(function (m) {
       return '<div class="chatMsg ' + (m.role === "user" ? "user" : "assistant") + '" style="align-self:' + (m.role === "user" ? "flex-end" : "flex-start") + ';">' + esc(m.content) + "</div>";
     }).join("");
 
     var termsBlock = situation.terms.length
-      ? '<div class="card" style="padding:18px;"><p class="eyebrow">이 상황의 용어</p><div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">' +
+      ? '<div class="card" style="padding:14px;"><p class="eyebrow">이 상황의 용어</p><div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">' +
           situation.terms.map(function (t) {
-            return '<div style="background:var(--panel);border-radius:10px;padding:9px 12px;"><b style="font-size:.84rem;color:var(--brand-dark);">' + esc(t.hangul) + '</b><div style="font-size:.7rem;color:var(--muted);">' + esc(t.glossEn) + '</div></div>';
+            return '<div style="background:var(--panel);border-radius:10px;padding:9px 12px;"><b style="font-size:.84rem;color:var(--brand-dark);">' + esc(t.hangul) + '</b>' + (bilingual ? '<div style="font-size:.7rem;color:var(--muted);">' + esc(t.glossEn) + '</div>' : "") + '</div>';
           }).join("") + '</div></div>'
       : "";
 
@@ -1158,8 +1390,9 @@
       '<a class="backlink" href="#" onclick="App.openLesson(\'' + R.unitId + "','" + R.situationId + '\');return false;">← 학습 화면으로</a>' +
       '<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;margin-top:12px;">' +
         '<div style="flex:1 1 480px;min-width:0;background:var(--brand-dark);color:#fff;border-radius:18px;padding:22px;">' +
-          '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;"><div><p style="font-size:.7rem;font-weight:700;letter-spacing:.04em;color:var(--brand-light);">역할극 ROLE PLAY</p><h1 style="margin-top:8px;font-size:1.3rem;font-weight:900;">' + esc(situation.titleKo) + '</h1></div><span class="pill" style="background:rgba(255,255,255,.12);">환자 역: 정적 데모</span></div>' +
-          '<div style="margin-top:18px;display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;">' + msgsHtml + '</div>' +
+          '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;"><div><p style="font-size:.7rem;font-weight:700;letter-spacing:.04em;color:var(--brand-light);">역할극 ROLE PLAY</p><h1 style="margin-top:8px;font-size:1.3rem;font-weight:900;">' + esc(situation.titleKo) + '</h1></div><span class="pill" style="background:rgba(255,255,255,.12);">환자 역: ' + esc(patientLabel || "정적 데모") + '</span></div>' +
+          (scenario.goalKo ? '<p style="margin-top:12px;background:rgba(255,255,255,.1);border-radius:12px;padding:10px 13px;font-size:.8rem;line-height:1.55;color:rgba(255,255,255,.85);"><b style="color:var(--brand-light);margin-right:6px;">목표</b>' + esc(scenario.goalKo) + '</p>' : "") +
+          '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;">' + msgsHtml + '</div>' +
           '<div style="margin-top:16px;display:flex;gap:8px;align-items:center;border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:10px;">' +
             '<input id="roleplayInput" placeholder="직접 입력하거나 마이크로 말해보세요…" style="flex:1;min-width:0;background:none;border:none;color:#fff;" onkeydown="if(event.key===\'Enter\')App.roleplaySend()" />' +
             (isSttSupported() ? '<button onclick="App.roleplayMic()" style="border:none;border-radius:999px;padding:8px 14px;font-size:.72rem;font-weight:700;background:' + (state.roleplayRecording ? "var(--warn-accent)" : "rgba(255,255,255,.15)") + ';color:#fff;">🎙 ' + (state.roleplayRecording ? "듣는 중…" : "말하기") + '</button>' : "") +
@@ -1169,14 +1402,25 @@
           '<p style="margin-top:12px;font-size:.68rem;color:rgba(255,255,255,.5);line-height:1.6;">이 독립 실행형 페이지는 서버가 없어 정해진 규칙 기반 응답으로만 동작합니다 — Next.js 앱에서는 Gemini API로 실제 대화합니다.</p>' +
         '</div>' +
         '<div style="flex:1 1 280px;max-width:380px;min-width:0;display:flex;flex-direction:column;gap:14px;">' +
-          '<div class="avatarCard"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 환자 아바타</p><div class="avatarFace" id="avatarFaceBox" style="margin-top:10px;">' + avatarFaceSvg() + '</div></div>' +
+          '<div class="avatarCard"><div style="display:flex;justify-content:space-between;"><p class="eyebrow" style="color:rgba(255,255,255,.8);">AI 환자 아바타</p><span class="pill" style="background:rgba(255,255,255,.15);">' + (state.avatar.state === "speaking" ? "● 말하는 중" : state.avatar.state === "listening" ? "● 듣는 중" : "대기 중") + "</span></div>" +
+            '<div class="avatarFace" style="margin-top:10px;position:relative;">' +
+              '<div id="patientAvatarBox" style="width:100%;height:100%;"></div>' +
+              (state.avatar.state === "listening" ? '<div style="position:absolute;inset:8px;border-radius:10px;box-shadow:0 0 0 2px rgba(255,255,255,.5);pointer-events:none;animation:avatarPulse 1.6s ease-in-out infinite;"></div>' : "") +
+            "</div>" +
+            '<p style="margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.5);">* 대화가 텍스트로만 오가 실제 음성은 없습니다 — 도착한 답변 길이에 맞춘 입모양만 재생합니다.</p>' +
+          '</div>' +
+          hintsBlock +
           termsBlock +
         '</div>' +
       '</div>';
 
     el.innerHTML = shell(mainHtml, "roleplay");
-    ensureAvatarMouthTimer();
-    ensureAvatarBlinkTimer();
+    mountPatientAvatar();
+    var lastMsg = R.messages[R.messages.length - 1];
+    if (patientEngine && lastMsg && lastMsg.role === "assistant" && R.spokenIndex !== R.messages.length - 1) {
+      R.spokenIndex = R.messages.length - 1;
+      patientEngine.playText(lastMsg.content);
+    }
   }
 
   var App_roleplaySend = function () {
@@ -1189,7 +1433,7 @@
     state.avatar.state = "speaking";
     renderRoleplay();
     setTimeout(function () {
-      R.messages.push({ role: "assistant", content: mockPatientReply(found.situation, text) });
+      R.messages.push({ role: "assistant", content: mockPatientReply(found.situation, text, getRoleplayScenario(R.unitId, R.situationId)) });
       state.avatar.state = "idle";
       renderRoleplay();
     }, 450);
@@ -1208,7 +1452,7 @@
         state.avatar.state = "speaking";
         renderRoleplay();
         setTimeout(function () {
-          R.messages.push({ role: "assistant", content: mockPatientReply(found.situation, text) });
+          R.messages.push({ role: "assistant", content: mockPatientReply(found.situation, text, getRoleplayScenario(R.unitId, R.situationId)) });
           state.avatar.state = "idle";
           renderRoleplay();
         }, 450);
@@ -1217,15 +1461,51 @@
     });
   };
 
-  /* ============================== VOCAB ============================== */
+  /* ============================== 기초한글 (상황별 학습) ============================== */
+  function renderBasicHangul() {
+    var bilingual = getSettings().displayLang !== "ko";
+    var practiced = getPracticedTerms();
+
+    var situationsHtml = BASIC_UNITS[0].situations.map(function (s) {
+      var termsHtml = s.terms.map(function (t) {
+        var learned = practiced.indexOf(t.id) !== -1;
+        return '<div class="termCard"><div><div class="word">' + esc(t.hangul) + '</div><div class="rom">[' + esc(t.romanization) + ']' + (bilingual ? " · " + esc(t.glossEn) : "") + '</div></div>' +
+          '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:.68rem;color:' + (learned ? "var(--brand)" : "var(--faint)") + ';">' + (learned ? "학습함" : "아직") + '</span>' +
+          '<button class="playBtn" onclick="App.vocabPlay(\'' + t.id + "','" + t.hangul.replace(/'/g, "\\'") + '\')">▶</button></div></div>';
+      }).join("");
+      return '<div class="card" style="padding:14px;margin-top:14px;">' +
+        '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:10px;">' +
+          '<div><h2 style="font-size:1.05rem;font-weight:700;color:var(--brand-dark);">' + esc(s.menuLabelKo) + '</h2><p style="margin-top:4px;font-size:.82rem;color:var(--muted);">' + esc(s.titleKo) + '</p>' +
+            '<div class="tagRow" style="margin-top:8px;"><span class="tag">' + esc(s.placeTag) + '</span><span class="tag">' + esc(s.formalityTag) + '</span></div></div>' +
+          '<button class="btn btn-primary" style="flex:none;white-space:nowrap;" onclick="App.openLesson(\'' + BASIC_UNITS[0].id + "','" + s.id + '\')">학습하기 →</button>' +
+        '</div>' +
+        '<div class="termGrid">' + termsHtml + '</div>' +
+      '</div>';
+    }).join("");
+
+    var mainHtml =
+      '<p class="eyebrow">기초한글 BASIC HANGUL</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글 자체를 처음부터 배우기</h1>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">자음·모음, 받침, 기초 낱말 등 한글 자체를 처음부터 배웁니다. 각 상황에 등장하는 용어는 바로 듣고 연습할 수 있고, 전체 용어는 단어장 메뉴에서 모아볼 수 있습니다.</p>' +
+      '<button type="button" onclick="App.openMediSsam()" style="display:inline-flex;align-items:center;gap:14px;border:none;border-radius:16px;background:var(--brand-dark);padding:14px 18px;margin-top:14px;cursor:pointer;text-align:left;">' +
+        '<span style="flex:none;width:48px;height:48px;border-radius:999px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:1.4rem;">🩺</span>' +
+        '<span><span style="display:block;font-size:1rem;font-weight:700;color:#fff;">메디쌤과 대화 연습</span><span style="display:block;margin-top:2px;font-size:.78rem;color:rgba(255,255,255,.7);">AI 아바타와 실제 문장을 말해보세요 ↗</span></span>' +
+      '</button>' +
+      situationsHtml;
+
+    el.innerHTML = shell(mainHtml, "basic-hangul");
+  }
+
+  /* ============================== 단어장 (기초한글+실습한글 전체 용어) ============================== */
   function renderVocab() {
+    var bilingual = getSettings().displayLang !== "ko";
+    var practiced = getPracticedTerms();
     var V = state.vocab;
     var all = getAllTerms();
-    var practiced = getPracticedTerms();
     var shown = all.filter(function (t) {
       var learned = practiced.indexOf(t.id) !== -1;
       if (V.tab === "학습함" && !learned) return false;
       if (V.tab === "아직" && learned) return false;
+      if (V.group && t.group !== V.group) return false;
       if (V.query && t.hangul.indexOf(V.query) === -1 && t.glossEn.toLowerCase().indexOf(V.query.toLowerCase()) === -1) return false;
       return true;
     });
@@ -1234,29 +1514,46 @@
       : '<div class="itemGrid" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr));">' + shown.map(function (t) {
           var learned = practiced.indexOf(t.id) !== -1;
           return '<div class="vocabCard"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
-            '<div><p style="font-size:1.05rem;font-weight:700;color:var(--brand-dark);">' + esc(t.hangul) + '</p><p class="mono" style="font-size:.7rem;color:var(--muted);margin-top:3px;">[' + esc(t.romanization) + '] · ' + esc(t.glossEn) + '</p></div>' +
+            '<div><p style="font-size:1.05rem;font-weight:700;color:var(--brand-dark);">' + esc(t.hangul) + '</p><p class="mono" style="font-size:.7rem;color:var(--muted);margin-top:3px;">[' + esc(t.romanization) + ']' + (bilingual ? " · " + esc(t.glossEn) : "") + '</p></div>' +
             '<button class="playBtn" onclick="App.vocabPlay(\'' + t.id + "','" + t.hangul.replace(/'/g, "\\'") + '\')">▶</button>' +
-            '</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;"><span style="font-size:.68rem;color:' + (learned ? "var(--brand)" : "var(--faint)") + ';">' + (learned ? "학습함" : "아직") + '</span><a href="#" onclick="App.openLesson(\'' + t.unitId + "','" + t.situationId + '\');return false;" style="font-size:.7rem;color:var(--brand);text-decoration:none;">' + esc(t.situationLabelKo) + ' →</a></div></div>';
+            '</div>' + (t.note ? '<p style="margin-top:8px;font-size:.72rem;color:var(--muted);line-height:1.45;">' + esc(t.note) + '</p>' : "") +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;"><span style="font-size:.68rem;color:' + (learned ? "var(--brand)" : "var(--faint)") + ';">' + (learned ? "학습함" : "아직") + '</span>' +
+            (t.custom
+              ? '<span style="font-size:.7rem;color:var(--faint);">' + esc(t.group || "단어장 단어") + '</span>'
+              : '<a href="#" onclick="App.openLesson(\'' + t.unitId + "','" + t.situationId + '\');return false;" style="font-size:.7rem;color:var(--brand);text-decoration:none;">' + esc(t.situationLabelKo) + ' →</a>') +
+            '</div></div>';
         }).join("") + '</div>';
 
     var tabsHtml = ["전체", "학습함", "아직"].map(function (t) {
       return '<button class="tabPill' + (V.tab === t ? " active" : "") + '" onclick="App.vocabTab(\'' + t + '\')">' + t + '</button>';
     }).join("");
+    // 단어장 편집(관리자)에서 붙인 분류가 있으면 분류 필터를 보여준다.
+    var groups = [];
+    all.forEach(function (t) { if (t.group && groups.indexOf(t.group) === -1) groups.push(t.group); });
+    groups.sort(function (a, b) { return a.localeCompare(b, "ko"); });
+    if (groups.length) {
+      tabsHtml += '<span style="align-self:center;color:var(--line);margin:0 4px;">|</span>' + [""].concat(groups).map(function (g, i) {
+        return '<button class="tabPill' + (V.group === g ? " active" : "") + '" onclick="App.vocabGroup(' + i + ')">' + esc(g || "모든 분류") + '</button>';
+      }).join("");
+    }
+    state.vocabGroups = [""].concat(groups);
 
     var mainHtml =
       '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
         '<div><p class="eyebrow">단어장 VOCABULARY</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">내 의료 용어 ' + all.length + '개</h1>' +
-        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">학습 화면·단어장에서 듣기 버튼을 누르면 "학습함"으로 표시됩니다 (' + practiced.length + '/' + all.length + ').</p></div>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">학습 화면에서 용어 듣기 버튼을 누르면 "학습함"으로 표시됩니다 (' + practiced.length + '/' + all.length + ').</p></div>' +
         '<input value="' + esc(V.query) + '" oninput="App.vocabSearch(this.value)" placeholder="용어 검색 · Search" style="min-width:200px;border:1px solid var(--line);border-radius:11px;padding:10px 14px;background:var(--card);color:var(--text);" />' +
       '</div>' +
-      '<div style="display:flex;gap:6px;margin-top:16px;">' + tabsHtml + '</div>' +
+      savedVideoTermsHtml() +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;">' + tabsHtml + '</div>' +
       '<div style="margin-top:16px;">' + cardsHtml + '</div>';
 
     el.innerHTML = shell(mainHtml, "vocab");
   }
-  var App_vocabPlay = function (id, hangul) { speak(hangul); markTermPracticed(id); renderVocab(); };
+  var App_vocabPlay = function (id, hangul) { speak(hangul); markTermPracticed(id); if (state.view === "vocab") renderVocab(); else renderBasicHangul(); };
   var App_vocabTab = function (t) { state.vocab.tab = t; renderVocab(); };
   var App_vocabSearch = function (v) { state.vocab.query = v; renderVocab(); };
+  var App_vocabGroup = function (i) { state.vocab.group = (state.vocabGroups || [""])[i] || ""; renderVocab(); };
 
   /* ============================== REPORT ============================== */
   function renderReport() {
@@ -1303,10 +1600,10 @@
         '<div class="card statTile"><p>연습 문장 수</p><p>' + stats.wordsPracticed + '</p></div>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px;">' +
-        '<div class="card" style="padding:18px;"><p class="eyebrow">주차별 평균 점수 (예시)</p><div class="barChart" style="margin-top:16px;height:130px;">' + weeklyBars + '</div><p style="margin-top:12px;font-size:.68rem;color:var(--faint);">* 주차별 이력은 아직 저장하지 않아 예시 그래프입니다.</p></div>' +
-        '<div class="card" style="padding:18px;"><p class="eyebrow">약한 발음 요소 (예시)</p><div style="margin-top:16px;">' + weakHtml + '</div><p style="font-size:.68rem;color:var(--faint);">* 음소 단위 분석은 아직 하지 않아 예시 값입니다.</p></div>' +
+        '<div class="card" style="padding:14px;"><p class="eyebrow">주차별 평균 점수 (예시)</p><div class="barChart" style="margin-top:16px;height:130px;">' + weeklyBars + '</div><p style="margin-top:12px;font-size:.68rem;color:var(--faint);">* 주차별 이력은 아직 저장하지 않아 예시 그래프입니다.</p></div>' +
+        '<div class="card" style="padding:14px;"><p class="eyebrow">약한 발음 요소 (예시)</p><div style="margin-top:16px;">' + weakHtml + '</div><p style="font-size:.68rem;color:var(--faint);">* 음소 단위 분석은 아직 하지 않아 예시 값입니다.</p></div>' +
       '</div>' +
-      '<div class="card" style="padding:18px;margin-top:16px;"><p class="eyebrow">유닛별 용어 학습 현황</p><div style="margin-top:12px;"><div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:.72rem;color:var(--faint);"><span>유닛</span><span>학습한 용어</span><span>진행률</span></div>' + unitRowsHtml + '</div></div>';
+      '<div class="card" style="padding:14px;margin-top:16px;"><p class="eyebrow">유닛별 용어 학습 현황</p><div style="margin-top:12px;"><div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:.72rem;color:var(--faint);"><span>유닛</span><span>학습한 용어</span><span>진행률</span></div>' + unitRowsHtml + '</div></div>';
 
     el.innerHTML = shell(mainHtml, "report");
   }
@@ -1357,26 +1654,36 @@
   /* ============================== NOTICES ============================== */
   function renderNotices() {
     var read = getNoticesRead();
-    var unread = NOTICES.filter(function (n) { return n.unread && read.indexOf(n.id) === -1; }).length;
-    var groups = [];
-    NOTICES.forEach(function (n) { if (groups.indexOf(n.group) === -1) groups.push(n.group); });
+    var notices = getAdminNotices();
+    var unread = notices.filter(function (n) { return read.indexOf(n.id) === -1; }).length;
+    var now = new Date();
+    var described = notices.map(function (n) {
+      var t = describeNoticeTime(n.createdAt, now);
+      return { id: n.id, titleKo: n.titleKo, detailKo: n.detailKo, groupKo: t.groupKo, timeKo: t.timeKo };
+    });
+    var groupOrder = ["오늘", "이번 주", "이전"];
+    var groups = groupOrder.filter(function (g) { return described.some(function (n) { return n.groupKo === g; }); });
     var groupsHtml = groups.map(function (g) {
-      var rows = NOTICES.filter(function (n) { return n.group === g; }).map(function (n) {
-        var isRead = !n.unread || read.indexOf(n.id) !== -1;
+      var rows = described.filter(function (n) { return n.groupKo === g; }).map(function (n) {
+        var isRead = read.indexOf(n.id) !== -1;
         return '<button onclick="App.noticeRead(\'' + n.id + '\')" style="display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;border:none;background:none;border-bottom:1px solid var(--line);padding:14px 18px;' + (isRead ? "opacity:.55;" : "") + '">' +
           '<span style="width:8px;height:8px;border-radius:999px;margin-top:6px;flex:none;background:' + (isRead ? "var(--line)" : "var(--warn-accent)") + ';"></span>' +
-          '<span style="flex:1;"><b style="display:block;font-size:.9rem;color:var(--brand-dark);">' + esc(n.title) + '</b><small style="display:block;margin-top:4px;font-size:.76rem;color:var(--muted);">' + esc(n.detail) + '</small></span>' +
-          '<span style="font-size:.7rem;color:var(--faint);flex:none;">' + esc(n.time) + '</span></button>';
+          '<span style="flex:1;"><b style="display:block;font-size:.9rem;color:var(--brand-dark);">' + esc(n.titleKo) + '</b><small style="display:block;margin-top:4px;font-size:.76rem;color:var(--muted);">' + esc(n.detailKo) + '</small></span>' +
+          '<span style="font-size:.7rem;color:var(--faint);flex:none;">' + esc(n.timeKo) + '</span></button>';
       }).join("");
       return '<div style="background:var(--panel);padding:10px 18px;font-size:.7rem;font-weight:700;color:var(--muted);">' + g + '</div>' + rows;
     }).join("");
 
+    var listHtml = notices.length === 0
+      ? '<div class="card" style="padding:30px;text-align:center;color:var(--muted);font-size:.86rem;">아직 받은 알림이 없습니다.</div>'
+      : '<div class="card" style="margin-top:16px;overflow:hidden;padding:0;">' + groupsHtml + '</div>';
+
     var mainHtml =
       '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:14px;">' +
-        '<div><p class="eyebrow">알림 NOTIFICATIONS</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">읽지 않은 알림 ' + unread + '건</h1><p style="margin-top:6px;font-size:.82rem;color:var(--muted);">실제 발송 서버는 아직 없어 목록은 예시 데이터입니다. 읽음 처리만 실제로 저장됩니다.</p></div>' +
-        '<button class="btn btn-ghost" onclick="App.noticesReadAll()">모두 읽음으로 표시</button>' +
+        '<div><p class="eyebrow">알림 NOTIFICATIONS</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">읽지 않은 알림 ' + unread + '건</h1><p style="margin-top:6px;font-size:.82rem;color:var(--muted);">관리자가 작성한 알림입니다. 실제 발송 서버(푸시 등)는 없어 이 목록에 나타나는 것으로 전달을 대신하며, 읽음 처리만 실제로 저장됩니다.</p></div>' +
+        (notices.length > 0 ? '<button class="btn btn-ghost" onclick="App.noticesReadAll()">모두 읽음으로 표시</button>' : "") +
       '</div>' +
-      '<div class="card" style="margin-top:16px;overflow:hidden;padding:0;">' + groupsHtml + '</div>';
+      listHtml;
 
     el.innerHTML = shell(mainHtml, "notices");
   }
@@ -1402,26 +1709,32 @@
       : "";
 
     var mainHtml =
-      '<div style="max-width:720px;">' +
+      '<div style="max-width:1100px;">' +
       '<p class="eyebrow">설정 SETTINGS</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">계정과 학습 환경</h1>' +
-      '<div class="card" style="padding:18px;margin-top:16px;"><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;"><div class="avatarCircle" style="width:56px;height:56px;font-size:1.1rem;">' + initials(auth.name) + '</div><div><p style="font-size:1.05rem;font-weight:700;color:var(--brand-dark);">' + esc(auth.name) + '</p><p style="margin-top:3px;font-size:.8rem;color:var(--muted);">' + (auth.role === "admin" ? "기관 관리자" : "간호조무 실습생") + '</p></div></div></div>' +
-      '<div class="card" style="padding:18px;margin-top:14px;"><p class="eyebrow">표시 언어</p><div style="position:relative;max-width:340px;margin-top:14px;">' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-top:16px;">' +
+      '<div style="display:flex;flex-direction:column;gap:14px;">' +
+      '<div class="card" style="padding:14px;"><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;"><div class="avatarCircle" style="width:56px;height:56px;font-size:1.1rem;">' + initials(auth.name) + '</div><div><p style="font-size:1.05rem;font-weight:700;color:var(--brand-dark);">' + esc(auth.name) + '</p><p style="margin-top:3px;font-size:.8rem;color:var(--muted);">' + (auth.role === "admin" ? "기관 관리자" : "간호조무 실습생") + '</p></div></div></div>' +
+      '<div class="card" style="padding:14px;"><p class="eyebrow">표시 언어</p><div style="position:relative;max-width:340px;margin-top:14px;">' +
         '<button class="langBtn" style="width:100%;justify-content:space-between;" onclick="App.toggleSettingsLang()"><span>' + esc(langFull) + '</span><span>▼</span></button>' + langMenuHtml +
       '</div><p style="margin-top:12px;font-size:.72rem;color:var(--muted);line-height:1.6;">용어 뜻과 화면 안내에 적용됩니다. 학습 문장은 항상 한국어로 표시됩니다.</p></div>' +
-      '<div class="card" style="padding:18px;margin-top:14px;"><p class="eyebrow">음성과 발음</p>' +
-        '<div style="margin-top:16px;"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:8px;"><span style="color:var(--brand-dark);">아바타 말하기 속도</span><span style="color:var(--muted);">' + S.speechRate.toFixed(1) + '배</span></div><input type="range" min="0.5" max="1.5" step="0.1" value="' + S.speechRate + '" oninput="App.setSpeechRate(this.value)" style="width:100%;accent-color:var(--brand);" /></div>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:18px;"><div><p style="font-size:.8rem;color:var(--brand-dark);">채점 엄격도</p><p style="margin-top:3px;font-size:.72rem;color:var(--muted);">' + (S.scoringStrictness === "beginner" ? "초급 기준으로 채점합니다" : "중급 기준으로 좀 더 엄격하게 채점합니다") + '</p></div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:14px;">' +
+      '<div class="card" style="padding:14px;"><p class="eyebrow">음성과 발음</p>' +
+        '<div style="margin-top:16px;"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:8px;"><span style="color:var(--brand-dark);">말하기 속도</span><span style="color:var(--muted);">' + S.speechRate.toFixed(1) + '배</span></div><input type="range" min="0.5" max="1.5" step="0.1" value="' + S.speechRate + '" oninput="App.setSpeechRate(this.value)" style="width:100%;accent-color:var(--brand);" /></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:14px;"><div><p style="font-size:.8rem;color:var(--brand-dark);">채점 엄격도</p><p style="margin-top:3px;font-size:.72rem;color:var(--muted);">' + (S.scoringStrictness === "beginner" ? "초급 기준으로 채점합니다" : "중급 기준으로 좀 더 엄격하게 채점합니다") + '</p></div>' +
           '<div style="display:flex;gap:4px;background:var(--panel);border-radius:9px;padding:4px;">' +
             ["beginner", "intermediate"].map(function (lv) { return '<button onclick="App.setScoringStrictness(\'' + lv + '\')" style="border:none;border-radius:6px;padding:6px 12px;font-size:.72rem;background:' + (S.scoringStrictness === lv ? "var(--brand-dark)" : "transparent") + ';color:' + (S.scoringStrictness === lv ? "#fff" : "var(--muted)") + ';">' + (lv === "beginner" ? "초급" : "중급") + '</button>'; }).join("") +
           '</div></div>' +
       '</div>' +
-      '<div class="card" style="padding:18px;margin-top:14px;"><p class="eyebrow">알림 · 그 밖의 기능</p><p style="margin-top:8px;font-size:.72rem;color:var(--muted);line-height:1.6;">아래 항목은 실제 녹음 오디오 저장이나 발송 서버가 아직 없어 화면 표시만 되고 실제로 켜고 끌 수는 없습니다.</p>' +
+      '<div class="card" style="padding:14px;"><p class="eyebrow">알림 · 그 밖의 기능</p><p style="margin-top:8px;font-size:.72rem;color:var(--muted);line-height:1.6;">아래 항목은 실제 녹음 오디오 저장이나 발송 서버가 아직 없어 화면 표시만 되고 실제로 켜고 끌 수는 없습니다.</p>' +
         '<div style="margin-top:14px;display:flex;flex-direction:column;gap:12px;opacity:.6;">' +
           mockToggleRow("녹음 자동 재생", S.autoPlayRecording) +
           mockToggleRow("복습 시간 알림 (매일 07:00)", true) +
           mockToggleRow("지도자 의견 알림", true) +
           mockToggleRow("주간 리포트 이메일", false) +
         '</div></div>' +
+      '</div>' +
+      '</div>' +
       '<button class="btn btn-ghost" style="width:100%;margin-top:16px;color:var(--warn);" onclick="App.logout()">로그아웃</button>' +
       '</div>';
 
@@ -1433,41 +1746,255 @@
 
   /* ============================== ADMIN ALERTS ============================== */
   function renderAdminAlerts() {
+    var notices = getAdminNotices();
+    var sentLast7Days = notices.filter(function (n) { return Date.now() - n.createdAt < 7 * 86400000; }).length;
     var meetingsHtml = UPCOMING_MEETINGS.map(function (m) {
       return '<div style="border-radius:12px;padding:14px 16px;margin-bottom:8px;' + (m.urgent ? "background:var(--warn-bg);border:1px solid var(--warn-border);" : "background:var(--panel);") + '"><p style="font-size:.72rem;font-weight:700;color:' + (m.urgent ? "var(--warn)" : "var(--faint)") + ';">' + m.date + '</p><p style="margin-top:6px;font-size:.86rem;font-weight:700;color:var(--brand-dark);">' + esc(m.title) + '</p><p style="margin-top:4px;font-size:.74rem;color:var(--muted);">' + esc(m.detail) + '</p></div>';
     }).join("");
     var journalRowsHtml = PENDING_JOURNAL_REVIEWS.map(function (r) {
       return "<tr><td style=\"font-weight:600;color:var(--brand-dark);\">" + esc(r.name) + "</td><td style=\"color:var(--muted);\">" + esc(r.dept) + "</td><td style=\"color:var(--muted);\">" + esc(r.submitted) + "</td><td style=\"font-weight:700;color:" + (r.days >= 3 ? "var(--warn)" : "var(--muted)") + ";\">" + r.days + "일</td></tr>";
     }).join("");
-    var sentHtml = RECENT_NOTICES_SENT.map(function (n) {
-      return '<div style="border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px;"><p style="font-size:.82rem;font-weight:600;color:var(--brand-dark);">' + esc(n.title) + '</p><p style="margin-top:3px;font-size:.72rem;color:var(--muted);">' + esc(n.meta) + '</p></div>';
-    }).join("");
+    var sentHtml = notices.length === 0
+      ? '<p style="font-size:.76rem;color:var(--faint);">아직 작성한 알림이 없습니다.</p>'
+      : notices.map(function (n) {
+          return '<div style="border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">' +
+              '<p style="font-size:.82rem;font-weight:600;color:var(--brand-dark);">' + esc(n.titleKo) + '</p>' +
+              '<button onclick="App.noticeDelete(\'' + n.id + '\')" style="flex:none;border:none;background:none;font-size:.72rem;color:var(--faint);cursor:pointer;">삭제</button>' +
+            '</div>' +
+            '<p style="margin-top:3px;font-size:.76rem;color:var(--muted);">' + esc(n.detailKo) + '</p>' +
+            '<p style="margin-top:4px;font-size:.68rem;color:var(--faint);">' + esc(describeNoticeTime(n.createdAt, new Date()).timeKo) + ' · ' + esc(n.audienceKo) + '</p>' +
+          '</div>';
+        }).join("");
 
     var mainHtml =
       '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
-        '<div><p class="eyebrow">알림 및 면담 ALERTS &amp; MEETINGS</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">처리할 항목 ' + (ADMIN_OVERVIEW.pendingJournals + ADMIN_OVERVIEW.upcomingMeetings) + '건</h1><p style="margin-top:6px;font-size:.82rem;color:var(--muted);">일지 확인 ' + ADMIN_OVERVIEW.pendingJournals + '건, 면담 예약 ' + ADMIN_OVERVIEW.upcomingMeetings + '건. 이 화면의 일정·발송 이력은 실제 백엔드가 없어 목데이터입니다.</p></div>' +
+        '<div><p class="eyebrow">알림 및 면담 ALERTS &amp; MEETINGS</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">처리할 항목 ' + (ADMIN_OVERVIEW.pendingJournals + ADMIN_OVERVIEW.upcomingMeetings) + '건</h1><p style="margin-top:6px;font-size:.82rem;color:var(--muted);">일지 확인 ' + ADMIN_OVERVIEW.pendingJournals + '건, 면담 예약 ' + ADMIN_OVERVIEW.upcomingMeetings + '건. 면담 일정·확인 대기 일지는 실제 백엔드가 없어 목데이터이지만, 아래 알림은 실제로 작성·저장되어 학습자 알림(알림 메뉴) 화면에 바로 나타납니다.</p></div>' +
         '<a class="btn btn-ghost" style="text-decoration:none;" href="#" onclick="App.navItem(\'admin\');return false;">전체 현황</a>' +
       '</div>' +
       '<div class="statGrid" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));">' +
         '<div class="card statTile"><p>확인 대기 일지</p><p>' + ADMIN_OVERVIEW.pendingJournals + '</p></div>' +
         '<div class="card statTile"><p>예정 면담</p><p>' + ADMIN_OVERVIEW.upcomingMeetings + '</p></div>' +
-        '<div class="card statTile"><p>발송 알림</p><p>' + ADMIN_OVERVIEW.sentNoticesLast7Days + '</p></div>' +
+        '<div class="card statTile"><p>발송 알림</p><p>' + sentLast7Days + '</p></div>' +
         '<div class="card statTile"><p>미접속 3일 이상</p><p>' + ADMIN_OVERVIEW.unreachedLearners + '</p></div>' +
       '</div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:16px;align-items:flex-start;">' +
         '<div style="flex:1 1 480px;min-width:0;display:flex;flex-direction:column;gap:14px;">' +
-          '<div class="card" style="padding:18px;"><p class="eyebrow">면담 일정</p><div style="margin-top:14px;">' + meetingsHtml + '</div></div>' +
-          '<div class="card" style="padding:18px;overflow-x:auto;"><p class="eyebrow">확인 대기 일지</p><table style="margin-top:12px;min-width:420px;"><thead><tr><th>실습생</th><th>부서</th><th>제출일</th><th>경과</th></tr></thead><tbody>' + journalRowsHtml + '</tbody></table></div>' +
+          '<div class="card" style="padding:14px;"><p class="eyebrow">면담 일정</p><div style="margin-top:14px;">' + meetingsHtml + '</div></div>' +
+          '<div class="card" style="padding:14px;overflow-x:auto;"><p class="eyebrow">확인 대기 일지</p><table style="margin-top:12px;min-width:420px;"><thead><tr><th>실습생</th><th>부서</th><th>제출일</th><th>경과</th></tr></thead><tbody>' + journalRowsHtml + '</tbody></table></div>' +
         '</div>' +
         '<div style="flex:1 1 280px;max-width:360px;min-width:0;display:flex;flex-direction:column;gap:14px;">' +
-          '<div class="sideCard"><p class="lbl">알림 보내기</p><p style="margin-top:12px;font-size:.72rem;color:rgba(255,255,255,.7);line-height:1.6;">미접속 실습생 ' + ADMIN_OVERVIEW.unreachedLearners + '명에게 학습 독려 알림을 보냅니다. (실제 발송 서버는 아직 없어 클릭 확인만 동작합니다.)</p><button class="cta" style="border:none;width:100%;cursor:pointer;" onclick="App.adminSendAlert()">' + (state.adminAlertSent ? "발송했습니다 ✓" : (ADMIN_OVERVIEW.unreachedLearners + "명에게 발송")) + '</button></div>' +
-          '<div class="card" style="padding:18px;"><p class="eyebrow">최근 발송 이력</p><div style="margin-top:12px;">' + sentHtml + '</div></div>' +
+          '<div class="sideCard"><p class="lbl">알림 작성</p>' +
+            '<div style="margin-top:14px;display:flex;flex-direction:column;gap:10px;">' +
+              '<div><label style="font-size:.7rem;color:rgba(255,255,255,.6);display:block;margin-bottom:5px;">제목</label><input id="noticeTitle" maxlength="80" placeholder="예: 중간 평가 일정 안내" style="width:100%;background:rgba(255,255,255,.1);border:none;border-radius:9px;padding:9px 12px;color:#fff;" /></div>' +
+              '<div><label style="font-size:.7rem;color:rgba(255,255,255,.6);display:block;margin-bottom:5px;">내용</label><textarea id="noticeDetail" rows="4" maxlength="500" placeholder="학습자에게 보여줄 내용을 적어주세요" style="width:100%;resize:none;background:rgba(255,255,255,.1);border:none;border-radius:9px;padding:9px 12px;color:#fff;"></textarea></div>' +
+              '<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;"><label style="font-size:.7rem;color:rgba(255,255,255,.6);">대상</label><button onclick="App.noticeFillAudience()" style="border:none;background:none;font-size:.68rem;color:var(--brand-light);cursor:pointer;text-decoration:underline;">미접속 ' + ADMIN_OVERVIEW.unreachedLearners + '명으로 채우기</button></div><input id="noticeAudience" maxlength="60" value="전체 학습자" style="width:100%;background:rgba(255,255,255,.1);border:none;border-radius:9px;padding:9px 12px;color:#fff;" /></div>' +
+            '</div>' +
+            (state.noticeError ? '<p style="margin-top:8px;font-size:.72rem;color:#fca5a5;">' + esc(state.noticeError) + '</p>' : "") +
+            '<button class="cta" style="border:none;width:100%;margin-top:14px;cursor:pointer;" onclick="App.noticeSend()">알림 보내기</button>' +
+          '</div>' +
+          '<div class="card" style="padding:14px;"><p class="eyebrow">보낸 알림 ' + notices.length + '건</p><div style="margin-top:12px;">' + sentHtml + '</div></div>' +
         '</div>' +
       '</div>';
 
     el.innerHTML = shell(mainHtml, "admin-alerts");
   }
-  var App_adminSendAlert = function () { state.adminAlertSent = true; renderAdminAlerts(); };
+
+  /* ============================== ADMIN: 실습내용 편집 ============================== */
+  // 편집기 본체는 public/hancare-library-editor.html. 저장 내용은 위 LIBRARY_KEY로 이 브라우저에
+  // 보관되어 기초한글·실습한글 화면에 바로 반영된다(Next.js 앱에서는 content/*.json에 저장).
+  function renderAdminLibrary() {
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
+        '<div><p class="eyebrow">실습내용 편집 CONTENT EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">한글실습 내용 편집</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">여기서 고친 유닛·상황·용어·문장은 자동 저장되어 기초한글/실습한글 화면에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장되니, 보관·공유하려면 편집기의 JSON 내보내기를 쓰세요.</p></div>' +
+        '<button class="btn btn-ghost" onclick="App.resetLibrary()">기본 콘텐츠로 되돌리기</button>' +
+      '</div>' +
+      '<iframe id="libraryEditorFrame" src="./public/hancare-library-editor.html?host=hangulcare" title="실습내용 편집기" ' +
+        'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
+    el.innerHTML = shell(mainHtml, "admin-library");
+  }
+  /* ============================== ADMIN: 단어장 편집 ============================== */
+  // 편집기 본체는 public/hancare-vocab-editor.html. 설정은 VOCAB_KEY로 이 브라우저에 보관되어
+  // 단어장·홈의 "복습이 필요한 용어"에 바로 반영된다(Next.js 앱에서는 content/vocab.json에 저장).
+  function renderAdminVocab() {
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
+        '<div><p class="eyebrow">단어장 편집 VOCAB EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">단어장 내용 편집</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">상황 용어의 표시·분류·메모를 정하고, 단어장 전용 단어를 추가합니다. 자동 저장되어 학습자 단어장에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장됩니다.</p></div>' +
+        '<button class="btn btn-ghost" onclick="App.resetVocab()">단어장 설정 초기화</button>' +
+      '</div>' +
+      '<iframe id="vocabEditorFrame" src="./public/hancare-vocab-editor.html?host=hangulcare" title="단어장 편집기" ' +
+        'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
+    el.innerHTML = shell(mainHtml, "admin-vocab");
+  }
+  /* ============================== ADMIN: 영상 편집 ============================== */
+  // 편집기 본체는 public/hancare-video-editor.html. 영상 목록은 VIDEO_LIST_KEY로 이 브라우저에 보관되어
+  // 영상학습 화면에 바로 반영된다(Next.js 앱에서는 content/videos.json에 저장, 업로드·AI 자동 자막 가능).
+  function renderAdminVideo() {
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
+        '<div><p class="eyebrow">영상 편집 VIDEO EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">영상학습 편집</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">영상학습의 영상 목록·영상 경로·자막(시간·대사·영어 뜻·학습 단어)을 편집합니다. 자동 저장되어 학습자 영상학습 화면에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장되고, 영상 업로드와 AI 자동 자막은 Next.js 서버판에서만 쓸 수 있습니다.</p></div>' +
+        '<button class="btn btn-ghost" onclick="App.resetVideos()">기본 영상으로 되돌리기</button>' +
+      '</div>' +
+      '<iframe id="videoEditorFrame" src="./public/hancare-video-editor.html?host=hangulcare" title="영상 편집기" ' +
+        'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
+    el.innerHTML = shell(mainHtml, "admin-video");
+  }
+  var App_resetVideos = function () {
+    if (!confirm("편집한 영상 목록을 지우고 기본 영상으로 되돌릴까요?")) return;
+    STORE.removeItem(VIDEO_LIST_KEY);
+    applyVideos(null);
+    renderAdminVideo();
+  };
+  /* ============================== ADMIN: XR실습 편집 ============================== */
+  // 편집기 본체는 public/hancare-xr-editor.html. 모듈 배열은 XR_KEY로 이 브라우저에 보관되어
+  // XR실습 목록·실습 화면·커리큘럼에 바로 반영된다(Next.js 앱에서는 content/xr-modules.json에 저장).
+  function renderAdminXr() {
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
+        '<div><p class="eyebrow">XR실습 편집 XR EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">XR실습 메뉴 편집</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">XR실습 모듈의 순서·모듈명·법정시간·환자 상황·인터랙션을 편집합니다. 자동 저장되어 학습자 XR실습 화면에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장됩니다.</p></div>' +
+        '<button class="btn btn-ghost" onclick="App.resetXr()">기본 모듈로 되돌리기</button>' +
+      '</div>' +
+      '<iframe id="xrEditorFrame" src="./public/hancare-xr-editor.html?host=hangulcare" title="XR실습 편집기" ' +
+        'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
+    el.innerHTML = shell(mainHtml, "admin-xr");
+  }
+  /* ============================== ADMIN: 역할극 편집 ============================== */
+  // 편집기 본체는 public/hancare-roleplay-editor.html. 시나리오는 RP_KEY로 이 브라우저에 보관되어
+  // 역할극 화면(첫 대사·규칙 응답·목표·추천 표현)에 바로 반영된다(Next.js 앱에서는 content/roleplays.json).
+  function renderAdminRoleplay() {
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;">' +
+        '<div><p class="eyebrow">역할극 편집 ROLE PLAY EDITOR</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">역할극 시나리오 편집</h1>' +
+        '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);">상황별 AI 환자 설정·첫 대사·규칙 응답·추천 표현을 편집합니다. 자동 저장되어 학습자 역할극에 바로 반영됩니다. 이 파일판에서는 이 브라우저에만 저장됩니다.</p></div>' +
+        '<button class="btn btn-ghost" onclick="App.resetRoleplay()">역할극 설정 초기화</button>' +
+      '</div>' +
+      '<iframe id="roleplayEditorFrame" src="./public/hancare-roleplay-editor.html?host=hangulcare" title="역할극 편집기" ' +
+        'style="margin-top:16px;display:block;width:100%;height:calc(100vh - 200px);min-height:560px;border:1px solid var(--line);border-radius:16px;background:#fff;"></iframe>';
+    el.innerHTML = shell(mainHtml, "admin-roleplay");
+  }
+  var App_resetRoleplay = function () {
+    if (!confirm("모든 상황의 역할극 설정을 지우고 기본 역할극으로 되돌릴까요?")) return;
+    STORE.removeItem(RP_KEY);
+    renderAdminRoleplay();
+  };
+  var App_roleplayHint = function (i) {
+    var R = state.roleplay, sc = getRoleplayScenario(R.unitId, R.situationId);
+    var input = document.getElementById("roleplayInput");
+    if (input && sc.hintsKo && sc.hintsKo[i]) { input.value = sc.hintsKo[i]; input.focus(); }
+  };
+
+  /* ============================== ADMIN: 음성 설정 ============================== */
+  // Next.js 앱의 /admin/voice-settings(Gemini 음색 8종, 모든 학습자에게 서버에서 일괄 적용)와는
+  // 다른 설정이다. 이 단일 파일판은 서버가 없어 GEMINI_API_KEY를 안전하게 둘 수 없으므로, 이
+  // 화면은 이 브라우저에 설치된 Web Speech API 음성 중 하나를 골라 pickKoreanVoice()의 기본값으로
+  // 쓴다(이 브라우저에만 저장 — 다른 기기·브라우저와 공유되지 않음).
+  var VOICE_PREVIEW_TEXT = "안녕하세요, 혈압 좀 재겠습니다.";
+  function renderAdminVoice() {
+    var saved = getVoiceSettings().voiceURI;
+    var voices = (isTtsSupported() ? window.speechSynthesis.getVoices() : []).slice();
+    voices.sort(function (a, b) {
+      var ak = a.lang.indexOf("ko") === 0 ? 0 : 1, bk = b.lang.indexOf("ko") === 0 ? 0 : 1;
+      if (ak !== bk) return ak - bk;
+      return a.name.localeCompare(b.name);
+    });
+
+    function voiceRow(uri, titleHtml, subtitleHtml, previewBtnHtml) {
+      var on = saved === uri;
+      return (
+        '<div class="card" style="padding:14px;cursor:pointer;' + (on ? "border-color:var(--brand-dark);background:var(--brand-dark);color:#fff;" : "") + '" onclick="App.selectVoice(' + (uri ? "'" + uri.replace(/'/g, "\\'") + "'" : "null") + ')">' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<span style="flex:none;width:20px;height:20px;border-radius:999px;border:2px solid ' + (on ? "#fff" : "var(--line)") + ';display:flex;align-items:center;justify-content:center;font-size:.6rem;color:' + (on ? "var(--brand-dark)" : "transparent") + ';background:' + (on ? "#fff" : "transparent") + ';">✓</span>' +
+            '<div style="flex:1;min-width:0;"><p style="font-size:.86rem;font-weight:700;">' + titleHtml + '</p>' +
+              '<p style="margin-top:2px;font-size:.72rem;' + (on ? "color:rgba(255,255,255,.7);" : "color:var(--muted);") + '">' + subtitleHtml + '</p></div>' +
+            previewBtnHtml +
+          '</div></div>'
+      );
+    }
+
+    var autoCardHtml = voiceRow(null, "자동(브라우저 기본값)", "이 브라우저에 설치된 한국어 음성 중 첫 번째를 자동으로 씁니다.", "");
+
+    var voiceCardsHtml = voices.length === 0
+      ? '<p style="font-size:.82rem;color:var(--faint);">사용 가능한 음성 목록을 불러오는 중입니다… (브라우저가 아직 준비하지 않았으면 잠시 후 자동으로 채워집니다)</p>'
+      : voices.map(function (v) {
+          var on = saved === v.voiceURI;
+          var isKo = v.lang.indexOf("ko") === 0;
+          var previewing = state.voicePreviewing === v.voiceURI;
+          var titleHtml = esc(v.name) + (isKo ? ' <span style="font-weight:400;' + (on ? "color:rgba(255,255,255,.7);" : "color:var(--brand);") + '">· 한국어</span>' : "");
+          var subtitleHtml = esc(v.lang) + (v.localService ? "" : " · 온라인 음성");
+          var escapedUri = v.voiceURI.replace(/'/g, "\\'");
+          var previewBtnHtml =
+            '<button onclick="event.stopPropagation();App.previewVoice(\'' + escapedUri + '\')" style="flex:none;border-radius:999px;border:1px solid ' + (on ? "rgba(255,255,255,.4)" : "var(--line)") + ';background:transparent;color:' + (on ? "#fff" : "var(--brand-dark)") + ';padding:6px 12px;font-size:.72rem;cursor:pointer;">' + (previewing ? "재생 중…" : "▶ 미리듣기") + '</button>';
+          return voiceRow(v.voiceURI, titleHtml, subtitleHtml, previewBtnHtml);
+        }).join("");
+
+    var mainHtml =
+      '<p class="eyebrow">관리자 설정 ADMIN SETTINGS</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">학습 음성(TTS) 설정</h1>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);line-height:1.6;max-width:720px;">학습 화면(따라 읽기·단어 듣기·단어장 등)에서 재생되는 "원어민 발음" 음성을 이 브라우저에 설치된 음성 중에서 고릅니다. 고르면 바로 저장되어 이 브라우저에서 계속 적용됩니다.</p>' +
+      '<div class="card" style="margin-top:16px;padding:14px;background:var(--warn-bg);border:1px solid var(--warn-border);">' +
+        '<p style="font-size:.8rem;color:var(--warn);line-height:1.6;">이 단일 파일판(hangulcare.html)은 서버가 없어 Gemini API 키를 안전하게 둘 수 없으므로, 이 화면은 브라우저 내장 음성(Web Speech API) 중에서 고르는 설정입니다. 더 자연스러운 Gemini AI 음성(성별 느낌 × 표준 아나운서/친근한 대화체/안내방송톤/또박또박한 스타일)은 서버가 있는 Next.js 버전의 "음성 설정"(/admin/voice-settings)에서 제공됩니다.</p>' +
+      '</div>' +
+      '<div class="card" style="margin-top:16px;padding:14px;">' +
+        '<p class="eyebrow">음성 선택 VOICE</p>' +
+        '<div style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">' + autoCardHtml + voiceCardsHtml + '</div>' +
+        '<p style="margin-top:14px;font-size:.72rem;color:var(--faint);">미리듣기 예문: "' + VOICE_PREVIEW_TEXT + '". 사용 가능한 음성은 이 기기·브라우저·운영체제에 설치된 음성에 따라 다릅니다(Chrome 권장). 재생 속도는 <span style="color:var(--brand-dark);font-weight:600;">설정 → 말하기 속도</span>에서 조절됩니다.</p>' +
+      '</div>';
+
+    el.innerHTML = shell(mainHtml, "admin-voice");
+  }
+  var App_selectVoice = function (voiceURI) {
+    setVoiceSettings({ voiceURI: voiceURI });
+    renderAdminVoice();
+  };
+  var App_previewVoice = function (voiceURI) {
+    state.voicePreviewing = voiceURI;
+    renderAdminVoice();
+    speakWithVoice(VOICE_PREVIEW_TEXT, voiceURI, function () {
+      state.voicePreviewing = null;
+      if (state.view === "admin-voice") renderAdminVoice();
+    });
+  };
+  if (isTtsSupported()) {
+    // 일부 브라우저(Chrome 등)는 음성 목록을 비동기로 채운다 — 음성 설정 화면이 열려 있는
+    // 동안 목록이 준비되면 다시 그려서 빈 목록으로 보이지 않게 한다.
+    window.speechSynthesis.onvoiceschanged = function () {
+      if (state.view === "admin-voice") renderAdminVoice();
+    };
+  }
+  var App_resetXr = function () {
+    if (!confirm("편집한 XR실습 모듈을 모두 지우고 기본 모듈로 되돌릴까요?")) return;
+    STORE.removeItem(XR_KEY);
+    applyXrModules(null);
+    renderAdminXr();
+  };
+  var App_resetVocab = function () {
+    if (!confirm("추가한 단어와 분류·메모·숨김 설정을 모두 지울까요?")) return;
+    STORE.removeItem(VOCAB_KEY);
+    renderAdminVocab();
+  };
+  var App_resetLibrary = function () {
+    if (!confirm("편집한 실습내용을 모두 지우고 기본 콘텐츠로 되돌릴까요?")) return;
+    STORE.removeItem(LIBRARY_KEY);
+    applyLibrary(DEFAULT_BASIC_UNITS.concat(DEFAULT_PRACTICE_UNITS));
+    renderAdminLibrary();
+  };
+  var App_noticeFillAudience = function () {
+    var input = document.getElementById("noticeAudience");
+    if (input) input.value = "미접속 3일 이상 " + ADMIN_OVERVIEW.unreachedLearners + "명";
+  };
+  var App_noticeSend = function () {
+    var titleEl = document.getElementById("noticeTitle"), detailEl = document.getElementById("noticeDetail"), audienceEl = document.getElementById("noticeAudience");
+    var title = titleEl.value.trim(), detail = detailEl.value.trim(), audience = (audienceEl.value || "").trim();
+    if (!title) { state.noticeError = "제목을 입력해주세요."; renderAdminAlerts(); return; }
+    if (!detail) { state.noticeError = "내용을 입력해주세요."; renderAdminAlerts(); return; }
+    createAdminNotice({ titleKo: title, detailKo: detail, audienceKo: audience });
+    state.noticeError = null;
+    renderAdminAlerts();
+  };
+  var App_noticeDelete = function (id) { deleteAdminNotice(id); renderAdminAlerts(); };
 
   /* ============================== XR LIST ============================== */
   function renderXrList() {
@@ -1478,11 +2005,13 @@
         '<div class="top"><span class="order">' + String(m.order).padStart(2, "0") + '</span><span style="margin-left:auto;font-size:.72rem;color:var(--faint);" class="mono">법정 ' + m.legalHours + "시간</span></div>" +
         "<h3 style=\"font-size:.92rem;color:var(--brand-dark);\">" + esc(m.titleKo) + "</h3><p style=\"font-size:.72rem;color:var(--faint);\">" + esc(m.titleEn) + "</p>" +
         '<p style="font-size:.76rem;color:var(--muted);">환자: ' + esc(m.patientNameKo) + "</p>" +
-        '<div style="display:flex;gap:6px;margin-top:auto;"><span class="pill" style="background:var(--panel);color:var(--muted);">테스트 가능</span>' + (done ? '<span class="pill" style="background:var(--chip);color:var(--brand);">완료 ✓</span>' : "") + "</div></a>";
+        '<div style="display:flex;gap:6px;margin-top:auto;flex-wrap:wrap;">' +
+          (m.id === "xr-vital-signs" ? '<span class="pill" style="background:var(--brand);color:#fff;">3D 실습 가능</span>' : '<span class="pill" style="background:var(--panel);color:var(--muted);">테스트 가능</span>') +
+          (done ? '<span class="pill" style="background:var(--chip);color:var(--brand);">완료 ✓</span>' : "") + "</div></a>";
     }).join("");
     var mainHtml =
       '<p class="eyebrow">XR실습 XR PRACTICE</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">HnaCare XR 5대 모듈</h1>' +
-      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);line-height:1.6;">docs/XR_MODULE_DESIGN.md의 Phase 1(화면 흐름·상호작용 셸)입니다. 실제 3D 뷰어·물리 엔진은 아직 없고, 인터랙션 버튼 결과는 미리 정의된 텍스트로 대체되어 있습니다.</p>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);line-height:1.6;">docs/XR_MODULE_DESIGN.md의 Phase 1(화면 흐름·상호작용 셸)입니다. "활력징후 및 기초사정"은 실제 Three.js 3D 뷰포트가 동작하는 심화 프로토타입(§7.1)으로 대체되어 있고, 나머지 모듈은 인터랙션 버튼 결과가 미리 정의된 텍스트로 대체되어 있습니다.</p>' +
       '<div class="modGrid">' + cards + "</div>";
     el.innerHTML = shell(mainHtml, "xr-list");
   }
@@ -1510,34 +2039,51 @@
         '<a class="btn btn-ghost" style="text-decoration:none;" href="#" onclick="App.navItem(\'xr-list\');return false;">← 목록</a>' +
       '</div>';
 
-    var mainHtml = headerHtml +
-      '<div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px;">' +
-        '<div class="viewport">' +
-          '<span class="vpLabel">3D VIEWPORT · WIREFRAME PREVIEW</span>' +
-          '<svg viewBox="0 0 400 230" fill="none" stroke="#7cffb2" stroke-width="1.4" opacity=".85">' +
-            '<rect x="26" y="150" width="230" height="46" rx="6"></rect><line x1="26" y1="168" x2="256" y2="168"></line>' +
-            '<rect x="14" y="112" width="16" height="88" rx="3"></rect><rect x="252" y="128" width="14" height="72" rx="3"></rect>' +
-            '<line x1="40" y1="196" x2="40" y2="212"></line><line x1="242" y1="196" x2="242" y2="212"></line>' +
-            '<ellipse cx="150" cy="150" rx="78" ry="17"></ellipse><rect x="70" y="128" width="46" height="24" rx="10"></rect><circle cx="92" cy="132" r="15"></circle>' +
-            '<line x1="320" y1="40" x2="320" y2="150" stroke-dasharray="2 4"></line><circle cx="320" cy="36" r="7"></circle>' +
-            '<rect x="340" y="70" width="46" height="34" rx="4"></rect><polyline points="344,90 352,90 356,78 362,100 368,84 372,90 382,90"></polyline>' +
-          "</svg>" +
-          '<div class="monitorPanel"><div class="lbl">인터랙션 결과 모니터</div><div class="reading">' + esc(X.reading) + '</div>' +
-            (logHtml ? '<div class="log">' + logHtml + "</div>" : "") + "</div>" +
-          (!X.dialogueDismissed
-            ? '<div class="dialogueBubble"><div class="who">' + esc(m.patientNameKo) + '</div><div class="say">' + esc(m.situationKo) + '</div><div class="sayEn">' + esc(m.situationEn) + '</div><button class="btn btn-primary" style="margin-top:8px;padding:6px 12px;font-size:.78rem;" onclick="App.xrDismissDialogue()">다음</button></div>'
-            : '<span class="hint">▶ 오른쪽에서 실습시작을 눌러 진행하세요</span>') +
-        "</div>" +
-        '<div class="rail">' +
-          '<button class="railBtn" onclick="App.xrModal(\'환자정보\')">환자정보</button>' +
-          '<button class="railBtn" onclick="App.xrModal(\'상황안내\')">상황안내</button>' +
-          '<button class="railBtn ' + (X.started ? "started" : "start") + '" ' + (X.started ? "disabled" : "") + ' onclick="App.xrStart()">' + (X.started ? "실습 진행 중" : "실습시작") + "</button>" +
-          interactionBtns +
-          '<button class="railBtn" onclick="App.xrModal(\'도움말\')">도움말</button>' +
-          '<button class="railBtn submit" ' + (X.completed.length === 0 ? "disabled" : "") + ' onclick="App.xrSubmit()">리포트제출</button>' +
-          (X.completed.length === 0 ? '<p style="font-size:.7rem;color:var(--faint);padding:0 2px;">인터랙션을 1개 이상 완료하면 제출할 수 있어요.</p>' : "") +
-        "</div>" +
-      "</div>";
+    var xrEmbedSrc = "public/xr/vital-signs.html";
+    var bodyHtml;
+    if (m.id === "xr-vital-signs") {
+      bodyHtml =
+        '<div class="card" style="margin-top:14px;padding:0;overflow:hidden;">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line);">' +
+            '<p style="font-size:.78rem;color:var(--muted);">3D 인터랙티브 실습 — 환자확인·손위생·체온·맥박호흡·혈압·SpO₂·기초사정·기록보고 8단계</p>' +
+            '<a class="btn btn-ghost" style="text-decoration:none;" href="' + xrEmbedSrc + '" target="_blank" rel="noopener">↗ 새 탭 전체화면으로 열기</a>' +
+          "</div>" +
+          '<div style="position:relative;width:100%;padding-top:64%;background:#07140f;">' +
+            '<iframe src="' + xrEmbedSrc + '" title="' + esc(m.titleKo) + '" loading="lazy" allow="fullscreen; autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:0;"></iframe>' +
+          "</div>" +
+        "</div>";
+    } else {
+      bodyHtml =
+        '<div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;margin-top:14px;">' +
+          '<div class="viewport">' +
+            '<span class="vpLabel">3D VIEWPORT · WIREFRAME PREVIEW</span>' +
+            '<svg viewBox="0 0 400 230" fill="none" stroke="#7cffb2" stroke-width="1.4" opacity=".85">' +
+              '<rect x="26" y="150" width="230" height="46" rx="6"></rect><line x1="26" y1="168" x2="256" y2="168"></line>' +
+              '<rect x="14" y="112" width="16" height="88" rx="3"></rect><rect x="252" y="128" width="14" height="72" rx="3"></rect>' +
+              '<line x1="40" y1="196" x2="40" y2="212"></line><line x1="242" y1="196" x2="242" y2="212"></line>' +
+              '<ellipse cx="150" cy="150" rx="78" ry="17"></ellipse><rect x="70" y="128" width="46" height="24" rx="10"></rect><circle cx="92" cy="132" r="15"></circle>' +
+              '<line x1="320" y1="40" x2="320" y2="150" stroke-dasharray="2 4"></line><circle cx="320" cy="36" r="7"></circle>' +
+              '<rect x="340" y="70" width="46" height="34" rx="4"></rect><polyline points="344,90 352,90 356,78 362,100 368,84 372,90 382,90"></polyline>' +
+            "</svg>" +
+            '<div class="monitorPanel"><div class="lbl">인터랙션 결과 모니터</div><div class="reading">' + esc(X.reading) + '</div>' +
+              (logHtml ? '<div class="log">' + logHtml + "</div>" : "") + "</div>" +
+            (!X.dialogueDismissed
+              ? '<div class="dialogueBubble"><div class="who">' + esc(m.patientNameKo) + '</div><div class="say">' + esc(m.situationKo) + '</div><div class="sayEn">' + esc(m.situationEn) + '</div><button class="btn btn-primary" style="margin-top:8px;padding:6px 12px;font-size:.78rem;" onclick="App.xrDismissDialogue()">다음</button></div>'
+              : '<span class="hint">▶ 오른쪽에서 실습시작을 눌러 진행하세요</span>') +
+          "</div>" +
+          '<div class="rail">' +
+            '<button class="railBtn" onclick="App.xrModal(\'환자정보\')">환자정보</button>' +
+            '<button class="railBtn" onclick="App.xrModal(\'상황안내\')">상황안내</button>' +
+            '<button class="railBtn ' + (X.started ? "started" : "start") + '" ' + (X.started ? "disabled" : "") + ' onclick="App.xrStart()">' + (X.started ? "실습 진행 중" : "실습시작") + "</button>" +
+            interactionBtns +
+            '<button class="railBtn" onclick="App.xrModal(\'도움말\')">도움말</button>' +
+            '<button class="railBtn submit" ' + (X.completed.length === 0 ? "disabled" : "") + ' onclick="App.xrSubmit()">리포트제출</button>' +
+            (X.completed.length === 0 ? '<p style="font-size:.7rem;color:var(--faint);padding:0 2px;">인터랙션을 1개 이상 완료하면 제출할 수 있어요.</p>' : "") +
+          "</div>" +
+        "</div>";
+    }
+
+    var mainHtml = headerHtml + bodyHtml;
 
     el.innerHTML = shell(mainHtml, "xr-list");
   }
@@ -1571,32 +2117,710 @@
     else openModal("도움말", '<p style="font-size:.84rem;">1. <strong>실습시작</strong>을 눌러 인터랙션 버튼을 활성화하세요.</p><p style="font-size:.84rem;">2. 각 버튼을 눌러 결과를 확인하세요.</p><p style="font-size:.84rem;">3. 하나 이상 완료하면 <strong>리포트제출</strong>로 마무리할 수 있어요.</p>');
   };
 
+  /* ============================== 영상학습 (VIDEO) ============================== */
+  // docs/VIDEO_MODULE_DESIGN.md의 정적 데모 버전. 재생·자막 동기화·단어 탭 정지·이어보기·
+  // 구간 반복·위치 저장·단어장 담기는 Next.js 앱과 같이 실제로 동작하고, AI 답변만
+  // 서버가 없어 자막의 어휘 주석·어미 규칙으로 만든 규칙 기반 답변으로 대체한다.
+  // 재생 중에는 <video>가 다시 만들어지지 않도록 전체 render() 대신 부분 갱신만 한다.
+  var VIDEO_KEY = "hc-demo-video";
+  var VIDEO_TICK_MS = 100;
+  var videoClock = null;
+
+  function getVideoData() {
+    var d = readJSON(VIDEO_KEY, null) || {};
+    return { progress: d.progress || {}, questions: d.questions || {}, savedTerms: d.savedTerms || [] };
+  }
+  function setVideoData(d) { writeJSON(VIDEO_KEY, d); }
+  function videoSavePosition(id, sec) {
+    var d = getVideoData(), p = d.progress[id] || { last: 0, max: 0 };
+    d.progress[id] = { last: sec, max: Math.max(p.max, sec) };
+    setVideoData(d);
+  }
+  function videoLogQuestion(id, log) {
+    var d = getVideoData();
+    d.questions[id] = (d.questions[id] || []).concat([log]);
+    setVideoData(d);
+  }
+  function videoTermSaved(videoId, hangul) {
+    return getVideoData().savedTerms.some(function (t) { return t.videoId === videoId && t.hangul === hangul; });
+  }
+  function videoWatchedPct(v) {
+    var p = getVideoData().progress[v.id];
+    return p && v.durationSec > 0 ? Math.min(100, Math.round((p.max / v.durationSec) * 100)) : 0;
+  }
+  // content/videos.json의 src는 Next.js public/ 기준(/videos/x.mp4)이다. 이 파일은 저장소
+  // 루트에서 열리므로 같은 public/videos/ 파일을 가리키도록 바꾼다.
+  function videoSrc(v) {
+    if (!v.src) return "";
+    if (/^https?:\/\//.test(v.src)) return v.src;
+    return "./public" + (v.src.charAt(0) === "/" ? v.src : "/" + v.src);
+  }
+  function fmtTime(sec) {
+    var s = Math.max(0, Math.floor(sec));
+    return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  // 대사 사이 공백 구간에서는 직전 대사를 계속 보여준다(멈췄을 때 "방금 나온 말"을 질문할 수 있게).
+  function findVideoCueIndex(cues, t) {
+    var idx = -1;
+    for (var i = 0; i < cues.length; i++) { if (cues[i].start <= t + 0.05) idx = i; else break; }
+    return idx;
+  }
+  // 자막 문장을 주석 단어(여러 어절 가능)와 일반 어절로 나눈다. 긴 주석부터 매칭한다.
+  function segmentCue(cue) {
+    var terms = (cue.terms || []).slice().sort(function (a, b) { return b.hangul.length - a.hangul.length; });
+    var text = cue.textKo, out = [], i = 0;
+    function termAt(pos) { return terms.filter(function (t) { return text.indexOf(t.hangul, pos) === pos; })[0]; }
+    while (i < text.length) {
+      var term = termAt(i);
+      if (term) { out.push({ text: term.hangul, gloss: term.glossEn, pick: term.hangul }); i += term.hangul.length; continue; }
+      if (text.charAt(i) === " ") { out.push({ text: " " }); i++; continue; }
+      var j = i;
+      while (j < text.length && text.charAt(j) !== " " && !termAt(j)) j++;
+      var word = text.slice(i, j), clean = word.replace(/[.,!?…"'“”‘’()]/g, "");
+      out.push({ text: word, pick: clean || null });
+      i = j;
+    }
+    return out;
+  }
+
+  /* ---------- 규칙 기반 답변 (정적 데모) ---------- */
+  var VIDEO_GRAMMAR = [
+    { re: /주무/, note: "주무시다: '자다'의 높임말. 환자·어르신께 씁니다. (잘 주무셨어요? = 잘 잤어요?)" },
+    { re: /드세요|드실|드셨|드시/, note: "드시다: '먹다'의 높임말. 약·식사를 권할 때 씁니다. (약 드세요 = 약 먹어요)" },
+    { re: /말씀드/, note: "말씀드리다: '말하다'의 겸양어. 윗사람(간호사 선생님 등)에게 전할 때 씁니다." },
+    { re: /드릴게요|드리겠|드릴께요/, note: "-아/어 드리다: 상대를 위해 해 준다는 겸손한 표현. -(으)ㄹ게요는 '내가 하겠다'는 약속입니다." },
+    { re: /겠습니다|겠어요/, note: "-겠-: 지금 하려는 일을 공손하게 미리 알릴 때 씁니다. (재겠습니다 = 이제 재겠다는 예고)" },
+    { re: /주세요/, note: "-아/어 주세요: 정중하게 부탁할 때 씁니다. (올려 주세요 = 올려 줘요의 공손한 말)" },
+    { re: /시면|셨|으세요|으시|세요/, note: "-(으)시-: 상대(환자)를 높이는 말. -세요로 끝나면 공손한 질문·부탁이 됩니다." },
+    { re: /면 돼요/, note: "-(으)면 되다: '그렇게 하면 충분하다'는 뜻. 방법을 쉽게 알려 줄 때 씁니다." },
+    { re: /수 있어요|수 있으니/, note: "-(으)ㄹ 수 있다: 그럴 가능성이 있다는 뜻. (조일 수 있어요 = 조일지도 몰라요)" },
+    { re: /환자분/, note: "-분: '사람'을 높이는 말. 환자 → 환자분." },
+    { re: /냐고/, note: "-(느)냐고: 상대가 한 질문을 되받아 말할 때 씁니다. (내가 누구냐고? = '내가 누구야?'라고 물었어?)" },
+    { re: /맞춰봐|맞혀 봐/, note: "-아/어 보다: 한번 해 보라는 권유. 정답을 알아맞힐 때 표준어는 '맞히다'라서 '맞혀 봐'가 맞는 표현이에요." },
+    { re: /거든/, note: "-거든: 앞말의 이유를 가볍게 덧붙일 때 쓰는 반말 어미. (항상 여기 있거든 = 항상 여기 있으니까)" },
+    { re: /게 될|게 돼/, note: "-게 되다: 저절로 그렇게 된다는 뜻. (보게 될 거야 = 보게 될 것이다)" },
+    { re: /하지$|하지\b|있지|체크하지/, note: "-지: 당연한 사실을 친근하게 말하는 반말 어미. 공손하게 말하려면 -지요/-습니다를 씁니다. (체크하지 → 확인합니다)" },
+    { re: /하에/, note: "N 하에: '~ 아래에서'라는 뜻의 격식 있는 표현. (의사의 지도하에 = 의사의 지도를 받으며)" },
+    { re: /어디든|누구든|언제든/, note: "-든: '어느 것이라도'라는 뜻. (어디든 = 어디라도)" },
+    { re: /줄 수 있는|수 있는/, note: "-(으)ㄹ 수 있다: 할 능력이나 가능성. -아/어 주다가 붙으면 '남을 위해 해 줄 수 있는'이 됩니다." },
+    { re: /누군지|어딘지|뭔지/, note: "-(으)ㄴ지/-인지: 의문을 문장 속에 넣을 때 씁니다. (내가 누군지 알겠어? = 내가 누구인지 알겠어?)" },
+    { re: /간호조무사/, note: "간호조무사: 의사·간호사를 도와 환자를 돌보는 의료인. 이 앱의 학습자가 준비하는 직업이에요." },
+    { re: /일 수 있으니|으니/, note: "-(으)니: 이유를 말할 때 씁니다. (부작용일 수 있으니 = 부작용일 수 있어서)" }
+  ];
+  var VIDEO_SIMILAR = {
+    "재겠습니다": ["측정하겠습니다 (더 공식적)", "재 볼게요 (조금 더 부드럽게)"],
+    "괜찮아요": ["괜찮으세요? (상대에게 물을 때 높임)", "문제없어요"],
+    "괜찮으세요": ["불편하지 않으세요?", "괜찮으신가요? (더 공손하게)"],
+    "말씀드릴게요": ["전달해 드릴게요", "알려 드리겠습니다 (더 공식적)"],
+    "알려 드릴게요": ["말씀드릴게요 (윗사람께)", "전해 드릴게요"],
+    "올려 주세요": ["들어 주세요", "올려 주시겠어요? (더 공손하게)"],
+    "주무셨어요": ["편히 쉬셨어요?", "잠은 잘 오셨어요?"],
+    "드시면 돼요": ["드시면 됩니다 (더 공식적)", "복용하시면 됩니다 (의료 현장 공식 표현)"],
+    "어지러워요": ["머리가 빙빙 돌아요", "어지럽습니다 (더 공식적)"],
+    "체크하지": ["확인하지", "확인합니다 (공손하게)"],
+    "맞춰봐": ["맞혀 봐 (표준어)", "맞혀 보세요 (공손하게)"],
+    "바이탈 사인": ["활력징후 (공식 용어)", "혈압·맥박·체온·호흡"],
+    "어시스트": ["보조", "도와드려요"],
+    "보조하고": ["돕고", "지원하고"],
+    "있거든": ["있으니까", "있어서요 (공손하게)"],
+    "알겠어": ["아시겠어요? (공손하게)", "이해했어?"]
+  };
+  function videoAskKind(question) {
+    if (/문법|어미|왜|grammar/i.test(question)) return "grammar";
+    if (/예문|example/i.test(question)) return "examples";
+    if (/비슷|다른 표현|공손|similar/i.test(question)) return "similar";
+    return "meaning";
+  }
+  function videoExamples(key, excludeText) {
+    var out = [];
+    function add(ko, en) { if (ko !== excludeText && ko.indexOf(key) !== -1 && out.length < 3 && !out.some(function (x) { return x.ko === ko; })) out.push({ ko: ko, en: en }); }
+    VIDEOS.forEach(function (v) { v.cues.forEach(function (c) { add(c.textKo, c.textEn); }); });
+    ALL_UNITS.forEach(function (u) { u.situations.forEach(function (s) { s.sentences.forEach(function (x) { add(x.textKo, x.textEn); }); }); });
+    return out;
+  }
+  function mockVideoAnswer(kind, cue, sel) {
+    if (!cue) return "아직 대사가 나오지 않았어요. 영상을 조금 재생한 뒤 질문해 보세요.";
+    var target = sel ? sel.term : cue.textKo;
+    var who = cue.speakerKo ? cue.speakerKo + ": " : "";
+    var notes = VIDEO_GRAMMAR.filter(function (g) { return g.re.test(target); }).map(function (g) { return g.note; });
+    var lines = [];
+    if (kind === "meaning") {
+      lines.push(sel ? "뜻 — 「" + sel.term + "」" + (sel.gloss ? ": " + sel.gloss : " (이 대사의 뜻: " + cue.textEn + ")") : "뜻 — \"" + cue.textKo + "\" = " + cue.textEn);
+      lines.push("이 장면에서 — " + who + "\"" + cue.textKo + "\" (" + cue.textEn + ")");
+      if (notes[0]) lines.push("쓰는 법 — " + notes[0]);
+    } else if (kind === "grammar") {
+      lines.push("「" + target + "」에 쓰인 문법");
+      if (notes.length) notes.slice(0, 3).forEach(function (n) { lines.push("· " + n); });
+      else lines.push("· 특별한 어미 없이 쓰는 기본 표현이에요. 문장 끝을 -요/-습니다로 맺으면 공손하게 말할 수 있어요.");
+    } else if (kind === "examples") {
+      var key = sel ? sel.term : (cue.terms && cue.terms[0] ? cue.terms[0].hangul : "");
+      var ex = key ? videoExamples(key, cue.textKo) : [];
+      if (!ex.length && key && key.length > 2) ex = videoExamples(key.slice(0, 2), cue.textKo);
+      lines.push("「" + (key || target) + "」 예문");
+      if (ex.length) ex.forEach(function (x) { lines.push("· " + x.ko + " — " + x.en); });
+      else lines.push("· 같은 표현이 들어간 예문이 아직 없어요. 이 장면 대사를 그대로 따라 말해 보세요: " + cue.textKo);
+    } else {
+      var sim = VIDEO_SIMILAR[target] || (sel ? null : VIDEO_SIMILAR[(cue.terms && cue.terms[cue.terms.length - 1] || {}).hangul]);
+      lines.push("「" + target + "」과(와) 비슷한 표현");
+      if (sim) sim.forEach(function (x) { lines.push("· " + x); });
+      else lines.push("· 병원에서는 -요보다 -습니다/-세요를 쓰면 더 공손하게 들려요.");
+    }
+    lines.push("");
+    lines.push("※ 정적 데모라 미리 만든 규칙으로 답합니다. 실제 앱에서는 Gemini가 이 장면에 맞춰 설명합니다.");
+    return lines.join("\n");
+  }
+
+  /* ---------- 상태·재생 제어 ---------- */
+  function initVideoLesson(videoId, t) {
+    var idx = Math.max(0, VIDEOS.findIndex(function (v) { return v.id === videoId; }));
+    var v = VIDEOS[idx];
+    var hasT = t !== undefined && t !== null && isFinite(Number(t));
+    var start = hasT ? Number(t) : ((getVideoData().progress[v.id] || {}).last || 0);
+    var restore = start > 1 && start < v.durationSec - 1;
+    stopVideoClock();
+    state.video = {
+      idx: idx, time: restore ? start : 0, duration: v.durationSec, playing: false, rate: 1,
+      captionMode: !videoSrc(v), loopCueId: null, selected: null, messages: [], pausedAt: null, lastSaved: 0,
+      notice: restore ? (hasT ? fmtTime(start) + " 장면부터 봅니다." : "지난번 본 " + fmtTime(start) + "부터 이어봅니다.") : null,
+      captionKey: null, scriptKey: null, listening: false
+    };
+  }
+  function leaveVideoLesson() {
+    var V = state.video;
+    stopVideoClock();
+    if (!V) return;
+    var vid = document.getElementById("vidVideo");
+    if (vid) vid.pause();
+    videoSavePosition(VIDEOS[V.idx].id, videoGetTime());
+  }
+  function stopVideoClock() { if (videoClock) { clearInterval(videoClock); videoClock = null; } }
+  function videoGetTime() {
+    var V = state.video, vid = document.getElementById("vidVideo");
+    return !V.captionMode && vid ? vid.currentTime : V.time;
+  }
+  function videoCurrentCue() {
+    var V = state.video, cues = VIDEOS[V.idx].cues, i = findVideoCueIndex(cues, V.time);
+    return i >= 0 ? cues[i] : null;
+  }
+  function onVideoTime(t) {
+    var V = state.video, v = VIDEOS[V.idx];
+    V.time = t;
+    if (Math.abs(t - V.lastSaved) >= 2) { V.lastSaved = t; videoSavePosition(v.id, t); }
+    if (V.loopCueId && V.playing) {
+      var lc = v.cues.filter(function (c) { return c.id === V.loopCueId; })[0];
+      if (lc && t >= lc.end) { videoSetTime(lc.start); return; }
+    }
+    updateVideoDynamic();
+  }
+  function onVideoPlaying(p) {
+    var V = state.video;
+    V.playing = p;
+    if (p) V.notice = null;
+    else videoSavePosition(VIDEOS[V.idx].id, videoGetTime());
+    updateVideoDynamic();
+  }
+  function videoSetTime(sec) {
+    var V = state.video, t = Math.max(0, Math.min(sec, V.duration || VIDEOS[V.idx].durationSec));
+    var vid = document.getElementById("vidVideo");
+    if (!V.captionMode && vid) vid.currentTime = t;
+    onVideoTime(t);
+  }
+  function videoPlay() {
+    var V = state.video;
+    if (V.captionMode) {
+      if (V.time >= V.duration) V.time = 0;
+      stopVideoClock();
+      videoClock = setInterval(function () {
+        var next = Math.min(V.duration, V.time + (VIDEO_TICK_MS / 1000) * V.rate);
+        onVideoTime(next);
+        if (next >= V.duration) { stopVideoClock(); onVideoPlaying(false); }
+      }, VIDEO_TICK_MS);
+      onVideoPlaying(true);
+    } else {
+      var vid = document.getElementById("vidVideo");
+      if (vid) { var pr = vid.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    }
+  }
+  function videoPause() {
+    var V = state.video;
+    if (V.captionMode) { stopVideoClock(); onVideoPlaying(false); }
+    else { var vid = document.getElementById("vidVideo"); if (vid) vid.pause(); }
+  }
+
+  /* ---------- 화면 ---------- */
+  function renderVideoList() {
+    var data = getVideoData();
+    var steps = [
+      ["1", "영상 보기", "자막과 함께 실습 장면 영상을 봅니다."],
+      ["2", "멈추고 누르기", "모르는 단어가 나오면 자막의 단어를 누르세요. 영상이 멈춥니다."],
+      ["3", "질문하기", "뜻·문법·예문을 바로 설명해 줍니다."],
+      ["4", "담고 이어보기", "단어장에 담고, 2초 전부터 이어서 봅니다."]
+    ];
+    var stepsHtml = steps.map(function (s) {
+      return '<div class="card" style="padding:14px;"><span class="mono" style="display:inline-flex;width:26px;height:26px;border-radius:8px;background:var(--chip);color:var(--brand);align-items:center;justify-content:center;font-size:.72rem;font-weight:700;">' + s[0] + '</span>' +
+        '<p style="margin-top:8px;font-size:.86rem;font-weight:700;color:var(--brand-dark);">' + s[1] + '</p><p style="margin-top:4px;font-size:.74rem;color:var(--muted);line-height:1.55;">' + s[2] + '</p></div>';
+    }).join("");
+    var cards = VIDEOS.map(function (v) {
+      var pct = videoWatchedPct(v), asked = (data.questions[v.id] || []).length;
+      return '<a class="card modCard" href="#" onclick="App.openVideo(\'' + v.id + '\');return false;">' +
+        '<div style="position:relative;aspect-ratio:16/9;border-radius:12px;background:var(--brand-dark);display:flex;align-items:center;justify-content:center;padding:12px;text-align:center;">' +
+          '<span style="color:rgba(255,255,255,.85);font-size:.84rem;font-weight:700;">“' + esc(v.cues[0] ? v.cues[0].textKo : v.titleKo) + '”</span>' +
+          '<span class="mono" style="position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;border-radius:5px;padding:2px 6px;font-size:.66rem;">' + fmtTime(v.durationSec) + '</span></div>' +
+        '<div class="top"><span class="mono" style="font-size:.72rem;color:var(--faint);">' + String(v.order).padStart(2, "0") + '</span><span class="pill" style="background:var(--panel);color:var(--muted);">' + esc(v.levelTag) + '</span><span style="margin-left:auto;font-size:.68rem;color:var(--faint);">대사 ' + v.cues.length + '줄</span></div>' +
+        '<h3 style="font-size:.92rem;color:var(--brand-dark);">' + esc(v.titleKo) + '</h3><p style="font-size:.72rem;color:var(--faint);">' + esc(v.titleEn) + '</p>' +
+        '<div style="margin-top:auto;"><div style="height:6px;border-radius:999px;background:var(--panel);overflow:hidden;"><div style="height:100%;width:' + pct + '%;background:var(--brand);border-radius:999px;"></div></div>' +
+        '<p style="margin-top:6px;display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);"><span>시청 ' + pct + '%</span><span>질문 ' + asked + '개</span></p></div></a>';
+    }).join("");
+    var mainHtml =
+      '<p class="eyebrow">영상학습 VIDEO</p><h1 style="margin-top:8px;font-size:1.6rem;font-weight:900;color:var(--brand-dark);">영상 보며 멈추고 질문하기</h1>' +
+      '<p style="margin-top:6px;font-size:.82rem;color:var(--muted);line-height:1.6;">실습 현장 영상을 보다가 궁금한 표현이 나오면 바로 멈추고 질문하세요. 저장한 표현은 단어장에 모입니다 (' + data.savedTerms.length + '개).</p>' +
+      '<div class="statGrid" style="margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));">' + stepsHtml + '</div>' +
+      '<div class="modGrid">' + cards + '</div>';
+    el.innerHTML = shell(mainHtml, "video-list");
+  }
+
+  function videoScreenInnerHtml() {
+    var V = state.video, v = VIDEOS[V.idx], cue = videoCurrentCue();
+    if (!V.captionMode) return '<video id="vidVideo" playsinline preload="metadata" src="' + esc(videoSrc(v)) + '"' + (v.poster ? ' poster="' + esc(v.poster) + '"' : "") + '></video>';
+    return '<span class="badge">자막 연습 모드 · 영상 파일 없음</span>' +
+      '<div id="vidOverlay">' + videoOverlayHtml(cue) + '</div>' +
+      '<p class="foot">' + (v.src ? esc(videoSrc(v)) + " 파일을 불러오지 못했습니다." : "영상 경로(src)가 비어 있습니다.") + " public/videos/README.md 참고</p>";
+  }
+  function videoOverlayHtml(cue) {
+    if (!cue) return '<p style="font-size:.84rem;color:rgba(255,255,255,.6);">▶ 재생을 누르면 대사가 시간에 맞춰 흘러갑니다.</p>';
+    return (cue.speakerKo ? '<p style="font-size:.72rem;color:var(--brand-light);">' + esc(cue.speakerKo) + '</p>' : "") +
+      '<p style="margin-top:8px;font-size:1.35rem;font-weight:700;line-height:1.4;">' + esc(cue.textKo) + '</p>' +
+      '<p style="margin-top:6px;font-size:.84rem;color:rgba(255,255,255,.6);">' + esc(cue.textEn) + '</p>';
+  }
+  function videoCaptionHtml(cue) {
+    var V = state.video;
+    if (!cue) return '<p style="font-size:.84rem;color:var(--faint);">자막이 여기에 표시됩니다. 모르는 단어가 나오면 단어를 눌러 보세요.</p>';
+    var segs = segmentCue(cue);
+    V.segs = segs;
+    var words = segs.map(function (seg, i) {
+      if (!seg.pick) return "<span>" + esc(seg.text) + "</span>";
+      var cls = "capWord" + (seg.gloss ? " term" : "") + (V.selected && V.selected.term === seg.pick ? " sel" : "");
+      return '<button class="' + cls + '"' + (seg.gloss ? ' title="' + esc(seg.gloss) + '"' : "") + ' onclick="App.videoPick(' + i + ')">' + esc(seg.text) + "</button>";
+    }).join("");
+    return '<div style="display:flex;align-items:center;gap:8px;">' +
+        (cue.speakerKo ? '<span class="pill" style="flex:none;white-space:nowrap;background:var(--chip);color:var(--brand);">' + esc(cue.speakerKo) + '</span>' : "") +
+        '<span style="font-size:.68rem;color:var(--faint);">단어를 누르면 영상이 멈추고 질문할 수 있어요</span>' +
+        '<button class="playBtn" style="margin-left:auto;" onclick="App.videoSpeakCue()" aria-label="자막 문장 듣기">🔊</button></div>' +
+      '<p style="margin-top:8px;font-size:1.25rem;line-height:1.8;">' + words + '</p>' +
+      '<p style="margin-top:2px;font-size:.84rem;color:var(--muted);">' + esc(cue.textEn) + '</p>';
+  }
+  function videoScriptHtml() {
+    var V = state.video, v = VIDEOS[V.idx], cur = videoCurrentCue();
+    var asked = (getVideoData().questions[v.id] || []).map(function (q) { return q.cueId; });
+    return v.cues.map(function (c, i) {
+      var on = cur && cur.id === c.id;
+      return '<button class="scriptRow' + (on ? " on" : "") + '" data-cue="' + esc(c.id) + '" onclick="App.videoSeekCue(' + i + ')">' +
+        '<span class="mono" style="width:40px;flex:none;font-size:.68rem;color:var(--faint);margin-top:2px;">' + fmtTime(c.start) + '</span>' +
+        '<span style="flex:1;min-width:0;"><span style="display:block;">' + (c.speakerKo ? '<span style="font-size:.68rem;color:var(--muted);font-weight:400;margin-right:6px;">' + esc(c.speakerKo) + '</span>' : "") + esc(c.textKo) + '</span>' +
+        '<span style="display:block;font-size:.72rem;color:var(--faint);font-weight:400;">' + esc(c.textEn) + '</span></span>' +
+        '<span style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none;">' +
+          (asked.indexOf(c.id) !== -1 ? '<span class="pill" style="background:var(--chip);color:var(--brand);">질문함</span>' : "") +
+          (V.loopCueId === c.id ? '<span class="pill" style="background:var(--warnBg);color:var(--warn);">반복</span>' : "") +
+        '</span></button>';
+    }).join("");
+  }
+  function videoQaHeadHtml() {
+    var V = state.video, v = VIDEOS[V.idx], sel = V.selected;
+    if (!sel) return '<p style="border-radius:12px;background:var(--panel);padding:10px 12px;font-size:.74rem;color:var(--muted);line-height:1.55;">자막의 단어를 누르면 그 단어를 골라서 질문할 수 있어요. 아무것도 고르지 않으면 지금 장면의 문장 전체에 대해 질문합니다.</p>';
+    var saved = videoTermSaved(v.id, sel.term);
+    return '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;border-radius:12px;background:var(--chip);padding:10px 12px;">' +
+      '<span style="font-size:.68rem;color:var(--muted);">선택한 표현</span><b style="font-size:1rem;color:var(--brand-dark);">' + esc(sel.term) + '</b>' +
+      (sel.gloss ? '<span style="font-size:.74rem;color:var(--muted);">· ' + esc(sel.gloss) + '</span>' : "") +
+      '<span style="flex:1;"></span>' +
+      '<button class="qaChip" style="color:var(--brand);font-weight:600;" ' + (saved ? "disabled" : "") + ' onclick="App.videoSaveTerm()">' + (saved ? "단어장에 담김 ✓" : "+ 단어장에 담기") + '</button>' +
+      '<button style="border:none;background:none;color:var(--faint);" onclick="App.videoClearPick()" aria-label="선택 해제">✕</button></div>';
+  }
+  function videoMsgsHtml() {
+    var V = state.video;
+    if (!V.messages.length) return '<p style="font-size:.84rem;color:var(--faint);">예) “재겠습니다는 왜 겠이 붙어요?”, “주무셨어요 뜻이 뭐예요?”</p>';
+    return V.messages.map(function (m) {
+      return '<div style="' + (m.role === "user" ? "margin-left:auto;max-width:88%;" : "max-width:94%;") + '">' +
+        (m.ctx ? '<p style="text-align:right;font-size:.66rem;color:var(--faint);margin-bottom:3px;">⏸ ' + esc(m.ctx) + '</p>' : "") +
+        '<div class="chatMsg ' + m.role + '" style="max-width:100%;white-space:pre-wrap;line-height:1.6;">' + esc(m.content || "…") + '</div></div>';
+    }).join("");
+  }
+
+  function renderVideoLesson() {
+    var V = state.video, v = VIDEOS[V.idx];
+    var prev = V.idx > 0 ? VIDEOS[V.idx - 1] : null, next = V.idx < VIDEOS.length - 1 ? VIDEOS[V.idx + 1] : null;
+    var sel = V.selected;
+    var chips = [["meaning", "뜻 알려줘"], ["grammar", "문법 설명"], ["examples", "예문 더 보기"], ["similar", "비슷한 표현"]].map(function (c) {
+      return '<button class="qaChip" onclick="App.videoAsk(\'' + c[0] + '\')">' + c[1] + '</button>';
+    }).join("");
+    var mainHtml =
+      '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;">' +
+        '<div><a class="backlink" href="#" onclick="App.navItem(\'video-list\');return false;">← 영상 목록</a>' +
+        '<p class="eyebrow" style="margin-top:8px;">영상학습 VIDEO · ' + esc(v.levelTag) + '</p>' +
+        '<h1 style="margin-top:6px;font-size:1.5rem;font-weight:900;color:var(--brand-dark);">' + esc(v.titleKo) + '</h1>' +
+        '<p style="margin-top:4px;font-size:.82rem;color:var(--muted);">' + esc(v.descriptionKo) + '</p></div>' +
+        '<div style="display:flex;gap:6px;">' +
+          (prev ? '<button class="btn btn-ghost" onclick="App.openVideo(\'' + prev.id + '\')">← 이전 영상</button>' : "") +
+          (next ? '<button class="btn btn-ghost" onclick="App.openVideo(\'' + next.id + '\')">다음 영상 →</button>' : "") +
+        '</div></div>' +
+      '<div class="vidGrid">' +
+        '<div class="vidMain">' +
+          '<div class="vidScreen" id="vidScreen">' + videoScreenInnerHtml() + '</div>' +
+          '<div class="card vidCtl">' +
+            '<button class="btn btn-primary" style="background:var(--brand-dark);" id="vidPlayBtn" onclick="App.videoToggle()">▶ 재생</button>' +
+            '<button class="ctl" onclick="App.videoSeekBy(-5)">⟲ 5초</button>' +
+            '<button class="ctl" onclick="App.videoReplayCue()">이 대사 다시</button>' +
+            '<button class="ctl" id="vidLoopBtn" onclick="App.videoLoop()">구간 반복</button>' +
+            '<div class="rates" id="vidRates"></div>' +
+            '<span class="mono" id="vidTime" style="margin-left:auto;font-size:.74rem;color:var(--muted);"></span>' +
+            '<input type="range" id="vidSeek" min="0" step="0.1" max="' + V.duration + '" oninput="App.videoSeek(this.value)" aria-label="재생 위치" />' +
+          '</div>' +
+          '<p id="vidNotice" style="border-radius:12px;background:var(--chip);color:var(--brand);padding:8px 14px;font-size:.74rem;"' + (V.notice ? "" : " hidden") + '>' + esc(V.notice || "") + '</p>' +
+          '<div class="card" style="padding:16px 18px;" id="vidCaption"></div>' +
+        '</div>' +
+        '<div class="card vidQa">' +
+          '<p class="eyebrow">멈추고 질문하기 ASK</p>' +
+          '<p style="margin:4px 0 10px;font-size:.68rem;color:var(--faint);">질문하면 영상이 자동으로 멈춥니다 · 정적 데모는 규칙 기반 답변</p>' +
+          '<div id="vidQaHead">' + videoQaHeadHtml() + '</div>' +
+          '<div id="vidQaMsgs" style="flex:1;min-height:120px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-top:10px;padding-right:2px;">' + videoMsgsHtml() + '</div>' +
+          '<button class="btn btn-primary" id="vidResume" style="margin-top:8px;width:100%;" onclick="App.videoResume()" hidden>▶ 이해했어요, 이어보기 (2초 전부터)</button>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">' + chips + '</div>' +
+          '<form style="display:flex;gap:6px;margin-top:8px;" onsubmit="App.videoSubmit(event)">' +
+            '<input id="vidQaInput" placeholder="' + (sel ? esc("\"" + sel.term + "\"에 대해 질문…") : "궁금한 표현을 질문하세요…") + '" style="flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 11px;background:var(--card);color:var(--text);" />' +
+            (isSttSupported() ? '<button type="button" id="vidMicBtn" class="ctl" style="border-radius:10px;border:1px solid var(--line);background:var(--card);padding:8px 10px;" onclick="App.videoMic()" aria-label="음성으로 질문">🎤</button>' : "") +
+            '<button type="submit" class="btn btn-primary" style="padding:8px 12px;">↑</button>' +
+          '</form>' +
+        '</div>' +
+        '<div class="vidScript">' +
+          '<div class="card" style="padding:14px;"><div style="display:flex;justify-content:space-between;align-items:baseline;"><p class="eyebrow">전체 대사 SCRIPT</p><span style="font-size:.68rem;color:var(--faint);">누르면 그 장면으로 이동</span></div>' +
+          '<div class="scriptList" id="vidScript"></div></div>' +
+          (v.related ? '<a class="card" style="padding:12px 16px;font-size:.84rem;color:var(--brand-dark);text-decoration:none;" href="#" onclick="App.openLesson(\'' + v.related.unitId + "','" + v.related.situationId + '\');return false;">관련 학습 · <b>' + esc(v.related.labelKo) + '</b> 에서 발음 연습하기 →</a>' : "") +
+        '</div>' +
+      '</div>';
+    el.innerHTML = shell(mainHtml, "video-list");
+    V.captionKey = null; V.scriptKey = null;
+    attachVideoElement();
+    updateVideoDynamic();
+  }
+
+  function attachVideoElement() {
+    var V = state.video, vid = document.getElementById("vidVideo");
+    if (!vid) return;
+    vid.addEventListener("timeupdate", function () { onVideoTime(vid.currentTime); });
+    vid.addEventListener("play", function () { onVideoPlaying(true); });
+    vid.addEventListener("pause", function () { onVideoPlaying(false); });
+    vid.addEventListener("ended", function () { onVideoPlaying(false); });
+    vid.addEventListener("click", function () { App_videoToggle(); });
+    vid.addEventListener("loadedmetadata", function () {
+      vid.playbackRate = V.rate;
+      if (isFinite(vid.duration) && vid.duration > 0) { V.duration = vid.duration; var sk = document.getElementById("vidSeek"); if (sk) sk.max = vid.duration; }
+    });
+    // 파일이 없거나 재생할 수 없으면 같은 위치에서 자막 연습 모드로 바꾼다.
+    vid.addEventListener("error", function () {
+      if (state.view !== "video-lesson" || state.video !== V) return;
+      V.captionMode = true; V.playing = false; V.duration = VIDEOS[V.idx].durationSec;
+      document.getElementById("vidScreen").innerHTML = videoScreenInnerHtml();
+      var sk = document.getElementById("vidSeek"); if (sk) sk.max = V.duration;
+      updateVideoDynamic();
+    });
+    vid.playbackRate = V.rate;
+    if (V.time > 0) { try { vid.currentTime = V.time; } catch (e) {} }
+  }
+
+  // 재생 tick마다 불린다 — 바뀐 부분만 갱신한다(<video>와 입력창은 건드리지 않음).
+  function updateVideoDynamic() {
+    if (state.view !== "video-lesson" || !state.video) return;
+    var V = state.video, v = VIDEOS[V.idx], cue = videoCurrentCue();
+    var $ = function (id) { return document.getElementById(id); };
+    if (!$("vidTime")) return;
+    $("vidTime").textContent = fmtTime(V.time) + " / " + fmtTime(V.duration);
+    if (document.activeElement !== $("vidSeek")) $("vidSeek").value = Math.min(V.time, V.duration);
+    $("vidPlayBtn").textContent = V.playing ? "⏸ 정지" : "▶ 재생";
+    $("vidLoopBtn").className = "ctl" + (V.loopCueId ? " on" : "");
+    $("vidLoopBtn").textContent = V.loopCueId ? "구간 반복 끄기" : "구간 반복";
+    $("vidRates").innerHTML = [0.75, 1, 1.25].map(function (r) { return '<button class="' + (V.rate === r ? "on" : "") + '" onclick="App.videoRate(' + r + ')">' + r + 'x</button>'; }).join("");
+    $("vidNotice").hidden = !V.notice;
+    $("vidResume").hidden = V.playing || !V.messages.length || V.answering;
+    if ($("vidMicBtn")) $("vidMicBtn").style.borderColor = V.listening ? "var(--warnAccent)" : "var(--line)";
+    var cueId = cue ? cue.id : "";
+    var capKey = cueId + "|" + (V.selected ? V.selected.term : "");
+    if (capKey !== V.captionKey) {
+      V.captionKey = capKey;
+      $("vidCaption").innerHTML = videoCaptionHtml(cue);
+      if ($("vidOverlay")) $("vidOverlay").innerHTML = videoOverlayHtml(cue);
+    }
+    var askedCount = (getVideoData().questions[v.id] || []).length;
+    var scriptKey = cueId + "|" + V.loopCueId + "|" + askedCount;
+    if (scriptKey !== V.scriptKey) {
+      V.scriptKey = scriptKey;
+      var list = $("vidScript");
+      list.innerHTML = videoScriptHtml();
+      // 재생 중인 대사가 목록 밖으로 나가지 않게 목록 안에서만 스크롤한다.
+      var row = list.querySelector(".scriptRow.on");
+      if (row) {
+        var top = row.offsetTop - list.offsetTop;
+        if (top < list.scrollTop || top + row.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = top - list.clientHeight / 3;
+      }
+    }
+  }
+  function renderVideoQa() {
+    var V = state.video;
+    document.getElementById("vidQaHead").innerHTML = videoQaHeadHtml();
+    var msgs = document.getElementById("vidQaMsgs");
+    msgs.innerHTML = videoMsgsHtml();
+    msgs.scrollTop = msgs.scrollHeight;
+    var input = document.getElementById("vidQaInput");
+    input.placeholder = V.selected ? "\"" + V.selected.term + "\"에 대해 질문…" : "궁금한 표현을 질문하세요…";
+    V.captionKey = null;
+    updateVideoDynamic();
+  }
+  function pauseForQuestion() {
+    var V = state.video;
+    videoPause();
+    V.pausedAt = videoGetTime();
+  }
+  function videoSend(kind, question) {
+    var V = state.video, v = VIDEOS[V.idx];
+    if (V.answering) return;
+    pauseForQuestion();
+    var cues = v.cues, i = findVideoCueIndex(cues, V.pausedAt), cue = i >= 0 ? cues[i] : null;
+    if (cue) videoLogQuestion(v.id, { cueId: cue.id, question: question, at: Date.now() });
+    var sel = V.selected;
+    V.messages.push({ role: "user", content: question, ctx: fmtTime(V.pausedAt) + (cue ? " · \"" + cue.textKo + "\"" : "") });
+    var answer = { role: "assistant", content: "" };
+    V.messages.push(answer);
+    V.answering = true;
+    renderVideoQa();
+    setTimeout(function () {
+      answer.content = mockVideoAnswer(kind, cue, sel);
+      V.answering = false;
+      if (state.video === V && state.view === "video-lesson") renderVideoQa();
+    }, 450);
+  }
+
+  /* ---------- App 핸들러 ---------- */
+  var App_openVideo = function (id) { navigate("video-lesson", { videoId: id }); };
+  var App_openVideoAt = function (id, t) { navigate("video-lesson", { videoId: id, t: t }); };
+  var App_videoToggle = function () { if (state.video.playing) videoPause(); else videoPlay(); };
+  var App_videoSeekBy = function (d) { videoSetTime(videoGetTime() + d); };
+  var App_videoSeek = function (val) { videoSetTime(Number(val)); };
+  var App_videoSeekCue = function (i) { videoSetTime(VIDEOS[state.video.idx].cues[i].start); };
+  var App_videoReplayCue = function () { var c = videoCurrentCue(); if (c) videoSetTime(c.start); };
+  var App_videoLoop = function () {
+    var V = state.video, c = videoCurrentCue();
+    V.loopCueId = V.loopCueId ? null : (c ? c.id : null);
+    updateVideoDynamic();
+  };
+  var App_videoRate = function (r) {
+    var V = state.video, vid = document.getElementById("vidVideo");
+    V.rate = r;
+    if (vid) vid.playbackRate = r;
+    updateVideoDynamic();
+  };
+  var App_videoPick = function (i) {
+    var V = state.video, seg = V.segs && V.segs[i], cue = videoCurrentCue();
+    if (!seg || !seg.pick) return;
+    pauseForQuestion();
+    V.selected = { term: seg.pick, gloss: seg.gloss || "", cueId: cue ? cue.id : null };
+    renderVideoQa();
+  };
+  var App_videoClearPick = function () { state.video.selected = null; renderVideoQa(); };
+  var App_videoAsk = function (kind) {
+    var sel = state.video.selected;
+    var q = {
+      meaning: sel ? "\"" + sel.term + "\" 무슨 뜻이에요? 이 장면에서는 어떤 의미예요?" : "방금 이 문장은 무슨 뜻이에요?",
+      grammar: sel ? "\"" + sel.term + "\"에 쓰인 문법(어미·존댓말)을 설명해 주세요." : "이 문장에 쓰인 문법을 설명해 주세요.",
+      examples: sel ? "\"" + sel.term + "\"을 병원에서 쓰는 예문을 더 알려 주세요." : "이 문장과 같은 형식으로 병원에서 쓰는 예문을 더 알려 주세요.",
+      similar: sel ? "\"" + sel.term + "\"와 비슷한 표현이나 더 공손한 표현을 알려 주세요." : "이 문장을 다르게 말하는 방법이나 더 공손한 표현을 알려 주세요."
+    }[kind];
+    videoSend(kind, q);
+  };
+  var App_videoSubmit = function (ev) {
+    ev.preventDefault();
+    var input = document.getElementById("vidQaInput"), text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    videoSend(videoAskKind(text), text);
+  };
+  var App_videoMic = function () {
+    var V = state.video;
+    if (V.listening) return;
+    V.listening = true; updateVideoDynamic();
+    startRecognition({
+      onResult: function (text) { var input = document.getElementById("vidQaInput"); if (input) input.value = text; },
+      onError: function () { V.listening = false; updateVideoDynamic(); },
+      onEnd: function () { V.listening = false; updateVideoDynamic(); }
+    });
+  };
+  var App_videoResume = function () {
+    var V = state.video;
+    videoSetTime((V.pausedAt !== null ? V.pausedAt : videoGetTime()) - 2);
+    videoPlay();
+  };
+  var App_videoSaveTerm = function () {
+    var V = state.video, v = VIDEOS[V.idx], sel = V.selected;
+    if (!sel) return;
+    var cue = v.cues.filter(function (c) { return c.id === sel.cueId; })[0] || videoCurrentCue();
+    var d = getVideoData();
+    if (!d.savedTerms.some(function (t) { return t.videoId === v.id && t.hangul === sel.term; })) {
+      d.savedTerms.unshift({ id: v.id + ":" + sel.term, hangul: sel.term, glossEn: sel.gloss || "", sentenceKo: cue ? cue.textKo : "", videoId: v.id, videoTitleKo: v.titleKo, cueStart: cue ? cue.start : 0, savedAt: Date.now() });
+      setVideoData(d);
+    }
+    renderVideoQa();
+  };
+  var App_videoRemoveTerm = function (i) {
+    var d = getVideoData();
+    d.savedTerms.splice(i, 1);
+    setVideoData(d);
+    renderVocab();
+  };
+  var App_videoSpeakCue = function () { var c = videoCurrentCue(); if (c) speak(c.textKo); };
+  var App_videoSpeakTerm = function (i) { var t = getVideoData().savedTerms[i]; if (t) speak(t.hangul); };
+
+  // 스페이스바 = 재생/정지 (영상 화면에서만, 입력창·버튼 포커스 시 제외)
+  document.addEventListener("keydown", function (e) {
+    if (state.view !== "video-lesson" || e.code !== "Space") return;
+    var tag = e.target && e.target.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "BUTTON") return;
+    e.preventDefault();
+    App_videoToggle();
+  });
+
+  // 단어장 화면 상단의 "영상에서 담은 표현" 섹션
+  function savedVideoTermsHtml() {
+    var terms = getVideoData().savedTerms;
+    if (!terms.length) return "";
+    return '<div class="card" style="padding:16px;margin-top:16px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;"><p class="eyebrow">영상에서 담은 표현 ' + terms.length + '개</p><a href="#" onclick="App.navItem(\'video-list\');return false;" style="font-size:.72rem;color:var(--brand);text-decoration:none;">영상학습 →</a></div>' +
+      '<div class="itemGrid" style="margin-top:10px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));">' + terms.map(function (t, i) {
+        return '<div style="border-radius:12px;background:var(--panel);padding:10px 12px;">' +
+          '<div style="display:flex;gap:8px;align-items:flex-start;"><div style="flex:1;min-width:0;"><p style="font-weight:700;color:var(--brand-dark);">' + esc(t.hangul) +
+          (t.glossEn ? ' <span style="font-size:.72rem;font-weight:400;color:var(--muted);">' + esc(t.glossEn) + '</span>' : "") + '</p>' +
+          '<p style="margin-top:2px;font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">“' + esc(t.sentenceKo) + '”</p></div>' +
+          '<button class="playBtn" onclick="App.videoSpeakTerm(' + i + ')">▶</button></div>' +
+          '<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:.68rem;">' +
+            '<a href="#" onclick="App.openVideoAt(\'' + t.videoId + '\',' + Math.floor(t.cueStart) + ');return false;" style="color:var(--brand);text-decoration:none;">' + esc(t.videoTitleKo) + ' 장면 보기 →</a>' +
+            '<button style="border:none;background:none;color:var(--faint);font-size:.68rem;" onclick="App.videoRemoveTerm(' + i + ')">삭제</button></div></div>';
+      }).join("") + '</div></div>';
+  }
+
   /* ============================== MODAL ============================== */
   var modalMask = document.getElementById("modalMask");
   var modalBody = document.getElementById("modalBody");
-  function openModal(title, bodyHtml) {
-    modalBody.innerHTML = "<h3 style=\"font-size:1rem;margin-bottom:10px;color:var(--brand-dark);\">" + esc(title) + "</h3>" + bodyHtml + '<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="App.closeModal()">닫기</button>';
+  function openModal(title, bodyHtml, opts) {
+    var wide = !!(opts && opts.wide);
+    modalBody.classList.toggle("wide", wide);
+    var closeX = wide ? '<button type="button" class="modalCloseX" aria-label="닫기" onclick="App.closeModal()">✕</button>' : "";
+    var titleStyle = wide ? "font-size:1.05rem;margin-bottom:14px;padding-right:32px;color:var(--brand-dark);" : "font-size:1rem;margin-bottom:10px;color:var(--brand-dark);";
+    var closeBtn = (opts && opts.noCloseBtn) ? "" : '<button class="btn btn-primary" style="width:100%;margin-top:14px;" onclick="App.closeModal()">닫기</button>';
+    modalBody.innerHTML = closeX + "<h3 style=\"" + titleStyle + "\">" + esc(title) + "</h3>" + bodyHtml + closeBtn;
     modalMask.hidden = false;
   }
   modalMask.addEventListener("click", function (e) { if (e.target === modalMask) modalMask.hidden = true; });
   var App_closeModal = function () { modalMask.hidden = true; };
 
+  /* ---------------- 메디쌤 팝업(전체화면에 가까운 크기, iframe) ---------------- */
+  var mediMask = document.getElementById("mediMask");
+  var mediFrame = document.getElementById("mediFrame");
+  var App_openMediSsam = function () {
+    mediFrame.src = "./medi-ssam.html";
+    mediMask.hidden = false;
+  };
+  var App_closeMediSsam = function () {
+    mediMask.hidden = true;
+    mediFrame.src = "about:blank"; // 닫으면 음성·애니메이션이 즉시 멈추도록 언로드한다
+  };
+  mediMask.addEventListener("click", function (e) { if (e.target === mediMask) App_closeMediSsam(); });
+
+  /* ---------------- 실습생 세부현황 팝업 ---------------- */
+  function App_learnerDetail(id) {
+    var l = LEARNERS.filter(function (x) { return x.id === id; })[0];
+    if (!l) return;
+    var allUnits = BASIC_UNITS.concat(PRACTICE_UNITS);
+    var totalSituations = allUnits.reduce(function (s, u) { return s + u.situations.length; }, 0);
+    var completedCount = l.completedSituationIds.length;
+    var weekdays = ["1주", "2주", "3주", "4주", "5주", "6주"];
+
+    var statTile = function (value, label, warn) {
+      return '<div style="border:1px solid var(--card-border);border-radius:11px;background:#fff;padding:12px;"><p style="font-size:.72rem;color:var(--muted);">' + esc(label) + '</p><p style="margin-top:5px;font-size:1.2rem;font-weight:900;color:' + (warn ? "var(--warn)" : "var(--brand-dark)") + ';">' + esc(value) + '</p></div>';
+    };
+
+    var attentionHtml = l.needsAttentionKo
+      ? '<div style="margin-top:12px;border:1px solid var(--warn-border);background:var(--warn-bg);border-radius:11px;padding:12px;"><p style="font-size:.76rem;font-weight:700;color:var(--warn);">⚠ 주의가 필요합니다</p><p style="margin-top:4px;font-size:.76rem;line-height:1.5;color:var(--warn);">' + esc(l.needsAttentionKo) + '</p></div>'
+      : "";
+
+    var weeklyBars = l.weeklyScores.map(function (v, i) {
+      return '<div style="flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%;"><div style="width:100%;border-radius:5px 5px 0 0;background:' + (v >= 85 ? "var(--brand)" : "var(--card-border)") + ';height:' + v + '%;"></div><span style="font-size:.66rem;color:var(--faint);">' + weekdays[i] + '</span></div>';
+    }).join("");
+
+    var weakSoundsHtml = l.weakSounds.map(function (s) {
+      return '<div><div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:6px;"><span style="color:var(--brand-dark);">' + esc(s.labelKo) + '</span><span style="font-weight:700;color:' + (s.warn ? "var(--warn)" : "var(--brand-dark)") + ';">' + s.value + '%</span></div><div style="height:6px;border-radius:999px;background:var(--chip);"><div style="height:6px;border-radius:999px;background:' + (s.warn ? "var(--warn)" : "var(--brand)") + ';width:' + s.value + '%;"></div></div></div>';
+    }).join('<div style="height:10px;"></div>');
+
+    var learnedHtml = allUnits.map(function (u) {
+      var rows = u.situations.map(function (s) {
+        var done = l.completedSituationIds.indexOf(s.id) !== -1;
+        return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:8px;background:var(--chip);padding:8px 10px;font-size:.78rem;"><span style="color:' + (done ? "var(--brand-dark)" : "var(--muted)") + ';">' + esc(s.menuLabelKo) + '</span><span style="font-size:.68rem;font-weight:700;color:' + (done ? "var(--brand)" : "var(--faint)") + ';">' + (done ? "완료" : "미완료") + '</span></div>';
+      }).join('<div style="height:6px;"></div>');
+      return '<div><p style="font-size:.76rem;font-weight:700;color:var(--brand-dark);">' + esc(u.titleKo) + '</p><div style="margin-top:8px;display:flex;flex-direction:column;">' + rows + '</div></div>';
+    }).join('<div style="height:14px;"></div>');
+
+    var body =
+      '<p style="font-size:.76rem;color:var(--muted);margin-bottom:10px;">' + esc(l.nationality) + " · " + esc(l.level) + " · " + esc(l.department) + " · 최근 학습 " + esc(l.lastActiveKo) + '</p>' +
+      '<div class="modalGrid">' +
+        '<div class="col-left">' +
+          '<p style="border-radius:11px;background:var(--chip);padding:10px 12px;font-size:.74rem;line-height:1.5;color:var(--muted);">이 세부현황은 실제 다중 사용자 백엔드가 없어 데모용 목데이터입니다(진도관리 화면 전체와 동일). 실제 서비스에서는 이 실습생 본인 계정에 쌓인 실제 학습 기록을 표시합니다.</p>' +
+          attentionHtml +
+          '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">' +
+            statTile(String(l.avgAccuracy), "평균 발음 정확도", l.avgAccuracy < 70) +
+            statTile(String(l.wordsPracticed), "누적 학습 문장 수") +
+            statTile(Math.round(l.wordsPracticed * 0.5) + "분", "학습 시간(추정)") +
+            statTile(completedCount + "/" + totalSituations, "완료 상황") +
+          '</div>' +
+          '<div style="border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
+            '<p class="eyebrow" style="margin-bottom:12px;">주차별 평균 점수 (예시)</p>' +
+            '<div style="height:90px;display:flex;align-items:flex-end;gap:8px;">' + weeklyBars + '</div>' +
+            '<p style="margin-top:8px;font-size:.66rem;color:var(--faint);">* 주차별 이력은 저장하지 않아 예시 그래프입니다.</p>' +
+          '</div>' +
+          '<div style="border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
+            '<p class="eyebrow" style="margin-bottom:12px;">약한 발음 요소 (예시)</p>' +
+            weakSoundsHtml +
+            '<p style="margin-top:10px;font-size:.66rem;color:var(--faint);">* 음소 단위 분석은 하지 않아 예시 값입니다.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="col-right">' +
+          '<div style="border:1px solid var(--card-border);border-radius:14px;padding:14px;">' +
+            '<p class="eyebrow" style="margin-bottom:12px;">학습한 내용</p>' +
+            learnedHtml +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    openModal(esc(l.name), body, { wide: true });
+  }
+
   /* ============================== EXPORT ============================== */
   window.App = {
     login: App_login, quickLogin: App_quickLogin, logout: App_logout, navItem: App_navItem,
     openLesson: App_openLesson, openXr: App_openXr, openRoleplay: App_openRoleplay,
-    setLang: App_setLang, gotoSituation: App_gotoSituation, speakText: App_speakText, speakSentence: App_speakSentence,
+    gotoSituation: App_gotoSituation, speakText: App_speakText, speakSentence: App_speakSentence,
     toggleRecording: App_toggleRecording, focusPractice: App_focusPractice, nextSentence: App_nextSentence,
-    sendChat: App_sendChat, submitChat: App_submitChat, startRoleplay: App_startRoleplay,
     xrGoto: App_xrGoto, xrDismissDialogue: App_xrDismissDialogue, xrStart: App_xrStart, xrInteract: App_xrInteract, xrSubmit: App_xrSubmit, xrModal: App_xrModal,
-    closeModal: App_closeModal,
+    closeModal: App_closeModal, learnerDetail: App_learnerDetail,
+    openMediSsam: App_openMediSsam, closeMediSsam: App_closeMediSsam,
     toggleTopLang: App_toggleTopLang, toggleSettingsLang: App_toggleSettingsLang, setDisplayLang: App_setDisplayLang,
     setSpeechRate: App_setSpeechRate, setScoringStrictness: App_setScoringStrictness,
-    vocabTab: App_vocabTab, vocabSearch: App_vocabSearch, vocabPlay: App_vocabPlay,
+    vocabTab: App_vocabTab, vocabSearch: App_vocabSearch, vocabPlay: App_vocabPlay, vocabGroup: App_vocabGroup,
     journalSave: App_journalSave,
     noticeRead: App_noticeRead, noticesReadAll: App_noticesReadAll,
     roleplaySend: App_roleplaySend, roleplayMic: App_roleplayMic,
-    adminSendAlert: App_adminSendAlert
+    openVideo: App_openVideo, openVideoAt: App_openVideoAt, videoToggle: App_videoToggle, videoSeekBy: App_videoSeekBy,
+    videoSeek: App_videoSeek, videoSeekCue: App_videoSeekCue, videoReplayCue: App_videoReplayCue, videoLoop: App_videoLoop,
+    videoRate: App_videoRate, videoPick: App_videoPick, videoClearPick: App_videoClearPick, videoAsk: App_videoAsk,
+    videoSubmit: App_videoSubmit, videoMic: App_videoMic, videoResume: App_videoResume, videoSaveTerm: App_videoSaveTerm,
+    videoRemoveTerm: App_videoRemoveTerm, videoSpeakCue: App_videoSpeakCue, videoSpeakTerm: App_videoSpeakTerm,
+    noticeFillAudience: App_noticeFillAudience, noticeSend: App_noticeSend, noticeDelete: App_noticeDelete,
+    resetLibrary: App_resetLibrary, resetVocab: App_resetVocab, resetXr: App_resetXr, resetVideos: App_resetVideos, resetRoleplay: App_resetRoleplay, roleplayHint: App_roleplayHint,
+    selectVoice: App_selectVoice, previewVoice: App_previewVoice
   };
 
   /* ============================== BOOT ============================== */

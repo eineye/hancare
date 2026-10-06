@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { DEMO_ACCOUNTS, findDemoAccount, useAuthStore } from '@/lib/auth';
+import { fetchServerSession, serverLogin, useAuthStore, type Account } from '@/lib/auth';
 
 const HIGHLIGHTS = ['상황별 의료 용어 학습', '음절 단위 발음 채점과 교정', 'AI 아바타와 역할극 연습'];
 
@@ -16,31 +16,51 @@ export default function LoginPage() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
+  const [demoLogin, setDemoLogin] = useState(false);
 
+  // 서버 세션이 이미 있으면(쿠키) 그대로 들어가고, 데모 바로 시작 허용 여부를 받아 온다.
   useEffect(() => {
-    if (!hydrated || !account) return;
-    router.replace(account.role === 'admin' ? '/admin' : '/home');
-  }, [hydrated, account, router]);
+    if (!hydrated) return;
+    let cancelled = false;
+    fetchServerSession().then((s) => {
+      if (cancelled || !s) return;
+      setDemoLogin(s.demoLogin);
+      if (s.account) {
+        login(s.account);
+        router.replace(s.account.role === 'admin' ? '/admin' : '/home');
+      } else if (account) {
+        useAuthStore.setState({ account: null });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
+
+  async function signIn(body: { id: string; password?: string; demo?: boolean }) {
+    if (busy) return;
+    setBusy(true);
+    setError(undefined);
+    try {
+      const found: Account = await serverLogin(body);
+      login(found);
+      router.replace(found.role === 'admin' ? '/admin' : '/home');
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const found = findDemoAccount(id.trim(), password);
-    if (!found) {
-      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
-      return;
-    }
-    setError(undefined);
-    login(found);
-    router.replace(found.role === 'admin' ? '/admin' : '/home');
+    signIn({ id: id.trim(), password });
   }
 
   function quickLogin(demoId: string) {
-    const demo = DEMO_ACCOUNTS.find((a) => a.id === demoId);
-    if (!demo) return;
-    setId(demo.id);
-    setPassword(demo.password);
-    login({ id: demo.id, name: demo.name, role: demo.role });
-    router.replace(demo.role === 'admin' ? '/admin' : '/home');
+    signIn({ id: demoId, demo: true });
   }
 
   return (
@@ -99,7 +119,7 @@ export default function LoginPage() {
                 value={id}
                 onChange={(e) => setId(e.target.value)}
                 className="w-full rounded-[11px] border border-line bg-white px-4 py-3 text-sm outline-none focus:border-brand"
-                placeholder="student 또는 admin"
+                placeholder="아이디"
               />
             </div>
             <div>
@@ -115,14 +135,16 @@ export default function LoginPage() {
             {error && <p className="text-xs text-warn">{error}</p>}
             <button
               type="submit"
-              className="mt-1.5 w-full rounded-xl bg-brand px-3 py-3.5 text-[15px] font-bold text-white hover:bg-brand/90"
+              disabled={busy}
+              className="mt-1.5 w-full disabled:opacity-60 rounded-xl bg-brand px-3 py-3.5 text-[15px] font-bold text-white hover:bg-brand/90"
             >
               학습 시작하기
             </button>
           </form>
 
+          {demoLogin && (
           <div className="mt-6 rounded-xl border border-line bg-white p-4 text-xs text-muted">
-            <p className="mb-2.5 font-medium text-brand-dark">데모 계정으로 바로 시작하기 (실제 인증 아님)</p>
+            <p className="mb-2.5 font-medium text-brand-dark">데모 계정으로 바로 시작하기</p>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -140,6 +162,7 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>
