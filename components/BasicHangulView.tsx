@@ -64,7 +64,7 @@ export default function BasicHangulView({ units }: { units: Unit[] }) {
           🩺
         </span>
         <span className="min-w-0">
-          <span className="block text-base font-bold text-white">메디쌤과 발화 연습</span>
+          <span className="block text-base font-bold text-white">메디쌤과 대화 연습</span>
           <span className="mt-0.5 block text-xs text-white/70">AI 아바타와 실제 문장을 말해보세요 ↗</span>
         </span>
       </button>
@@ -79,7 +79,7 @@ export default function BasicHangulView({ units }: { units: Unit[] }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex flex-none items-center justify-between border-b border-line px-4 py-2.5">
-              <p className="text-sm font-bold text-brand-dark">메디쌤과 발화 연습</p>
+              <p className="text-sm font-bold text-brand-dark">메디쌤과 대화 연습</p>
               <button
                 type="button"
                 onClick={() => setMediOpen(false)}
@@ -89,7 +89,7 @@ export default function BasicHangulView({ units }: { units: Unit[] }) {
                 ✕
               </button>
             </div>
-            <iframe src="/medi-ssam.html" title="메디쌤과 발화 연습" className="w-full flex-1 border-0" />
+            <iframe src="/medi-ssam.html" title="메디쌤과 대화 연습" className="w-full flex-1 border-0" />
           </div>
         </div>
       )}
