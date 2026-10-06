@@ -96,22 +96,38 @@ JSON을 직접 고치는 대신 관리자 메뉴 **실습내용 편집**(`/admin
 실습내용 편집기(`public/hancare-library-editor.html`)로 편집할 수도 있습니다. 편집 내용은
 `/api/hangul-library`를 통해 위 파일에 바로 자동 저장됩니다.
 
-### LLM 대화 기능 활성화 (선택)
+### LLM 대화 · 학습 음성(TTS) 기능 활성화 (선택)
 
-역할극(`/roleplay`) 화면의 LLM 대화는 [Gemini API](https://aistudio.google.com/app/apikey)로
-연동되어 있습니다(비용 고려 — 무료 테스트 티어가 있는 `gemini-1.5-flash` 사용). 키가
-없어도 앱은 정상 동작하며, 이 경우 채팅창에 환경변수 설정 안내가 표시됩니다.
+역할극(`/roleplay`) 화면의 LLM 대화와 학습 화면 전체(따라 읽기·단어 듣기·단어장·영상
+자막)의 "원어민 발음" 음성은 같은 [Gemini API](https://aistudio.google.com/app/apikey)
+키로 연동되어 있습니다 — 대화는 `gemini-1.5-flash`(비용 고려, 무료 테스트 티어),
+음성은 `gemini-2.5-flash-preview-tts`를 기본으로 씁니다. 키가 없어도 앱은 정상
+동작하며, 이 경우 채팅창에는 환경변수 설정 안내가, 학습 음성은 브라우저 기본 음성
+(Web Speech API)으로 자동 대체되어 재생됩니다.
 
 ```bash
 cp .env.example .env.local
 # .env.local에 GEMINI_API_KEY=발급받은키 입력
 ```
 
+학습 음성의 음색(성별 느낌 × 표준 아나운서/친근한 대화체/안내방송톤/또박또박한 스타일
+8종)은 관리자 메뉴 **음성 설정**(`/admin/voice-settings`)에서 미리듣기로 들어보고
+고르면 바로 저장되어 모든 학습자 화면에 적용됩니다(`content/ttsSettings.json`,
+자세한 내용은 [`content/README.md`](content/README.md#음성-설정-hancare-voice-settings)
+참고).
+
 ### 프로토타입 범위 안내
 
 - **콘텐츠**: `content/*.json`의 로컬 목데이터(유닛/상황/용어/문장) — 재빌드 없이
   파일 교체만으로 갱신 가능 (위 "실습내용(콘텐츠) 수정하기" 참고)
-- **STT/TTS**: 브라우저 내장 Web Speech API (Chrome 권장, 마이크 권한 필요)
+- **STT(음성 인식)**: 브라우저 내장 Web Speech API (Chrome 권장, 마이크 권한 필요)
+- **TTS(학습 음성)**: [Gemini 2.5 TTS](https://aistudio.google.com/app/apikey)로 실제 음성을
+  합성합니다(`app/api/tts/route.ts`, `lib/speech.ts`). 관리자가 `/admin/voice-settings`에서
+  고른 음색이 적용되며, `GEMINI_API_KEY`가 없거나 호출이 실패하면 브라우저 내장 음성으로
+  자동 대체됩니다. 역할극 "AI 환자"·메디쌤 팝업(Canvas 2D 캐릭터 엔진)은 입모양 연동 때문에
+  별도의 브라우저 음성을 그대로 쓰며(아래 "아바타" 항목 참고), 단일 파일판
+  `hangulcare.html`은 서버가 없어 API 키를 안전하게 쓸 수 없으므로 계속 브라우저 음성만
+  씁니다.
 - **발음 채점**: 실제 음성 신호 기반 채점이 아닌, 인식된 텍스트와 목표 문장을
   비교하는 **텍스트 유사도 근사치**입니다 (`lib/scoring.ts`)
 - **아바타 (Canvas 2D 캐릭터 엔진)**: 외부에서 받은 Canvas 2D 벡터 캐릭터 엔진(원본

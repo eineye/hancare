@@ -406,21 +406,32 @@ hancare/
 ## 11. 구현 노트 (프론트엔드 프로토타입, 2026)
 
 본 설계를 바탕으로 저장소 루트에 Next.js 기반 **동작하는 프론트엔드 프로토타입**을
-구현했다. 실행 방법은 저장소 루트의 `README.md`를 참고. 설계 대비 아래 두 가지는
+구현했다. 실행 방법은 저장소 루트의 `README.md`를 참고. 설계 대비 아래 세 가지는
 비용/구현 범위를 고려해 대체했다:
 
 - **LLM 대화(§6.3)**: Claude API 대신 **Gemini API**(`gemini-1.5-flash`)로 연동
   (`app/api/chat/route.ts`). 무료 테스트 티어가 있어 프로토타입 단계의 비용 부담이
   적다. 시스템 프롬프트 주입, 역할극, 모국어 질문 지원 등 설계 의도는 동일하게 유지.
+- **학습 음성(TTS, §6.1)**: §6.1이 전제한 "한국어 TTS(존댓말 어미 자연스러운 모델)"를
+  **Gemini 2.5 TTS**(`gemini-2.5-flash-preview-tts`)로 연동했다(`app/api/tts/route.ts`,
+  `lib/geminiTts.ts`) — LLM 대화와 같은 `GEMINI_API_KEY`를 재사용한다. 관리자가
+  `/admin/voice-settings`에서 음색(성별 느낌 × 표준 아나운서/친근한 대화체/안내방송톤/
+  또박또박한 스타일 8종, `lib/ttsVoices.ts`)을 고르면 `content/ttsSettings.json`에
+  저장되어 학습 화면 전체(따라 읽기·단어 듣기·단어장·영상 자막, `lib/speech.ts`의
+  `speak()`)에 바로 적용된다. 키가 없거나 호출이 실패하면 기존 브라우저 내장 음성
+  (Web Speech API)으로 자동 대체된다. 역할극의 "AI 환자"·메디쌤 팝업은 아래 "아바타
+  입모양" 절의 별도 Canvas 2D 캐릭터 엔진이 입모양 타이밍 때문에 자체 Web Speech
+  음성을 그대로 쓰므로 이번 변경 범위 밖이며, 서버가 없어 API 키를 안전하게 쓸 수
+  없는 단일 파일판 `hangulcare.html`도 대상이 아니다(계속 브라우저 음성만 사용).
 - **PWA(§3.1)**: `next-pwa`/workbox 계열 라이브러리는 이 문서 작성 시점 기준으로
   빌드 도구 체인에 해결되지 않은 취약 의존성(`serialize-javascript` 등)이 남아있어,
   대신 손으로 작성한 최소 서비스워커(`public/sw.js`)를 사용했다. 오프라인 캐싱
   전략이 더 정교하게 필요해지면 그때 workbox 계열 재도입을 검토한다.
 
-그 외 STT/TTS(브라우저 Web Speech API), 발음 채점(텍스트 유사도 근사치),
-콘텐츠(로컬 JSON)는 이 문서 §6에서 설명한 실제 파이프라인의 자리표시자이며,
-상용 API/자체 모델로 교체 시 `lib/speech.ts`, `lib/scoring.ts`, `lib/content.ts`의
-인터페이스만 유지하면 되도록 분리해두었다.
+그 외 STT(브라우저 Web Speech API), 발음 채점(텍스트 유사도 근사치), 콘텐츠(로컬
+JSON)는 이 문서 §6에서 설명한 실제 파이프라인의 자리표시자이며, 상용 API/자체 모델로
+교체 시 `lib/speech.ts`, `lib/scoring.ts`, `lib/content.ts`의 인터페이스만 유지하면
+되도록 분리해두었다.
 
 ### 아바타 입모양 (§6.1 보강)
 

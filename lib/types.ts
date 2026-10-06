@@ -28,6 +28,12 @@ export interface VocabConfig {
   lessonOverrides: Record<string, VocabLessonOverride>;
 }
 
+/** content/ttsSettings.json — 관리자 설정(/admin/voice-settings)이 저장하는 학습 음성(TTS) 설정.
+ * voiceId는 lib/ttsVoices.ts의 TTS_VOICE_OPTIONS 중 하나를 가리킨다. */
+export interface TtsSettings {
+  voiceId: string;
+}
+
 /** 역할극 규칙 응답 — 학습자 말에 키워드 중 하나가 들어 있으면 이 대사로 답한다. */
 export interface RoleplayReplyRule {
   keywords: string[];

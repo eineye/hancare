@@ -13,6 +13,7 @@
 | `xr-modules.json` | XR실습 (HnaCare XR 5대 모듈 — 스키마는 [`docs/XR_MODULE_DESIGN.md`](../docs/XR_MODULE_DESIGN.md) §6 참고, Unit 스키마와 다름) |
 | `roleplays.json` | 역할극 시나리오 (상황별 환자 설정·첫 대사·규칙 응답 — 아래 "역할극 편집기" 참고) |
 | `vocab.json` | 단어장 설정 (단어장 전용 단어 + 상황 용어 숨김·분류·메모 — 아래 "단어장 편집기" 참고, Unit 스키마와 다름) |
+| `ttsSettings.json` | 학습 음성(TTS) 설정 — 관리자가 고른 Gemini 음색 1개(아래 "음성 설정" 참고, Unit 스키마와 다름) |
 
 필요하면 같은 형식으로 새 파일을 만들고 `lib/content.ts`의 `CONTENT_FILES` 배열에
 파일명을 추가하면 됩니다.
@@ -116,6 +117,37 @@ JSON을 손으로 고치지 않고 표/폼 화면으로 편집하려면 관리�
   키워드 규칙(위에서부터) → 상황 용어 언급 → 통증·감사 → `fallbackKo` 순.
 - 편집기 오른쪽 **테스트 대화**로 규칙 응답을 바로 시험할 수 있습니다.
 - `hangulcare.html`(단일 파일판)에서는 브라우저 `localStorage`(`hc-roleplay-config`)에 저장됩니다.
+
+## 음성 설정 (hancare-voice-settings)
+
+관리자 메뉴 **음성 설정**(`/admin/voice-settings`, `components/AdminVoiceSettings.tsx`)에서
+학습 화면 전체(따라 읽기 · 단어 듣기 · 단어장 · 영상 자막, `lib/speech.ts`의 `speak()`)가
+재생하는 "원어민 발음" 음색을 고릅니다. 다른 편집기들과 달리 이 화면은 단독 HTML
+편집기가 아니라 일반 React 페이지입니다(편집할 내용이 값 하나뿐이라 iframe JSON
+편집기 없이 바로 구현). 고르는 즉시 `content/ttsSettings.json`에 자동 저장됩니다
+(`GET/PUT /api/tts-settings`, `lib/ttsSettings.ts`, PUT은 관리자만 — `middleware.ts`).
+
+```jsonc
+{ "voiceId": "kore-announcer-f" }   // lib/ttsVoices.ts의 TTS_VOICE_OPTIONS 중 하나
+```
+
+- 음색 목록(8종, `lib/ttsVoices.ts`)은 Gemini 2.5 TTS의 사전 설정 음색 중 "성별 느낌 ×
+  표준 아나운서/친근한 대화체/안내방송톤/또박또박한 스타일"로 고른 것입니다. Gemini
+  음색은 공식적으로 성별을 표시하지 않으므로, 화면의 **▶ 미리듣기** 버튼으로 직접
+  들어보고 고르는 것을 권장합니다.
+- 실제 합성은 학습자가 발음 듣기 버튼을 누를 때 서버(`app/api/tts/route.ts`,
+  `lib/geminiTts.ts`)가 그때그때 Gemini API(`GEMINI_API_KEY` 공용)를 호출해 처리합니다
+  — `GET /api/tts-settings`가 저장된 음색을 미리 내려주는 게 아니라, `/api/tts`가 저장된
+  설정을 서버에서 직접 읽어 씁니다.
+- `GEMINI_API_KEY`가 없거나 호출이 실패하면 학습자 화면은 자동으로 브라우저 내장
+  음성(Web Speech API)으로 대체됩니다(`lib/speech.ts`) — 이 화면에서 무엇을 고르고
+  저장해도 키가 없으면 적용되지 않는다는 안내 배너가 뜹니다.
+- 역할극의 "AI 환자"·메디쌤 팝업(`character2d-canvas` 엔진, 위 "아바타" 관련 내용은
+  README.md 참고)은 입모양(비셈) 타이밍 때문에 별도의 Web Speech 기반 엔진을 그대로
+  쓰며, 이 설정의 영향을 받지 않습니다.
+- 단일 파일판 `hangulcare.html`은 서버가 없어 `GEMINI_API_KEY`를 안전하게 보관할 수
+  없으므로(클라이언트 코드에 키가 노출됨), 이 화면·Gemini TTS 연동 대상이 아니며
+  계속 브라우저 내장 음성만 씁니다.
 
 ## 스키마
 

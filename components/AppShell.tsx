@@ -91,6 +91,7 @@ export default function AppShell({
     { id: 'admin-video', ko: '영상 편집', en: 'Video editor', href: '/admin/video-editor' },
     { id: 'admin-xr', ko: 'XR실습 편집', en: 'XR editor', href: '/admin/xr-editor' },
     { id: 'admin-roleplay', ko: '역할극 편집', en: 'Role play editor', href: '/admin/roleplay-editor' },
+    { id: 'admin-voice', ko: '음성 설정', en: 'Voice settings', href: '/admin/voice-settings' },
   ];
   const nav = isAdmin ? adminNav : learnerNav;
 
