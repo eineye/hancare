@@ -166,8 +166,9 @@ interface NoticesReadState {
   markAllRead: (ids: string[]) => void;
 }
 
-/** 알림(/notices) 읽음 상태. 알림 목록 자체(lib/noticesMock.ts)는 목데이터지만,
- * "읽었는지"는 이 브라우저에서 실제로 클릭한 결과를 반영한다. */
+/** 알림(/notices) 읽음 상태. 알림 목록 자체는 관리자가 작성해 content/notices.json에
+ * 실제로 저장되지만(lib/notices.ts), "읽었는지"는 이 브라우저에서 실제로 클릭한
+ * 결과만 반영한다(다른 기기·사용자와 공유되지 않음). */
 export const useNoticesReadStore = create<NoticesReadState>()(
   persist(
     (set) => ({

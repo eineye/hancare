@@ -14,7 +14,7 @@ import {
   type DisplayLang,
 } from '@/lib/store';
 import { ADMIN_OVERVIEW } from '@/lib/adminMock';
-import { NOTICES } from '@/lib/noticesMock';
+import type { AdminNotice } from '@/lib/types';
 import { LANGS } from '@/lib/langs';
 
 interface NavItem {
@@ -36,10 +36,12 @@ export default function AppShell({
   children,
   defaultLearnHref,
   practiceUnitIds = [],
+  notices = [],
 }: {
   children: React.ReactNode;
   defaultLearnHref?: string;
   practiceUnitIds?: string[];
+  notices?: AdminNotice[];
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -126,7 +128,7 @@ export default function AppShell({
   const langLabel = displayLang === 'ko' ? '한국어' : `한국어 + ${currentLangRow.native}`;
 
   const avgAccuracy = accuracyCount > 0 ? Math.round(accuracySum / accuracyCount) : 0;
-  const unreadNotices = NOTICES.filter((n) => n.unread && !readIds.includes(n.id)).length;
+  const unreadNotices = notices.filter((n) => !readIds.includes(n.id)).length;
 
   function handleLogout() {
     logout();
