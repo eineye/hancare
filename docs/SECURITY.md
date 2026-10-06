@@ -15,7 +15,7 @@ Vercel 등 호스팅을 쓰면 파일 대신 대시보드의 환경 변수(Secre
 
 | 변수 | 필수 | 설명 |
 |---|---|---|
-| `GEMINI_API_KEY` | AI 기능 쓸 때 | AI 대화·영상 질문·AI 자동 자막. **`NEXT_PUBLIC_`을 붙이면 브라우저에 노출되므로 절대 붙이지 않는다** |
+| `GEMINI_API_KEY` | AI 기능 쓸 때 | AI 대화·영상 질문·AI 자동 자막·학습 음성(TTS). **`NEXT_PUBLIC_`을 붙이면 브라우저에 노출되므로 절대 붙이지 않는다** |
 | `SESSION_SECRET` | ✅ | 세션 쿠키 서명 키, 32자 이상. 없으면 운영에서 로그인·API가 모두 막힌다(503) |
 | `ADMIN_PASSWORD` | ✅ | 관리자(`admin`) 비밀번호. 비워 두면 관리자 로그인 불가 |
 | `STUDENT_PASSWORD` | 선택 | 데모 학습자(`student`) 비밀번호. 비워 두면 그 계정 로그인 불가 |
@@ -38,8 +38,8 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 
 | 위치 | 상태 |
 |---|---|
-| 키를 읽는 곳 | 서버 라우트 `/api/chat`, `/api/video-qa`, `/api/videos/transcribe`의 `process.env.GEMINI_API_KEY`뿐 |
-| 브라우저 | 키가 전달되지 않음. Gemini SDK는 키를 URL이 아닌 요청 헤더로 보내 로그·오류 URL에도 찍히지 않음 |
+| 키를 읽는 곳 | 서버 라우트 `/api/chat`, `/api/video-qa`, `/api/videos/transcribe`, `/api/tts`의 `process.env.GEMINI_API_KEY`뿐 |
+| 브라우저 | 키가 전달되지 않음. `@google/generative-ai` SDK(대화·자막)와 `lib/geminiTts.ts`(TTS REST 직접 호출) 모두 키를 쿼리스트링이 아니라 요청 헤더(`x-goog-api-key`)로 보내 로그·오류 URL에도 찍히지 않음 |
 | 오류 메시지 | AI 자동 자막 실패 시 외부 서비스 원문 오류는 서버 로그에만 남기고 화면에는 일반 문구만 보냄 |
 | `hangulcare.html`(GitHub Pages) | 정적 페이지는 키를 숨길 수 없어 키를 쓰지 않음(규칙 기반 답변) |
 
@@ -84,6 +84,7 @@ Google 쪽에서도 제한을 걸어 둔다(Google AI Studio → Google Cloud �
 |---|---|
 | 로그인 시도 | 계정당 10분에 10회 (`TRUST_PROXY=true`면 IP당 10분에 30회도) |
 | AI 대화 `/api/chat`, 영상 질문 `/api/video-qa` | 사용자당 분당 15회, 하루 400회 |
+| 학습 음성(TTS) `/api/tts` | 사용자당 분당 40회, 하루 2,000회 (같은 문장은 서버 캐시로 재호출 줄임) |
 | AI 자동 자막 `/api/videos/transcribe` | 사용자당 시간당 20회, 하루 60회 |
 | 영상 업로드 | 사용자당 시간당 30회, 하루 100회 |
 

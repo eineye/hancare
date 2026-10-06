@@ -23,11 +23,13 @@ export async function synthesizeSpeech(text: string, voiceName: string): Promise
   if (!apiKey) throw new Error('GEMINI_API_KEY_MISSING');
 
   const model = process.env.GEMINI_TTS_MODEL?.trim() || DEFAULT_MODEL;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
+  // 키를 쿼리스트링(?key=)이 아니라 헤더로 보낸다 — docs/SECURITY.md가 보장하는 대로
+  // 서버 접근 로그·리버스 프록시 로그·오류 스택의 요청 URL에 키가 찍히지 않게 한다.
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       contents: [{ parts: [{ text }] }],
       generationConfig: {
