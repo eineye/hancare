@@ -421,8 +421,12 @@ hancare/
   `speak()`)에 바로 적용된다. 키가 없거나 호출이 실패하면 기존 브라우저 내장 음성
   (Web Speech API)으로 자동 대체된다. 역할극의 "AI 환자"·메디쌤 팝업은 아래 "아바타
   입모양" 절의 별도 Canvas 2D 캐릭터 엔진이 입모양 타이밍 때문에 자체 Web Speech
-  음성을 그대로 쓰므로 이번 변경 범위 밖이며, 서버가 없어 API 키를 안전하게 쓸 수
-  없는 단일 파일판 `hangulcare.html`도 대상이 아니다(계속 브라우저 음성만 사용).
+  음성을 그대로 쓰므로 이번 변경 범위 밖이다. 서버가 없어 `GEMINI_API_KEY`를 안전하게
+  둘 수 없는 단일 파일판 `hangulcare.html`도 Gemini와는 연동되지 않지만, 대신 같은
+  관리자 메뉴 자리에 브라우저 내장 음성(Web Speech API, `getVoices()`) 중에서 고르는
+  별도의 "음성 설정" 화면을 둬(`hc-voice-settings`에 이 브라우저에만 저장) `/admin/
+  voice-settings`와 같은 위치·구조로 기능 공백 없이 맞췄다 — 품질은 Gemini보다
+  낮지만(기기별 설치 음성에 의존) 구조적 공백은 남기지 않는 절충이다.
 - **PWA(§3.1)**: `next-pwa`/workbox 계열 라이브러리는 이 문서 작성 시점 기준으로
   빌드 도구 체인에 해결되지 않은 취약 의존성(`serialize-javascript` 등)이 남아있어,
   대신 손으로 작성한 최소 서비스워커(`public/sw.js`)를 사용했다. 오프라인 캐싱
