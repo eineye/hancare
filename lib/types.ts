@@ -188,6 +188,20 @@ export interface JournalEntry {
   createdAt: number;
 }
 
+/** content/notices.json — 관리자 "알림 및 면담"(/admin/alerts)에서 작성한 알림 한 건.
+ * 학습자 알림(/notices) 화면과 상단바 알림 벨이 이 목록을 그대로 읽는다. 실제 발송
+ * 서버(푸시 알림 등)는 없어 "작성하면 모두의 알림 목록에 나타난다" 수준까지만 실제로
+ * 동작한다 — 열람 여부는 각 학습자 브라우저의 로컬 읽음 상태로만 구분된다. */
+export interface AdminNotice {
+  id: string;
+  titleKo: string;
+  detailKo: string;
+  /** 발송 대상 설명(자유 텍스트, 예: "전체 학습자", "미접속 3일 이상 3명"). 실제
+   * 대상별 발송 제어는 없고 화면 표시용이다. */
+  audienceKo: string;
+  createdAt: number;
+}
+
 /** 영상학습 자막 한 줄에 달린 어휘 주석. 자막에서 강조 표시되고 탭하면 바로 질문 대상이 된다. */
 export interface VideoCueTerm {
   hangul: string;

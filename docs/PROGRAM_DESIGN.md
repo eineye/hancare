@@ -432,6 +432,21 @@ hancare/
   대신 손으로 작성한 최소 서비스워커(`public/sw.js`)를 사용했다. 오프라인 캐싱
   전략이 더 정교하게 필요해지면 그때 workbox 계열 재도입을 검토한다.
 
+### 알림(§6 Notification Service 보강)
+
+알림(`/notices`, `/admin/alerts`)은 애초에 고정 목데이터 3건이었으나, 관리자가
+제목·내용·대상을 직접 작성하면 `content/notices.json`에 실제로 저장되고 **모든
+학습자**의 알림 화면·상단바 알림 벨 배지에 바로 반영되도록 구현했다
+(`app/api/notices/route.ts`, `app/api/notices/[id]/route.ts`, `lib/notices.ts`,
+작성·삭제는 관리자만 — `middleware.ts`). "오늘/이번 주/이전" 묶음과 표시 시각은
+저장된 `createdAt` 하나만으로 매 요청마다 계산한다(`components/NoticesView.tsx`).
+실제 발송(푸시 등)·열람 추적 서버는 없어 "이 목록에 나타남"으로 전달을 대신하고,
+읽음 여부는 기존대로 각 학습자 브라우저의 로컬 상태로만 구분된다(관리자는 열람률을
+볼 수 없다). 서버가 없는 단일 파일판 `hangulcare.html`은 같은 기능을 브라우저
+`localStorage`(`hc-admin-notices`)로 구현해, 그 브라우저 안에서는 작성자·학습자
+화면이 바로 공유되지만 다른 기기와는 공유되지 않는다 — 다른 관리자 기능들과 같은
+한계다.
+
 그 외 STT(브라우저 Web Speech API), 발음 채점(텍스트 유사도 근사치), 콘텐츠(로컬
 JSON)는 이 문서 §6에서 설명한 실제 파이프라인의 자리표시자이며, 상용 API/자체 모델로
 교체 시 `lib/speech.ts`, `lib/scoring.ts`, `lib/content.ts`의 인터페이스만 유지하면

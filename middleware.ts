@@ -8,7 +8,7 @@ import { SESSION_COOKIE, readSessionToken, sessionConfigError } from '@/lib/sess
 //   - 그 밖의 /api         : 로그인한 사용자 (AI 대화·질문, 영상 파일, 목록 읽기)
 //   - 편집기 페이지        : 관리자만 (아니면 로그인 화면으로)
 
-const ADMIN_WRITE_PREFIXES = ['/api/videos', '/api/hangul-library', '/api/roleplays', '/api/vocab', '/api/xr-modules', '/api/tts-settings'];
+const ADMIN_WRITE_PREFIXES = ['/api/videos', '/api/hangul-library', '/api/roleplays', '/api/vocab', '/api/xr-modules', '/api/tts-settings', '/api/notices'];
 const READ_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
 function json(status: number, error: string) {
