@@ -10,7 +10,7 @@
 | `practice-hangul.json` | 실습한글 (간호조무 실습 회화) |
 | `basic-hangul.json` | 기초한글 |
 | `videos.json` | 영상학습 (`/video` — 영상 경로·자막(cues)·어휘 주석. 스키마는 [`docs/VIDEO_MODULE_DESIGN.md`](../docs/VIDEO_MODULE_DESIGN.md) §5 참고, 영상 파일은 `public/videos/`) |
-| `xr-modules.json` | XR실습 (HnaCare XR 5대 모듈 — 스키마는 [`docs/XR_MODULE_DESIGN.md`](../docs/XR_MODULE_DESIGN.md) §6 참고, Unit 스키마와 다름) |
+| `xr-modules.json` | XR실습 (관리자가 올린 Unity WebGL 빌드 연결 — 스키마는 [`docs/XR_MODULE_DESIGN.md`](../docs/XR_MODULE_DESIGN.md) §6 참고, Unit 스키마와 다름. 기본값은 빈 배열) |
 | `roleplays.json` | 역할극 시나리오 (상황별 환자 설정·첫 대사·규칙 응답 — 아래 "역할극 편집기" 참고) |
 | `vocab.json` | 단어장 설정 (단어장 전용 단어 + 상황 용어 숨김·분류·메모 — 아래 "단어장 편집기" 참고, Unit 스키마와 다름) |
 | `ttsSettings.json` | 학습 음성(TTS) 설정 — 관리자가 고른 Gemini 음색 1개(아래 "음성 설정" 참고, Unit 스키마와 다름) |
@@ -79,15 +79,19 @@ JSON을 손으로 고치지 않고 표/폼 화면으로 편집하려면 관리�
 
 관리자 메뉴 **XR실습 편집**(`/admin/xr-editor`, 편집기 본체 `public/hancare-xr-editor.html`)에서
 `xr-modules.json`을 편집합니다(`GET/PUT /api/xr-modules`). 저장하면 학습자 XR실습 목록(`/xr`)·
-실습 화면(`/xr/[moduleId]`)·커리큘럼의 XR실습 항목에 바로 반영됩니다.
+실습 화면(`/xr/[moduleId]`)·커리큘럼의 XR실습 항목에 바로 반영됩니다. 자세한 업로드·호스팅
+구조는 [`docs/XR_MODULE_DESIGN.md`](../docs/XR_MODULE_DESIGN.md) 참고.
 
-- 모듈: 순서(▲▼ — 저장 시 `order`를 1부터 다시 매김), id, 모듈명(한/영), 법정 실습시간, 환자 이름,
-  환자 첫 마디/상황(한/영), 적용 기술(표시용) / 추가·삭제
-- 인터랙션: 실습 화면의 조작 버튼 이름(한/영)과 누르면 로그에 나오는 결과 문구(한/영), id / 추가·삭제·순서 변경
-- id가 비었거나 중복되면 저장하지 않고 상태줄에 이유를 보여줍니다.
-- 모듈 id `xr-vital-signs`는 3D 실습 화면과 연결되어 있으니 바꾸지 마세요.
-- 엑셀 불러오기/내보내기: `Modules` 시트 + `Interactions` 시트(moduleId로 연결).
-- `hangulcare.html`(단일 파일판)에서는 브라우저 `localStorage`(`hc-xr-modules`)에 저장됩니다.
+- 모듈: 순서(▲▼ — 저장 시 `order`를 1부터 다시 매김), id(영문 소문자·숫자·하이픈만 — 업로드 폴더명으로도
+  쓰임), 모듈명(한/영), 법정 실습시간, 빌드 URL / 추가·삭제
+- **Unity WebGL 빌드 업로드**: Next.js 서버에서 열었을 때만 보이는 버튼으로, 빌드 폴더를 압축한
+  `.zip`을 `POST /api/xr-modules/upload?id=...`로 올리면 서버가 `uploads/xr-builds/{id}/`에
+  풀고 `buildUrl`을 자동으로 채웁니다. 이미 외부에 호스팅된 빌드가 있으면 `buildUrl`에 직접
+  URL을 입력해도 됩니다.
+- id가 비었거나 형식이 올바르지 않거나 중복되면 저장하지 않고 상태줄에 이유를 보여줍니다.
+- 엑셀 불러오기/내보내기: `Modules` 시트(id/order/titleKo/titleEn/legalHours/buildUrl).
+- `hangulcare.html`(단일 파일판)에서는 업로드 서버가 없어 `buildUrl`을 직접 입력하는 텍스트
+  필드만 보이고, 설정은 브라우저 `localStorage`(`hc-xr-modules`)에 저장됩니다.
 
 ## 역할극 편집기 (hancare-roleplay-editor)
 

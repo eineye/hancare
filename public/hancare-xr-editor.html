@@ -68,15 +68,10 @@
   .btn.danger{color:var(--danger);}
   .btn.danger:hover{background:var(--danger-soft); border-color:var(--danger);}
   .btn.small{padding:4px 8px; font-size:11.5px; border-radius:6px;}
+  .btn:disabled{opacity:.4; cursor:default;}
 
   .banner{display:flex; gap:10px; align-items:flex-start; background:var(--coral-soft); border:1px solid var(--coral); border-radius:var(--radius-md); padding:10px 12px; font-size:12.5px; margin-bottom:14px;}
   .banner b{color:var(--coral);}
-
-  .filters{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
-  .filters input, .filters select{border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-sm); padding:7px 10px; font-size:12.5px; outline:none;}
-  .filters input{min-width:220px;}
-  .filters input:focus, .filters select:focus{border-color:var(--accent);}
-  .filters label{font-size:12.5px; color:var(--ink-muted); display:flex; gap:6px; align-items:center;}
 
   .layout{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:14px; align-items:start;}
   @media (max-width:1000px){ .layout{grid-template-columns:minmax(0,1fr);} }
@@ -84,32 +79,11 @@
   .panel-head{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 14px; border-bottom:1px solid var(--border);}
   .panel-head h2{font-size:13.5px; font-weight:700;}
   .panel-head .hint{font-size:11.5px; color:var(--ink-faint);}
-  .panel-body{padding:10px 12px; overflow-x:auto;}
+  .panel-body{padding:10px 12px;}
   .empty{padding:18px; text-align:center; color:var(--ink-faint); font-size:12.5px;}
-
-  table.grid{width:100%; border-collapse:collapse; font-size:12.5px;}
-  table.grid th{text-align:left; font-size:11px; font-weight:600; color:var(--ink-faint); padding:0 6px 6px; border-bottom:1px solid var(--border); white-space:nowrap;}
-  table.grid td{padding:4px; vertical-align:middle; border-bottom:1px solid var(--border);}
-  table.grid tr:last-child td{border-bottom:none;}
-  table.grid tr.is-hidden td{opacity:.5;}
-  table.grid input[type=text]{width:100%; min-width:70px; border:1px solid transparent; border-radius:6px; padding:6px 7px; background:var(--surface-2); outline:none;}
-  table.grid input[type=text]:focus{background:var(--surface); border-color:var(--accent);}
-  table.grid input.mono{font-family:var(--font-mono); font-size:11px;}
-  table.grid input.dupe{border-color:var(--danger); background:var(--danger-soft);}
-  table.grid .ro{padding:6px 7px; color:var(--ink); white-space:nowrap;}
-  table.grid .ro.mono{font-family:var(--font-mono); font-size:11px; color:var(--ink-muted);}
-  table.grid .src{font-size:11px; color:var(--ink-muted); white-space:nowrap;}
-  table.grid .tight{width:1%; white-space:nowrap;}
-  .cell-flex{display:flex; gap:4px; align-items:center;}
-  .pill{display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:999px; background:var(--accent-soft); color:var(--accent-strong);}
 
   .preview{padding:14px;}
   .vcard{border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--surface);}
-  .vcard .h{font-size:18px; font-weight:700; color:var(--accent-strong);}
-  .vcard .r{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-muted); margin-top:3px;}
-  .vcard .n{font-size:11.5px; color:var(--ink-muted); margin-top:8px;}
-  .vcard .f{display:flex; justify-content:space-between; margin-top:12px; font-size:11px; color:var(--ink-faint);}
-  .vcard .f a{color:var(--accent); text-decoration:none;}
   .help{font-size:12px; color:var(--ink-muted); line-height:1.6; padding:0 14px 14px;}
   .help b{color:var(--ink);}
 
@@ -149,20 +123,24 @@
   .field input.mono{font-family:var(--font-mono); font-size:12px;}
   .field input.dupe{border-color:var(--danger); background:var(--danger-soft);}
   .field .note{font-size:11px; color:var(--coral); margin-top:3px;}
-  table.grid textarea{width:100%; min-width:120px; border:1px solid transparent; border-radius:6px; padding:6px 7px; background:var(--surface-2); outline:none; resize:vertical; min-height:50px; font-size:12.5px; line-height:1.4;}
-  table.grid textarea:focus{background:var(--surface); border-color:var(--accent);}
-  table.grid td.tight{white-space:nowrap;}
+
+  .upload-box{grid-column:1 / -1; border:1px dashed var(--border-strong); border-radius:var(--radius-md); padding:12px; background:var(--surface-2);}
+  .upload-box .row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .upload-box .bar{height:6px; border-radius:999px; background:var(--surface-3); overflow:hidden; margin-top:8px;}
+  .upload-box .bar > div{height:100%; background:var(--accent); width:0%; transition:width .15s;}
+  .upload-box .msg{font-size:11.5px; color:var(--ink-muted); margin-top:6px;}
+  .upload-box .msg.err{color:var(--danger);}
+  .upload-box .msg.ok{color:var(--success);}
 
   .xcard{border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--surface);}
   .xcard .top{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--ink-faint);}
   .xcard .badge{background:var(--accent); color:var(--accent-ink); border-radius:999px; padding:1px 8px; font-weight:700;}
   .xcard .ttl{font-size:16px; font-weight:700; margin-top:8px; color:var(--ink);}
   .xcard .sub{font-size:11.5px; color:var(--ink-muted);}
-  .xcard .quote{margin-top:10px; background:var(--surface-2); border-radius:10px; padding:9px 11px; font-size:12px;}
-  .xcard .quote small{display:block; color:var(--ink-faint); font-size:10.5px; margin-bottom:2px;}
-  .xcard .chips{display:flex; flex-wrap:wrap; gap:5px; margin-top:10px;}
-  .xcard .chip{font-size:11px; border:1px solid var(--border); border-radius:999px; padding:2px 8px; background:var(--surface);}
-  .xcard .tech{margin-top:10px; font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);}
+  .xcard .status{display:inline-block; margin-top:10px; font-size:11px; border-radius:999px; padding:3px 10px;}
+  .xcard .status.on{background:var(--accent-soft); color:var(--accent-strong);}
+  .xcard .status.off{background:var(--surface-2); color:var(--ink-faint);}
+  .xcard .url{margin-top:8px; font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); word-break:break-all;}
 </style>
 </head>
 <body>
@@ -170,7 +148,7 @@
   <header class="top">
     <div class="brand">
       <h1>XR실습 편집기</h1>
-      <div class="sub">한글케어 XR실습(HnaCare XR) — 모듈 · 환자 상황 · 인터랙션 편집</div>
+      <div class="sub">한글케어 XR실습(HnaCare XR) — Unity WebGL 빌드 연결·모듈 편집</div>
       <div class="stats" id="stats"></div>
       <div class="status-line" id="statusLine"><span class="status-dot"></span><span id="statusText">불러오는 중…</span></div>
     </div>
@@ -208,8 +186,9 @@
         <div class="help">
           <b>적용 방식</b><br>
           저장하면 학습자 <b>XR실습</b> 목록·실습 화면과 커리큘럼의 XR실습 항목에 바로 반영됩니다.<br>
-          <b>인터랙션</b>은 실습 화면의 조작 버튼이 되고, 누르면 <b>결과 문구</b>가 로그에 표시됩니다.<br>
-          모듈 id <code>xr-vital-signs</code>는 3D 실습 화면과 연결되어 있으니 바꾸지 마세요.
+          <b>빌드 URL</b>이 비어 있으면 학습 화면에는 &ldquo;아직 콘텐츠가 연결되지 않았습니다&rdquo; 안내만 보입니다.<br>
+          Unity에서 <b>WebGL</b> 플랫폼으로 빌드한 폴더 전체(또는 그 안의 내용)를 zip으로 압축해 올리세요 — 압축 형식은
+          빌드 설정의 Compression Format을 <b>Disabled</b>로 두는 것을 권장합니다(Gzip/Brotli도 지원하지만 더 느립니다).
         </div>
       </section>
     </aside>
@@ -220,16 +199,19 @@
 <div class="toast" id="toast"></div>
 <input type="file" id="fileJson" accept=".json,application/json" class="visually-hidden">
 <input type="file" id="fileExcel" accept=".xlsx,.xls" class="visually-hidden">
+<input type="file" id="fileZip" accept=".zip,application/zip" class="visually-hidden">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ==================================================================
    XR실습 편집기 — 한글케어 XR실습 모듈(content/xr-modules.json) 편집
-   스키마: docs/XR_MODULE_DESIGN.md §6 (XrModule / XrInteraction)
+   스키마: docs/XR_MODULE_DESIGN.md §6 (XrModule) — Unity WebGL 빌드(.zip)를
+   올리면 서버가 uploads/xr-builds/{id}/에 풀고 buildUrl을 채운다.
    연결 방식 (실습내용·단어장 편집기와 같다)
    - ?host=hangulcare: 단일 파일판 hangulcare.html 안(iframe). 부모와 postMessage로 get/put.
-   - 서버에서 열림: Next.js의 GET/PUT /api/xr-modules 에 자동 저장
-   - file:// 로 따로 열림: 로컬 전용 모드 (JSON/엑셀 내보내기로 보관)
+     이 모드에는 업로드 서버가 없어 buildUrl을 직접 입력하는 텍스트 필드만 보인다.
+   - 서버에서 열림: Next.js의 GET/PUT /api/xr-modules + POST /api/xr-modules/upload
+   - file:// 로 따로 열림: 로컬 전용 모드 (JSON/엑셀 내보내기로 보관, 업로드 불가)
    ================================================================== */
 (function(){
   "use strict";
@@ -241,7 +223,8 @@
       put: function(data){
         return fetch(url, { method:"PUT", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(data) })
           .then(function(r){ if(!r.ok) return r.json().catch(function(){ return {}; }).then(function(b){ throw new Error(b.error || ("HTTP " + r.status)); }); });
-      }
+      },
+      canUpload: true
     };
   }
   function parentBackend(){
@@ -258,7 +241,7 @@
         window.parent.postMessage({ hcXr:"req", id:id, op:op, payload:payload }, "*");
       });
     }
-    return { get: function(){ return call("get"); }, put: function(data){ return call("put", data); } };
+    return { get: function(){ return call("get"); }, put: function(data){ return call("put", data); }, canUpload: false };
   }
   var backend = null;
   if(/[?&]host=hangulcare\b/.test(location.search) && window.parent !== window) backend = parentBackend();
@@ -268,6 +251,7 @@
   var modules = [];
   var current = null;   // 선택한 모듈 객체 (id를 편집 중이어도 선택이 유지되도록 객체로 들고 있는다)
   var saveTimer = null;
+  var uploading = false;
 
   function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); }
   function pad2(n){ return String(n).padStart(2, "0"); }
@@ -278,33 +262,25 @@
       return {
         id: String(m.id || ""), titleKo: m.titleKo || "", titleEn: m.titleEn || "",
         legalHours: typeof m.legalHours === "number" ? m.legalHours : Number(m.legalHours) || 0,
-        patientNameKo: m.patientNameKo || "", situationKo: m.situationKo || "", situationEn: m.situationEn || "",
-        techNoteKo: m.techNoteKo || "",
-        interactions: (m.interactions || []).map(function(it){
-          return { id: String(it.id || ""), labelKo: it.labelKo || "", labelEn: it.labelEn || "", resultKo: it.resultKo || "", resultEn: it.resultEn || "" };
-        })
+        buildUrl: m.buildUrl || "", buildUploadedAt: typeof m.buildUploadedAt === "number" ? m.buildUploadedAt : undefined
       };
     });
   }
   function exportArray(){
     return modules.map(function(m, i){
-      return { id:m.id, order:i + 1, titleKo:m.titleKo, titleEn:m.titleEn, legalHours:m.legalHours, patientNameKo:m.patientNameKo,
-        situationKo:m.situationKo, situationEn:m.situationEn, techNoteKo:m.techNoteKo,
-        interactions: m.interactions.map(function(it){ return { id:it.id, labelKo:it.labelKo, labelEn:it.labelEn, resultKo:it.resultKo, resultEn:it.resultEn }; }) };
+      var out = { id:m.id, order:i + 1, titleKo:m.titleKo, titleEn:m.titleEn, legalHours:m.legalHours };
+      if(m.buildUrl) out.buildUrl = m.buildUrl;
+      if(m.buildUploadedAt) out.buildUploadedAt = m.buildUploadedAt;
+      return out;
     });
   }
   function problems(){
     var list = [], seen = {};
     modules.forEach(function(m, i){
       if(!m.id.trim()) list.push((i+1) + "번째 모듈 id가 비어 있어요");
+      else if(!/^[a-z0-9][a-z0-9-]{0,63}$/.test(m.id)) list.push("모듈 id는 영문 소문자·숫자·하이픈만 쓸 수 있어요: " + m.id);
       else if(seen[m.id]) list.push("모듈 id 중복: " + m.id);
       seen[m.id] = true;
-      var s2 = {};
-      m.interactions.forEach(function(it){
-        if(!it.id.trim()) list.push(m.titleKo + ": 인터랙션 id가 비어 있어요");
-        else if(s2[it.id]) list.push(m.titleKo + ": 인터랙션 id 중복 " + it.id);
-        s2[it.id] = true;
-      });
     });
     return list;
   }
@@ -329,14 +305,13 @@
       }).catch(function(err){ setStatus("offline", "저장 실패 — " + err.message); });
     }, 600);
   }
-
   /* ---------- 렌더 ---------- */
   function renderStats(){
     var hours = modules.reduce(function(s, m){ return s + (Number(m.legalHours) || 0); }, 0);
-    var its = modules.reduce(function(s, m){ return s + m.interactions.length; }, 0);
+    var connected = modules.filter(function(m){ return m.buildUrl; }).length;
     document.getElementById("stats").innerHTML =
       '<div class="stat"><b>' + modules.length + '</b><span>모듈</span></div>' +
-      '<div class="stat"><b>' + its + '</b><span>인터랙션</span></div>' +
+      '<div class="stat"><b>' + connected + '</b><span>콘텐츠 연결됨</span></div>' +
       '<div class="stat"><b>' + hours + '</b><span>법정 실습시간 합계(h)</span></div>';
     document.getElementById("sideSum").textContent = "법정 실습시간 합계 " + hours + "시간";
   }
@@ -354,9 +329,7 @@
   }
   function field(label, key, value, opts){
     opts = opts || {};
-    var input = opts.textarea
-      ? '<textarea data-mf="' + key + '" rows="2">' + esc(value) + '</textarea>'
-      : '<input data-mf="' + key + '" type="' + (opts.number ? "number" : "text") + '"' + (opts.number ? ' min="0" step="1"' : "") + ' value="' + esc(value) + '"' + (opts.cls ? ' class="' + opts.cls + '"' : "") + '>';
+    var input = '<input data-mf="' + key + '" type="' + (opts.number ? "number" : "text") + '"' + (opts.number ? ' min="0" step="1"' : "") + ' value="' + esc(value) + '"' + (opts.cls ? ' class="' + opts.cls + '"' : "") + (opts.readonly ? " readonly" : "") + '>';
     return '<div class="field' + (opts.full ? " full" : "") + '"><label>' + label + '</label>' + input + (opts.note ? '<div class="note">' + opts.note + '</div>' : "") + '</div>';
   }
   function renderEditor(){
@@ -366,46 +339,38 @@
     el.innerHTML =
       '<section class="panel"><div class="panel-head"><h2>모듈 정보</h2><button class="btn small danger" id="btnDelModule" type="button">이 모듈 삭제</button></div>' +
       '<div class="form">' +
-        field("모듈 ID", "id", m.id, { cls: "mono" + (dupId || !m.id.trim() ? " dupe" : ""), note: m.id === "xr-vital-signs" ? "3D 실습 화면과 연결된 id입니다 — 바꾸면 3D 화면이 열리지 않아요" : "" }) +
+        field("모듈 ID", "id", m.id, { cls: "mono" + (dupId || !m.id.trim() ? " dupe" : ""), note: "업로드 폴더명으로도 쓰여요 — 영문 소문자·숫자·하이픈만" }) +
         field("법정 실습시간 (시간)", "legalHours", m.legalHours, { number: true }) +
         field("모듈명 (한글)", "titleKo", m.titleKo) +
         field("모듈명 (영문)", "titleEn", m.titleEn) +
-        field("환자 이름", "patientNameKo", m.patientNameKo) +
-        field("적용 기술 (표시용)", "techNoteKo", m.techNoteKo) +
-        field("환자 첫 마디 / 상황 (한글)", "situationKo", m.situationKo, { textarea: true, full: true }) +
-        field("환자 첫 마디 / 상황 (영문)", "situationEn", m.situationEn, { textarea: true, full: true }) +
-      '</div></section>' +
-      '<section class="panel"><div class="panel-head"><h2>인터랙션 (' + m.interactions.length + ')</h2><span class="hint">실습 화면의 조작 버튼 · 누르면 결과 문구가 로그에 표시</span></div>' +
-      '<div class="panel-body">' + renderInteractions(m) + '</div>' +
-      '<div class="side-foot"><button class="btn small" id="btnAddInteraction" type="button">+ 인터랙션 추가</button></div></section>';
+        renderBuildField(m) +
+      '</div></section>';
   }
-  function renderInteractions(m){
-    if(!m.interactions.length) return '<div class="empty">인터랙션이 없습니다.</div>';
-    var seen = {}, dup = {};
-    m.interactions.forEach(function(it){ if(seen[it.id]) dup[it.id] = true; seen[it.id] = true; });
-    return '<table class="grid"><thead><tr><th></th><th>버튼 이름 (한글)</th><th>버튼 이름 (영문)</th><th>결과 문구 (한글)</th><th>결과 문구 (영문)</th><th>ID</th><th></th></tr></thead><tbody>' +
-      m.interactions.map(function(it, i){
-        return '<tr data-iidx="' + i + '">' +
-          '<td class="tight"><button class="icon-btn" data-imove="-1" type="button"' + (i === 0 ? " disabled" : "") + '>▲</button><button class="icon-btn" data-imove="1" type="button"' + (i === m.interactions.length - 1 ? " disabled" : "") + '>▼</button></td>' +
-          '<td><input type="text" data-if="labelKo" value="' + esc(it.labelKo) + '"></td>' +
-          '<td><input type="text" data-if="labelEn" value="' + esc(it.labelEn) + '"></td>' +
-          '<td><textarea data-if="resultKo" rows="2">' + esc(it.resultKo) + '</textarea></td>' +
-          '<td><textarea data-if="resultEn" rows="2">' + esc(it.resultEn) + '</textarea></td>' +
-          '<td><input type="text" data-if="id" class="mono' + (dup[it.id] || !it.id.trim() ? " dupe" : "") + '" value="' + esc(it.id) + '"></td>' +
-          '<td class="tight"><button class="btn small danger" data-idel="1" type="button">삭제</button></td>' +
-        '</tr>';
-      }).join("") + '</tbody></table>';
+  function renderBuildField(m){
+    if(backend && backend.canUpload){
+      return '<div class="field full"><label>Unity WebGL 빌드 URL</label>' +
+        '<input data-mf="buildUrl" type="text" class="mono" value="' + esc(m.buildUrl) + '" placeholder="/api/xr-builds/… 또는 외부에 호스팅된 URL">' +
+        '<div class="note" style="color:var(--ink-faint)">업로드하면 자동으로 채워져요. 이미 다른 곳에 호스팅된 빌드가 있으면 URL을 직접 입력해도 됩니다.</div></div>' +
+        '<div class="upload-box" id="uploadBox">' +
+          '<div class="row"><button class="btn small primary" id="btnUploadZip" type="button">Unity WebGL 빌드(.zip) 올리기</button>' +
+          (m.buildUploadedAt ? '<span class="msg">마지막 업로드 ' + esc(new Date(m.buildUploadedAt).toLocaleString("ko-KR")) + '</span>' : "") +
+          '</div><div class="bar" id="uploadBar" style="display:none"><div></div></div><div class="msg" id="uploadMsg"></div>' +
+        '</div>';
+    }
+    return '<div class="field full"><label>Unity WebGL 빌드 URL</label>' +
+      '<input data-mf="buildUrl" type="text" class="mono" value="' + esc(m.buildUrl) + '" placeholder="https://… (Unity WebGL 빌드 index.html 주소)">' +
+      '<div class="note" style="color:var(--ink-faint)">이 화면에서는 서버가 없어 직접 업로드할 수 없습니다 — 빌드를 다른 곳에 올린 뒤 그 URL을 입력해 주세요.</div></div>';
   }
   function renderPreview(){
     var el = document.getElementById("preview"), m = active();
     if(!m){ el.innerHTML = '<div class="empty">모듈을 선택하세요</div>'; return; }
     var idx = modules.indexOf(m);
     el.innerHTML = '<div class="xcard">' +
-      '<div class="top"><span class="badge">' + (idx + 1) + '</span><span>법정 ' + esc(m.legalHours) + '시간</span>' + (m.id === "xr-vital-signs" ? '<span>· 3D 실습 가능</span>' : "") + '</div>' +
+      '<div class="top"><span class="badge">' + (idx + 1) + '</span><span>법정 ' + esc(m.legalHours) + '시간</span></div>' +
       '<div class="ttl">' + esc(m.titleKo || "(모듈명)") + '</div><div class="sub">' + esc(m.titleEn) + '</div>' +
-      '<div class="quote"><small>환자 ' + esc(m.patientNameKo || "—") + '</small>“' + esc(m.situationKo) + '”</div>' +
-      '<div class="chips">' + m.interactions.map(function(it){ return '<span class="chip">' + esc(it.labelKo || it.id) + '</span>'; }).join("") + '</div>' +
-      (m.techNoteKo ? '<div class="tech">' + esc(m.techNoteKo) + '</div>' : "") +
+      (m.buildUrl
+        ? '<span class="status on">콘텐츠 연결됨</span><div class="url">' + esc(m.buildUrl) + '</div>'
+        : '<span class="status off">콘텐츠 없음</span>') +
     '</div>';
   }
   function renderBanners(){
@@ -419,27 +384,15 @@
   document.addEventListener("input", function(ev){
     var t = ev.target, m = active(); if(!m) return;
     var mf = t.getAttribute && t.getAttribute("data-mf");
-    var inf = t.getAttribute && t.getAttribute("data-if");
-    if(mf){
-      if(mf === "legalHours") m.legalHours = Math.max(0, Number(t.value) || 0);
-      else if(mf === "id"){
-        m.id = t.value.trim();
-        var dup = !m.id || modules.filter(function(x){ return x.id === m.id; }).length > 1;
-        t.classList.toggle("dupe", dup);
-      } else m[mf] = t.value;
-      renderList(); renderPreview(); scheduleSave();
-    } else if(inf){
-      var tr = t.closest("tr[data-iidx]"); if(!tr) return;
-      var it = m.interactions[Number(tr.getAttribute("data-iidx"))];
-      it[inf] = inf === "id" ? t.value.trim() : t.value;
-      if(inf === "id"){
-        var ids = m.interactions.map(function(x){ return x.id; });
-        document.querySelectorAll('#editor tr[data-iidx] input[data-if="id"]').forEach(function(inp, i){
-          inp.classList.toggle("dupe", !ids[i] || ids.indexOf(ids[i]) !== i);
-        });
-      }
-      renderPreview(); scheduleSave();
-    }
+    if(!mf) return;
+    if(mf === "legalHours") m.legalHours = Math.max(0, Number(t.value) || 0);
+    else if(mf === "id"){
+      m.id = t.value.trim();
+      var dup = !m.id || modules.filter(function(x){ return x.id === m.id; }).length > 1;
+      t.classList.toggle("dupe", dup);
+    } else if(mf === "buildUrl") m.buildUrl = t.value.trim();
+    else m[mf] = t.value;
+    renderList(); renderPreview(); scheduleSave();
   });
   document.addEventListener("click", function(ev){
     var t = ev.target;
@@ -456,29 +409,9 @@
       }
       current = modules[idx]; renderAll(); return;
     }
-    var m = active(); if(!m) return;
-    var tr = t.closest && t.closest("tr[data-iidx]");
-    if(tr){
-      var i = Number(tr.getAttribute("data-iidx"));
-      var im = t.closest("[data-imove]");
-      if(im && !im.disabled){
-        var k = i + Number(im.getAttribute("data-imove"));
-        var x = m.interactions[i]; m.interactions[i] = m.interactions[k]; m.interactions[k] = x;
-        renderEditor(); renderPreview(); scheduleSave(); return;
-      }
-      if(t.closest("[data-idel]")){
-        m.interactions.splice(i, 1);
-        renderEditor(); renderPreview(); scheduleSave(); toast("인터랙션을 삭제했어요"); return;
-      }
-    }
-    if(t.id === "btnAddInteraction"){
-      var used = new Set(m.interactions.map(function(x){ return x.id; }));
-      m.interactions.push({ id: uniqueId("action-" + (m.interactions.length + 1), used), labelKo:"", labelEn:"", resultKo:"", resultEn:"" });
-      renderEditor(); renderPreview(); scheduleSave();
-      var rows = document.querySelectorAll('#editor tr[data-iidx] input[data-if="labelKo"]');
-      if(rows.length) rows[rows.length - 1].focus();
-    }
-    if(t.id === "btnDelModule") confirmModal("모듈 삭제", "“" + (m.titleKo || m.id) + "” 모듈과 인터랙션 " + m.interactions.length + "개를 삭제할까요?", "삭제", function(){
+    var m = active();
+    if(t.id === "btnUploadZip" && m) document.getElementById("fileZip").click();
+    if(t.id === "btnDelModule" && m) confirmModal("모듈 삭제", "“" + (m.titleKo || m.id) + "” 모듈을 삭제할까요? 업로드된 빌드도 함께 지워집니다.", "삭제", function(){
       var idx2 = modules.indexOf(m);
       modules.splice(idx2, 1);
       current = modules[Math.min(idx2, modules.length - 1)] || null;
@@ -487,14 +420,48 @@
   });
   function addModule(){
     var used = new Set(modules.map(function(x){ return x.id; }));
-    var m = { id: uniqueId("xr-module-" + (modules.length + 1), used), titleKo:"새 XR 모듈", titleEn:"New XR module", legalHours:0,
-      patientNameKo:"", situationKo:"", situationEn:"", techNoteKo:"", interactions:[] };
+    var m = { id: uniqueId("xr-module-" + (modules.length + 1), used), titleKo:"새 XR 모듈", titleEn:"New XR module", legalHours:0, buildUrl:"" };
     modules.push(m); current = m;
     renderAll(); scheduleSave();
     var inp = document.querySelector('#editor input[data-mf="titleKo"]'); if(inp){ inp.focus(); inp.select(); }
   }
   document.getElementById("btnAddModule").addEventListener("click", addModule);
   document.getElementById("btnAddModule2").addEventListener("click", addModule);
+
+  /* ---------- zip 업로드 ---------- */
+  document.getElementById("fileZip").addEventListener("change", function(ev){
+    var f = ev.target.files[0]; ev.target.value = "";
+    var m = active(); if(!f || !m) return;
+    if(!m.id.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(m.id)){
+      toast("먼저 모듈 ID를 영문 소문자·숫자·하이픈으로 정해주세요"); return;
+    }
+    if(uploading) return;
+    uploading = true;
+    var bar = document.getElementById("uploadBar"), fill = bar.querySelector("div"), msg = document.getElementById("uploadMsg");
+    bar.style.display = ""; fill.style.width = "0%"; msg.className = "msg"; msg.textContent = "업로드 중…(" + Math.round(f.size / 1024 / 1024) + "MB)";
+
+    // 저장 중인 모듈 id를 올리는 동안 바꾸면 엉뚱한 모듈에 결과가 붙을 수 있어 고정해둔다.
+    var targetModule = m, targetId = m.id;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/xr-modules/upload?id=" + encodeURIComponent(targetId));
+    xhr.upload.onprogress = function(e){ if(e.lengthComputable) fill.style.width = Math.round(e.loaded / e.total * 100) + "%"; };
+    xhr.onload = function(){
+      uploading = false;
+      var body = {}; try { body = JSON.parse(xhr.responseText); } catch(e){}
+      if(xhr.status >= 200 && xhr.status < 300 && body.buildUrl){
+        if(modules.indexOf(targetModule) !== -1 && targetModule.id === targetId){
+          targetModule.buildUrl = body.buildUrl;
+          targetModule.buildUploadedAt = Date.now();
+          renderEditor(); renderPreview(); scheduleSave();
+        }
+        fill.style.width = "100%"; msg.className = "msg ok"; msg.textContent = "업로드 완료 — 파일 " + (body.fileCount || "?") + "개";
+      } else {
+        msg.className = "msg err"; msg.textContent = "업로드 실패 — " + (body.error || ("HTTP " + xhr.status));
+      }
+    };
+    xhr.onerror = function(){ uploading = false; msg.className = "msg err"; msg.textContent = "업로드 실패 — 네트워크 오류"; };
+    xhr.send(f);
+  });
 
   /* ---------- 모달 / 토스트 ---------- */
   var toastTimer;
@@ -551,13 +518,11 @@
   });
   document.getElementById("btnExportExcel").addEventListener("click", function(){
     if(!window.XLSX){ toast("엑셀 라이브러리를 불러오지 못했어요 (네트워크 확인)"); return; }
-    var wb = XLSX.utils.book_new(), mods = [], its = [];
+    var wb = XLSX.utils.book_new(), mods = [];
     exportArray().forEach(function(m){
-      mods.push({ moduleId:m.id, order:m.order, titleKo:m.titleKo, titleEn:m.titleEn, legalHours:m.legalHours, patientNameKo:m.patientNameKo, situationKo:m.situationKo, situationEn:m.situationEn, techNoteKo:m.techNoteKo });
-      m.interactions.forEach(function(it){ its.push({ moduleId:m.id, interactionId:it.id, labelKo:it.labelKo, labelEn:it.labelEn, resultKo:it.resultKo, resultEn:it.resultEn }); });
+      mods.push({ moduleId:m.id, order:m.order, titleKo:m.titleKo, titleEn:m.titleEn, legalHours:m.legalHours, buildUrl:m.buildUrl || "" });
     });
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(mods), "Modules");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(its.length ? its : [{ moduleId:"", interactionId:"", labelKo:"", labelEn:"", resultKo:"", resultEn:"" }]), "Interactions");
     download("hancare-xr-modules.xlsx", new Blob([XLSX.write(wb, { bookType:"xlsx", type:"array" })], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
   });
   document.getElementById("btnImportExcel").addEventListener("click", function(){ document.getElementById("fileExcel").click(); });
@@ -571,13 +536,8 @@
         var map = {}, arr = [];
         XLSX.utils.sheet_to_json(wb.Sheets.Modules, { defval:"" }).forEach(function(r){
           var id = String(r.moduleId || "").trim(); if(!id || map[id]) return;
-          map[id] = { id:id, order:Number(r.order) || arr.length + 1, titleKo:String(r.titleKo), titleEn:String(r.titleEn), legalHours:Number(r.legalHours) || 0,
-            patientNameKo:String(r.patientNameKo), situationKo:String(r.situationKo), situationEn:String(r.situationEn), techNoteKo:String(r.techNoteKo), interactions:[] };
+          map[id] = { id:id, order:Number(r.order) || arr.length + 1, titleKo:String(r.titleKo), titleEn:String(r.titleEn), legalHours:Number(r.legalHours) || 0, buildUrl:String(r.buildUrl || "") };
           arr.push(map[id]);
-        });
-        if(wb.Sheets.Interactions) XLSX.utils.sheet_to_json(wb.Sheets.Interactions, { defval:"" }).forEach(function(r){
-          var m = map[String(r.moduleId || "").trim()]; if(!m || !String(r.interactionId || "").trim()) return;
-          m.interactions.push({ id:String(r.interactionId).trim(), labelKo:String(r.labelKo), labelEn:String(r.labelEn), resultKo:String(r.resultKo), resultEn:String(r.resultEn) });
         });
         openModal('<div class="modal"><h3>엑셀 불러오기</h3><p>모듈 ' + arr.length + '개로 지금 모듈 전체를 교체합니다. 계속할까요?</p><div class="modal-actions">' +
           '<button class="btn" id="mCancel" type="button">취소</button><button class="btn primary" id="mOk" type="button">교체하기</button></div></div>');

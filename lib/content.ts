@@ -75,7 +75,7 @@ export async function unitProgress(unitId: string, situationId: string) {
   return { current: index + 1, total: unit.situations.length };
 }
 
-/** XR실습(HnaCare XR) 5대 모듈. docs/XR_MODULE_DESIGN.md 참고. 다른 콘텐츠와 마찬가지로
+/** XR실습(HnaCare XR) 모듈. docs/XR_MODULE_DESIGN.md 참고. 다른 콘텐츠와 마찬가지로
  * content/xr-modules.json을 매 요청마다 새로 읽는다. */
 export async function getXrModules(): Promise<XrModule[]> {
   try {

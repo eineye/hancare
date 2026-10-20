@@ -211,8 +211,8 @@ stateDiagram-v2
 
 ## 7. 진도·단어장·리포트 연동 — `lib/videoStore.ts`
 
-Zustand `persist`(`hangulcare-video`, `safeLocalStorage`) — `lib/xrStore.ts`와 같은 패턴.
-실제 백엔드 전까지는 이 브라우저에만 저장된다.
+Zustand `persist`(`hangulcare-video`, `safeLocalStorage`). 실제 백엔드 전까지는
+이 브라우저에만 저장된다.
 
 | 상태 | 형태 | 사용처 |
 |---|---|---|
