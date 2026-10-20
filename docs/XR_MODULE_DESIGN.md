@@ -90,8 +90,48 @@ graph LR
   `deleteXrBuild()`가 `uploads/xr-builds/{id}/`를 통째로 지운다(`PUT
   /api/xr-modules`가 이전 모듈 id 목록과 비교해 자동 처리).
 - **외부에 이미 호스팅된 빌드**를 쓰고 싶으면 업로드 없이 `buildUrl`에 그 주소를
-  직접 입력해도 된다(S3, 별도 CDN 등). 단일 파일판(`hangulcare.html`)에는
-  업로드 서버가 없으므로 이 방식만 쓸 수 있다 — §6 참고.
+  직접 입력해도 된다(S3, 별도 CDN 등). 이 방식은 서버 유무와 무관하게 항상 쓸 수 있다.
+
+### 3.1 단일 파일판(`hangulcare.html`) 전용 — Service Worker + IndexedDB
+
+`hangulcare.html`에는 Next.js 서버가 없어 위 업로드 API를 쓸 수 없지만, **https(또는
+`http://localhost`)로 호스팅했다면** 서버 없이도 이 브라우저 안에서 실제로 zip을
+업로드할 수 있다 — `file://`로 직접 연 경우는 예외(아래 참고).
+
+```mermaid
+graph LR
+    A[관리자: hangulcare.html의 XR실습 편집에서 .zip 선택] --> B["JSZip으로 압축 해제\n(public/hancare-xr-editor.html)"]
+    B --> C["IndexedDB(hc-xr-builds/files)에 저장"]
+    C --> D["buildUrl = hc-xr-blob/{id}/index.html"]
+    D --> E["학습 화면 iframe → sw-xr-builds.js가 가로채 서빙"]
+```
+
+- **압축 해제**: `public/hancare-xr-editor.html`의 `extractClientXrBuild()`가
+  브라우저에서 [JSZip](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js)로
+  zip을 읽는다 — 경로 탈출 거부, 공통 루트 폴더 제거, `index.html` 탐색,
+  용량(기본 400MB)·항목 수(기본 4000개) 상한까지 서버 쪽 `extractXrBuild()`와
+  같은 순서로 검증한다(서버보다 상한을 낮춘 이유는 브라우저 메모리 제약).
+  문제가 있으면 IndexedDB에 아무것도 쓰기 전에 거부한다.
+- **저장**: IndexedDB `hc-xr-builds`의 `files` 오브젝트 스토어에 `{ key:
+  "{moduleId}/{relPath}", moduleId, data: Blob, contentType, contentEncoding }`
+  형태로 쓴다. **이 브라우저에만 저장되며 다른 사람·다른 기기·서버 어디에도
+  올라가지 않는다.**
+- **서빙**: 저장소 루트의 `sw-xr-builds.js`(Service Worker)가 `hc-xr-blob/{id}/
+  {path...}` 요청을 가로채 IndexedDB에서 꺼내 `Content-Type`/`Content-Encoding`과
+  함께 돌려준다 — `app/api/xr-builds/[moduleId]/[...path]` 라우트와 같은 역할을
+  서버 없이 한다.
+- **등록 시점**: `hangulcare.html`이 로드될 때 한 번 등록한다(상대 경로
+  `sw-xr-builds.js` — 서브 경로에 배포해도 자동으로 그 디렉터리를 스코프로 잡는다).
+  학습 화면(`renderXrPractice`)은 `navigator.serviceWorker.ready`가 풀릴 때까지
+  "콘텐츠를 준비하고 있습니다…" 안내를 보여준 뒤 자동으로 iframe을 띄운다(브라우저가
+  이 세션에서 처음 Service Worker를 활성화하는 극히 짧은 순간을 위한 안전장치 — 보통
+  사용자가 로그인→메뉴 이동하는 동안 이미 끝나 있다).
+- **`file://`로 직접 연 경우**: 브라우저가 Service Worker 등록 자체를 금지하므로(보안
+  정책상 `file:` 출처는 Service Worker를 쓸 수 없다) 이 방식이 통째로 비활성화되고,
+  §5의 "URL 직접 입력" 모드로 자동 전환된다.
+- **정리**: 모듈을 편집기에서 삭제하거나 "모듈 전체 지우기"를 누르면
+  `hangulcare.html`의 `xrClientDeleteModule()`/`xrClientClearAll()`이 해당
+  IndexedDB 레코드도 함께 지운다(서버 쪽 `deleteXrBuild()`와 같은 역할).
 
 ---
 
@@ -117,8 +157,9 @@ graph LR
 |---|---|
 | `components/XrModuleGrid.tsx` | `/xr` 목록 — 모듈 카드(순서·법정시간·콘텐츠 연결 여부) |
 | `components/XrPracticeScreen.tsx` | `/xr/[moduleId]` — iframe + 전체화면 토글 + 이전/다음/목록 이동 |
-| `public/hancare-xr-editor.html` | 관리자 편집기 — 모듈 CRUD + zip 업로드 위젯(§6) |
+| `public/hancare-xr-editor.html` | 관리자 편집기 — 모듈 CRUD + zip 업로드 위젯(§5) |
 | `lib/xrBuilds.ts` | 서버 전용 — zip 추출·검증, 빌드 파일 경로 안전성 검사 |
+| `sw-xr-builds.js` | 단일 파일판 전용 Service Worker — IndexedDB에 저장된 빌드를 서빙(§3.1) |
 
 Unity WebGL 콘텐츠 내부의 완료 신호(예: "이 환자 확인 끝났음")를 앱이 알아내는
 방법은 없다 — iframe은 기본적으로 불투명한 블랙박스다. 완료율·리포트 제출 같은
@@ -135,9 +176,10 @@ Unity WebGL 콘텐츠 내부의 완료 신호(예: "이 환자 확인 끝났음"
 
 | 실행 환경 | 백엔드 | 업로드 위젯 |
 |---|---|---|
-| Next.js 서버에서 열림(`/admin/xr-editor`) | `GET/PUT /api/xr-modules` | 보임 — `POST /api/xr-modules/upload`로 직접 업로드 |
-| 단일 파일판(`hangulcare.html`) 안에서 iframe(`?host=hangulcare`) | `postMessage`(`hcXr` 메시지, 이 브라우저의 localStorage에 보관) | 숨김 — `buildUrl`을 텍스트로 직접 입력(서버가 없어 업로드 불가) |
-| `file://`로 단독 실행 | 없음(JSON/엑셀 내보내기로만 보관) | 숨김 — 동일하게 텍스트 입력만 |
+| Next.js 서버에서 열림(`/admin/xr-editor`) | `GET/PUT /api/xr-modules` | `POST /api/xr-modules/upload`로 서버에 직접 업로드 |
+| 단일 파일판(`hangulcare.html`) 안에서 iframe(`?host=hangulcare`), **https로 호스팅** | `postMessage`(`hcXr` 메시지, 이 브라우저의 localStorage에 보관) | Service Worker + IndexedDB로 이 브라우저 안에 직접 업로드(§3.1) |
+| 단일 파일판을 **`file://`로 직접 연 경우** | `postMessage`(위와 동일) | 숨김 — `buildUrl`을 텍스트로 직접 입력만(Service Worker 등록 자체가 브라우저에서 막힘) |
+| `file://`로 편집기만 단독 실행 | 없음(JSON/엑셀 내보내기로만 보관) | 숨김 — 동일하게 텍스트 입력만 |
 
 필드: 모듈 ID(영문 소문자·숫자·하이픈 — 업로드 폴더명으로도 쓰임)·순서·
 모듈명(한/영)·법정 실습시간·빌드 URL. 엑셀 내보내기는 `Modules` 시트 하나
