@@ -128,17 +128,10 @@ export interface ChatMessage {
   content: string;
 }
 
-/** XR실습(HnaCare XR) 모듈 내 하나의 3D 인터랙션. 실제 3D/물리 연산 결과 대신
- * 목데이터 결과 문구를 보여주는 프로토타입 단계 스키마다. */
-export interface XrInteraction {
-  id: string;
-  labelKo: string;
-  labelEn: string;
-  resultKo: string;
-  resultEn: string;
-}
-
-/** XR실습 5대 모듈. docs/XR_MODULE_DESIGN.md 참고. */
+/** XR실습(HnaCare XR) 모듈. 관리자가 "XR실습 편집"에서 Unity WebGL 빌드(.zip)를
+ * 올리면 서버가 `public/xr-builds/{id}/`에 풀어주고 `buildUrl`을 채운다(또는
+ * 외부에 이미 호스팅된 빌드의 URL을 직접 입력해도 된다). 학습 화면은 이 URL을
+ * `<iframe>`으로 띄운다 — docs/XR_MODULE_DESIGN.md 참고. */
 export interface XrModule {
   id: string;
   order: number;
@@ -146,12 +139,10 @@ export interface XrModule {
   titleEn: string;
   /** 국가 자격 기준 법정 실습시간(시간 단위) */
   legalHours: number;
-  patientNameKo: string;
-  situationKo: string;
-  situationEn: string;
-  /** 실제 적용 예정 기술 스택(참고용 표시 문구, PDF 스펙 그대로) */
-  techNoteKo: string;
-  interactions: XrInteraction[];
+  /** Unity WebGL 빌드 진입점(index.html) URL. 비어 있으면 아직 콘텐츠가 연결되지 않은 것. */
+  buildUrl?: string;
+  /** 관리자가 .zip을 업로드해 서버가 직접 호스팅한 경우의 업로드 시각(epoch ms, 표시용) */
+  buildUploadedAt?: number;
 }
 
 /** 관리자 진도관리 화면용 학습자 요약. 실제 다중 사용자 백엔드가 없어 목데이터다. */

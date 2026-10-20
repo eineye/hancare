@@ -54,13 +54,12 @@ npm run dev       # http://localhost:3000
 [unitId]/[situationId]`)으로 바로 이어집니다. 진도관리(`/courses`)에서는 실습한글 /
 XR실습 2개 분류로 고를 수 있습니다(기초한글은 위 전용 메뉴로 옮겼습니다). 콘텐츠는
 전부 `content/*.json` 파일의 실제 데이터로 연결되어 있습니다.
-XR실습(`/xr`)은 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md)의 Phase 1
-(화면 흐름·상호작용 셸)까지 구현되어 있으며, 실제 3D 뷰어·물리 엔진은 아직 없고
-와이어프레임 미리보기와 목데이터 인터랙션 결과로 대체되어 있습니다. 5개 모듈 중
-1번 "활력징후 및 기초사정"은 Three.js 3D 뷰포트가 실제로 동작하는 독립 프로토타입
-[`public/xr/vital-signs.html`](public/xr/vital-signs.html)(`/xr/vital-signs.html`로
-정적 서빙, 다른 사이트에 `<iframe>`으로 임베드 가능)로 먼저 검증했으며, 아직 위
-`/xr` 메뉴에는 연결되어 있지 않습니다(자세한 내용은 `docs/XR_MODULE_DESIGN.md` §7.1 참고).
+XR실습(`/xr`)은 관리자가 Unity(WebGL 플랫폼)로 제작한 3D 인터랙션 콘텐츠를
+`.zip`으로 올리면 서버가 풀어서 호스팅하고, 학습 화면이 그 결과물을 `<iframe>`으로
+띄우는 방식입니다(APK 실행이나 Unreal Pixel Streaming은 지원하지 않습니다 —
+자세한 이유와 구조는 [`docs/XR_MODULE_DESIGN.md`](docs/XR_MODULE_DESIGN.md) 참고).
+모듈은 관리자가 "XR실습 편집"에서 직접 추가하므로, 빌드를 올리기 전에는
+`/xr` 메뉴가 비어 있을 수 있습니다.
 
 ### 새 화면 (역할극 · 기초한글 단어장 · 리포트 · 실습 일지 · 알림 · 설정 · 관리자 알림)
 

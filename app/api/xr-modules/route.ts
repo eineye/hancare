@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getXrModules } from '@/lib/content';
 import { cleanXrModules, saveXrModules } from '@/lib/contentStore';
+import { deleteXrBuild } from '@/lib/xrBuilds';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,7 +22,11 @@ export async function PUT(req: NextRequest) {
   const modules = cleanXrModules(body);
   if (typeof modules === 'string') return NextResponse.json({ error: modules }, { status: 400 });
   try {
+    const before = await getXrModules();
+    const keptIds = new Set(modules.map((m) => m.id));
+    const removedIds = before.map((m) => m.id).filter((id) => !keptIds.has(id));
     await saveXrModules(modules);
+    await Promise.all(removedIds.map((id) => deleteXrBuild(id)));
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('[xr-modules] 저장 실패:', err);
