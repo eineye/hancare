@@ -200,8 +200,10 @@
 <input type="file" id="fileJson" accept=".json,application/json" class="visually-hidden">
 <input type="file" id="fileExcel" accept=".xlsx,.xls" class="visually-hidden">
 <input type="file" id="fileZip" accept=".zip,application/zip" class="visually-hidden">
+<input type="file" id="fileZipClient" accept=".zip,application/zip" class="visually-hidden">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 /* ==================================================================
    XR실습 편집기 — 한글케어 XR실습 모듈(content/xr-modules.json) 편집
@@ -209,9 +211,13 @@
    올리면 서버가 uploads/xr-builds/{id}/에 풀고 buildUrl을 채운다.
    연결 방식 (실습내용·단어장 편집기와 같다)
    - ?host=hangulcare: 단일 파일판 hangulcare.html 안(iframe). 부모와 postMessage로 get/put.
-     이 모드에는 업로드 서버가 없어 buildUrl을 직접 입력하는 텍스트 필드만 보인다.
+     이 모드에는 Next.js 서버가 없지만, https(또는 http://localhost)로 열렸고 브라우저가
+     Service Worker를 지원하면 zip을 이 브라우저의 IndexedDB(hc-xr-builds)에 직접 풀어
+     저장한다 — sw-xr-builds.js가 hc-xr-blob/{id}/... 요청을 가로채 거기서 서빙한다.
+     file://로 직접 연 경우(Service Worker 등록 자체가 막힘)에는 buildUrl을 직접 입력하는
+     텍스트 필드만 보인다.
    - 서버에서 열림: Next.js의 GET/PUT /api/xr-modules + POST /api/xr-modules/upload
-   - file:// 로 따로 열림: 로컬 전용 모드 (JSON/엑셀 내보내기로 보관, 업로드 불가)
+   - file:// 로 따로 열림(hangulcare 호스트 아님): 로컬 전용 모드 (JSON/엑셀 내보내기로 보관, 업로드 불가)
    ================================================================== */
 (function(){
   "use strict";
@@ -243,9 +249,134 @@
     }
     return { get: function(){ return call("get"); }, put: function(data){ return call("put", data); }, canUpload: false };
   }
+  var IS_HANGULCARE_HOST = /[?&]host=hangulcare\b/.test(location.search) && window.parent !== window;
   var backend = null;
-  if(/[?&]host=hangulcare\b/.test(location.search) && window.parent !== window) backend = parentBackend();
+  if(IS_HANGULCARE_HOST) backend = parentBackend();
   else if(location.protocol !== "file:") backend = restBackend("/api/xr-modules");
+
+  /* ---------- hangulcare.html 전용: Service Worker + IndexedDB로 실제 zip 업로드 ----------
+     Next.js 서버 없이도 sw-xr-builds.js(저장소 루트)가 hc-xr-blob/{id}/... 요청을 가로채
+     IndexedDB(hc-xr-builds/files)에서 꺼내 서빙한다. lib/xrBuilds.ts의 extractXrBuild()와
+     같은 검증(경로 탈출·zip 폭탄·index.html 탐색·공통 루트 폴더 제거)을 클라이언트에서 한다. */
+  var CLIENT_SW_PREFIX = "hc-xr-blob/";
+  var MAX_CLIENT_ZIP_BYTES = 200 * 1024 * 1024;
+  var MAX_CLIENT_UNCOMPRESSED_BYTES = 400 * 1024 * 1024;
+  var MAX_CLIENT_ENTRY_COUNT = 4000;
+  function clientUploadSupported(){
+    return "serviceWorker" in navigator && "indexedDB" in window && location.protocol !== "file:";
+  }
+  if(IS_HANGULCARE_HOST && clientUploadSupported()){
+    navigator.serviceWorker.register("../sw-xr-builds.js").catch(function(e){ console.warn("[xr-editor] Service Worker 등록 실패", e); });
+  }
+  function openXrBuildsDb(){
+    return new Promise(function(resolve, reject){
+      var req = indexedDB.open("hc-xr-builds", 1);
+      req.onupgradeneeded = function(){
+        var db = req.result;
+        if(!db.objectStoreNames.contains("files")){
+          var store = db.createObjectStore("files", { keyPath:"key" });
+          store.createIndex("moduleId", "moduleId", { unique:false });
+        }
+      };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  }
+  function deleteClientBuild(moduleId){
+    return openXrBuildsDb().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction("files", "readwrite");
+        var idx = tx.objectStore("files").index("moduleId");
+        var req = idx.openCursor(IDBKeyRange.only(moduleId));
+        req.onsuccess = function(){ var c = req.result; if(c){ c.delete(); c.continue(); } };
+        tx.oncomplete = function(){ resolve(); };
+        tx.onerror = function(){ reject(tx.error); };
+      });
+    });
+  }
+  var CLIENT_MIME_BY_EXT = {
+    ".html":"text/html; charset=utf-8", ".htm":"text/html; charset=utf-8", ".js":"text/javascript; charset=utf-8",
+    ".mjs":"text/javascript; charset=utf-8", ".json":"application/json", ".css":"text/css; charset=utf-8",
+    ".wasm":"application/wasm", ".data":"application/octet-stream", ".mem":"application/octet-stream",
+    ".symbols":"application/octet-stream", ".unityweb":"application/octet-stream", ".bin":"application/octet-stream",
+    ".png":"image/png", ".jpg":"image/jpeg", ".jpeg":"image/jpeg", ".gif":"image/gif", ".svg":"image/svg+xml",
+    ".ico":"image/x-icon", ".webp":"image/webp", ".ttf":"font/ttf", ".woff":"font/woff", ".woff2":"font/woff2",
+    ".txt":"text/plain; charset=utf-8", ".xml":"application/xml"
+  };
+  function clientFileHeaders(name){
+    var n = name, enc;
+    if(/\.gz$/i.test(n)){ enc = "gzip"; n = n.slice(0, -3); }
+    else if(/\.br$/i.test(n)){ enc = "br"; n = n.slice(0, -3); }
+    var dot = n.lastIndexOf(".");
+    var ext = dot === -1 ? "" : n.slice(dot).toLowerCase();
+    var out = { contentType: CLIENT_MIME_BY_EXT[ext] || "application/octet-stream" };
+    if(enc) out.contentEncoding = enc;
+    return out;
+  }
+  function clientFindCommonRootDir(names){
+    if(!names.length) return "";
+    var first = names[0].indexOf("/");
+    if(first === -1) return "";
+    var candidate = names[0].slice(0, first + 1);
+    return names.every(function(n){ return n.indexOf(candidate) === 0; }) ? candidate : "";
+  }
+  /** zip 파일을 검증 후 IndexedDB(hc-xr-builds/files)에 쓴다. 성공하면 {buildUrl, fileCount}를 돌려준다.
+   * 문제가 있으면 디스크(IndexedDB)에 아무것도 쓰기 전에 거부한다 — 서버 쪽 extractXrBuild()와 동일한 순서. */
+  function extractClientXrBuild(moduleId, file){
+    if(!/^[a-z0-9][a-z0-9-]{0,63}$/.test(moduleId)) return Promise.reject(new Error("모듈 id 형식이 올바르지 않습니다(영문 소문자·숫자·하이픈만)."));
+    if(file.size > MAX_CLIENT_ZIP_BYTES) return Promise.reject(new Error("파일이 너무 큽니다(최대 " + (MAX_CLIENT_ZIP_BYTES / 1024 / 1024) + "MB)."));
+    if(!window.JSZip) return Promise.reject(new Error("zip 라이브러리를 불러오지 못했어요(네트워크 확인)."));
+    return file.arrayBuffer().then(function(buf){
+      return JSZip.loadAsync(buf).catch(function(){ throw new Error("zip 파일을 열 수 없습니다. 올바른 zip 파일인지 확인해주세요."); });
+    }).then(function(zip){
+      var entries = [];
+      zip.forEach(function(relPath, entry){ entries.push(entry); });
+      if(!entries.length) throw new Error("빈 zip 파일입니다.");
+      if(entries.length > MAX_CLIENT_ENTRY_COUNT) throw new Error("파일이 너무 많습니다(최대 " + MAX_CLIENT_ENTRY_COUNT + "개).");
+      var fileNames = entries.filter(function(e){ return !e.dir; }).map(function(e){ return e.name.replace(/\\/g, "/"); });
+      var commonPrefix = clientFindCommonRootDir(fileNames);
+      var safe = [], totalSize = 0;
+      var tasks = entries.map(function(entry){
+        var raw = entry.name.replace(/\\/g, "/");
+        var stripped = commonPrefix && raw.indexOf(commonPrefix) === 0 ? raw.slice(commonPrefix.length) : raw;
+        if(!stripped) return Promise.resolve();
+        if(stripped.charAt(0) === "/" || stripped.split("/").indexOf("..") !== -1){
+          throw new Error("허용되지 않는 경로가 포함되어 있습니다: " + entry.name);
+        }
+        if(entry.dir) return Promise.resolve();
+        return entry.async("blob").then(function(blob){
+          totalSize += blob.size;
+          if(totalSize > MAX_CLIENT_UNCOMPRESSED_BYTES) throw new Error("압축 해제 용량이 너무 큽니다(최대 " + (MAX_CLIENT_UNCOMPRESSED_BYTES / 1024 / 1024) + "MB).");
+          safe.push({ relPath: stripped, blob: blob });
+        });
+      });
+      return Promise.all(tasks).then(function(){
+        if(!safe.length) throw new Error("zip 안에 파일이 없습니다.");
+        var paths = safe.map(function(s){ return s.relPath; });
+        var indexRel = paths.find(function(p){ return p.toLowerCase() === "index.html"; })
+          || paths.find(function(p){ return p.toLowerCase().slice(-11) === "/index.html"; });
+        if(!indexRel) throw new Error("압축 파일 안에서 index.html을 찾지 못했습니다. Unity WebGL 빌드 결과물을 통째로 압축했는지 확인해주세요.");
+        return { safe: safe, indexRel: indexRel };
+      });
+    }).then(function(result){
+      return deleteClientBuild(moduleId).then(function(){ return result; });
+    }).then(function(result){
+      return openXrBuildsDb().then(function(db){
+        return new Promise(function(resolve, reject){
+          var tx = db.transaction("files", "readwrite");
+          var store = tx.objectStore("files");
+          result.safe.forEach(function(s){
+            var h = clientFileHeaders(s.relPath);
+            store.put({ key: moduleId + "/" + s.relPath, moduleId: moduleId, data: s.blob, contentType: h.contentType, contentEncoding: h.contentEncoding });
+          });
+          tx.oncomplete = function(){ resolve(); };
+          tx.onerror = function(){ reject(tx.error); };
+        });
+      }).then(function(){
+        return { buildUrl: CLIENT_SW_PREFIX + moduleId + "/" + result.indexRel, fileCount: result.safe.length };
+      });
+    });
+  }
 
   /* ---------- 상태 ---------- */
   var modules = [];
@@ -357,9 +488,24 @@
           '</div><div class="bar" id="uploadBar" style="display:none"><div></div></div><div class="msg" id="uploadMsg"></div>' +
         '</div>';
     }
+    if(IS_HANGULCARE_HOST && clientUploadSupported()){
+      return '<div class="field full"><label>Unity WebGL 빌드 URL</label>' +
+        '<input data-mf="buildUrl" type="text" class="mono" value="' + esc(m.buildUrl) + '" placeholder="hc-xr-blob/… 또는 외부에 호스팅된 URL">' +
+        '<div class="note" style="color:var(--ink-faint)">업로드하면 자동으로 채워져요(이 브라우저 안에 저장됩니다 — 다른 사람·다른 기기에는 보이지 않아요). 이미 다른 곳에 호스팅된 빌드가 있으면 URL을 직접 입력해도 됩니다.</div></div>' +
+        '<div class="upload-box" id="uploadBoxClient">' +
+          '<div class="row"><button class="btn small primary" id="btnUploadZipClient" type="button">Unity WebGL 빌드(.zip) 올리기(이 브라우저에 저장)</button>' +
+          (m.buildUploadedAt ? '<span class="msg">마지막 업로드 ' + esc(new Date(m.buildUploadedAt).toLocaleString("ko-KR")) + '</span>' : "") +
+          '</div><div class="msg" id="uploadMsgClient"></div>' +
+        '</div>';
+    }
+    var reason = IS_HANGULCARE_HOST
+      ? (location.protocol === "file:"
+          ? "file://로 직접 연 경우 브라우저 제한으로 업로드할 수 없습니다 — https로 호스팅해서 열거나, 빌드를 다른 곳에 올린 뒤 URL을 입력해 주세요."
+          : "이 브라우저는 업로드에 필요한 기능(Service Worker)을 지원하지 않습니다 — 빌드를 다른 곳에 올린 뒤 URL을 입력해 주세요.")
+      : "이 화면에서는 서버가 없어 직접 업로드할 수 없습니다 — 빌드를 다른 곳에 올린 뒤 그 URL을 입력해 주세요.";
     return '<div class="field full"><label>Unity WebGL 빌드 URL</label>' +
       '<input data-mf="buildUrl" type="text" class="mono" value="' + esc(m.buildUrl) + '" placeholder="https://… (Unity WebGL 빌드 index.html 주소)">' +
-      '<div class="note" style="color:var(--ink-faint)">이 화면에서는 서버가 없어 직접 업로드할 수 없습니다 — 빌드를 다른 곳에 올린 뒤 그 URL을 입력해 주세요.</div></div>';
+      '<div class="note" style="color:var(--ink-faint)">' + reason + '</div></div>';
   }
   function renderPreview(){
     var el = document.getElementById("preview"), m = active();
@@ -411,10 +557,12 @@
     }
     var m = active();
     if(t.id === "btnUploadZip" && m) document.getElementById("fileZip").click();
+    if(t.id === "btnUploadZipClient" && m) document.getElementById("fileZipClient").click();
     if(t.id === "btnDelModule" && m) confirmModal("모듈 삭제", "“" + (m.titleKo || m.id) + "” 모듈을 삭제할까요? 업로드된 빌드도 함께 지워집니다.", "삭제", function(){
       var idx2 = modules.indexOf(m);
       modules.splice(idx2, 1);
       current = modules[Math.min(idx2, modules.length - 1)] || null;
+      if(IS_HANGULCARE_HOST && clientUploadSupported()) deleteClientBuild(m.id).catch(function(){});
       renderAll(); scheduleSave(); toast("모듈을 삭제했어요");
     });
   });
@@ -461,6 +609,30 @@
     };
     xhr.onerror = function(){ uploading = false; msg.className = "msg err"; msg.textContent = "업로드 실패 — 네트워크 오류"; };
     xhr.send(f);
+  });
+  document.getElementById("fileZipClient").addEventListener("change", function(ev){
+    var f = ev.target.files[0]; ev.target.value = "";
+    var m = active(); if(!f || !m) return;
+    if(!m.id.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(m.id)){
+      toast("먼저 모듈 ID를 영문 소문자·숫자·하이픈으로 정해주세요"); return;
+    }
+    if(uploading) return;
+    uploading = true;
+    var msg = document.getElementById("uploadMsgClient");
+    msg.className = "msg"; msg.textContent = "처리 중…(" + Math.round(f.size / 1024 / 1024) + "MB)";
+    var targetModule = m, targetId = m.id;
+    extractClientXrBuild(targetId, f).then(function(result){
+      uploading = false;
+      if(modules.indexOf(targetModule) !== -1 && targetModule.id === targetId){
+        targetModule.buildUrl = result.buildUrl;
+        targetModule.buildUploadedAt = Date.now();
+        renderEditor(); renderPreview(); scheduleSave();
+      }
+      msg.className = "msg ok"; msg.textContent = "업로드 완료 — 파일 " + result.fileCount + "개(이 브라우저에 저장됨)";
+    }).catch(function(err){
+      uploading = false;
+      msg.className = "msg err"; msg.textContent = "업로드 실패 — " + err.message;
+    });
   });
 
   /* ---------- 모달 / 토스트 ---------- */

@@ -90,8 +90,12 @@ JSON을 손으로 고치지 않고 표/폼 화면으로 편집하려면 관리�
   URL을 입력해도 됩니다.
 - id가 비었거나 형식이 올바르지 않거나 중복되면 저장하지 않고 상태줄에 이유를 보여줍니다.
 - 엑셀 불러오기/내보내기: `Modules` 시트(id/order/titleKo/titleEn/legalHours/buildUrl).
-- `hangulcare.html`(단일 파일판)에서는 업로드 서버가 없어 `buildUrl`을 직접 입력하는 텍스트
-  필드만 보이고, 설정은 브라우저 `localStorage`(`hc-xr-modules`)에 저장됩니다.
+- `hangulcare.html`(단일 파일판)에는 Next.js 서버가 없지만, **https(또는 `http://localhost`)로
+  열었다면** `sw-xr-builds.js`(Service Worker) + IndexedDB(`hc-xr-builds`)로 zip을 이
+  브라우저 안에 직접 풀어 올릴 수 있습니다 — 다른 사람·다른 기기에는 보이지 않고 이 브라우저에만
+  저장됩니다. `file://`로 직접 연 경우에는 브라우저가 Service Worker 등록 자체를 막아 여전히
+  `buildUrl` 텍스트 입력만 가능합니다. 모듈 목록 자체는 두 경우 모두 브라우저
+  `localStorage`(`hc-xr-modules`)에 저장됩니다.
 
 ## 역할극 편집기 (hancare-roleplay-editor)
 
