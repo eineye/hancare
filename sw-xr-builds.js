@@ -55,7 +55,13 @@ self.addEventListener("fetch", function (event) {
     getFile(key)
       .then(function (rec) {
         if (!rec) return new Response("Not found", { status: 404 });
-        var headers = { "Content-Type": rec.contentType || "application/octet-stream", "Cache-Control": "no-store" };
+        // rec.data는 Blob이라 크기를 미리 알 수 있다 — Content-Length를 직접 붙여 준다
+        // (Unity 로더가 이게 없으면 "다운로드 진행률을 못 보여준다"는 안내를 띄운다).
+        var headers = {
+          "Content-Type": rec.contentType || "application/octet-stream",
+          "Content-Length": String(rec.data.size),
+          "Cache-Control": "no-store",
+        };
         if (rec.contentEncoding) headers["Content-Encoding"] = rec.contentEncoding;
         return new Response(rec.data, { status: 200, headers: headers });
       })
