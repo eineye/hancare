@@ -1,0 +1,28 @@
+// Character2DCanvas는 palette 색상만 바꿔서 다른 인물을 표현한다(얼굴 형태 자체는 공용).
+// 역할극 화면의 "AI 환자" 아바타용 — 남자 노인 인상을 주도록 흰/회색 머리·눈썹·콧수염,
+// 저채도 입술(립스틱 톤 배제), 환자복 색 상의, 배지 없음으로 구성했다.
+export const ELDERLY_MAN_PALETTE = {
+  skin: '#e3c3a4',
+  skinLight: '#f2ddc6',
+  skinShade: '#c9a17d',
+  skinDeep: '#ad8161',
+  hair: '#d6d6d2',
+  hairMid: '#c2c2bc',
+  hairLight: '#eeeeec',
+  hairStyle: 'short',
+  iris: '#5b6773',
+  irisDark: '#2a323a',
+  lash: '#8a8a86',
+  brow: '#cccac4',
+  lipUpper: '#c99483',
+  lipLower: '#d19c8b',
+  lipLine: '#8f6152',
+  mouth: '#5c352d',
+  teeth: '#f0ebe3',
+  tongue: '#c48d84',
+  cloth: '#7c93a6',
+  clothLight: '#9db2c2',
+  collar: '#eef2f4',
+  badge: null,
+  mustache: '#8c8c85',
+};

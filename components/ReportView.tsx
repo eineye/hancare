@@ -20,7 +20,7 @@ const MOCK_WEAK_SOUNDS = [
 
 function StatTile({ value, label, hint }: { value: string; label: string; hint?: string }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5">
+    <div className="rounded-2xl border border-line bg-white p-4">
       <p className="text-xs text-muted">{label}</p>
       <p className="mt-2 text-2xl font-black text-brand-dark">{value}</p>
       {hint && <p className="mt-1.5 text-xs text-brand">{hint}</p>}
@@ -45,7 +45,7 @@ export default function ReportView({ units }: { units: UnitSummary[] }) {
   const completedUnits = unitRows.filter((u) => u.total > 0 && u.learned === u.total).length;
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div>
         <p className="text-[11.5px] font-bold tracking-wide text-brand">발음 리포트 REPORT</p>
         <h1 className="mt-2.5 text-[28px] font-black tracking-tight text-brand-dark sm:text-[30px]">
@@ -61,8 +61,8 @@ export default function ReportView({ units }: { units: UnitSummary[] }) {
         <StatTile value={String(wordsPracticed)} label="연습 문장 수" />
       </div>
 
-      <div className="grid grid-cols-1 gap-[18px] lg:grid-cols-2">
-        <div className="rounded-2xl border border-line bg-white p-5">
+      <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
+        <div className="rounded-2xl border border-line bg-white p-4">
           <p className="mb-5 text-[11.5px] font-bold tracking-wide text-brand">주차별 평균 점수 (예시)</p>
           <div className="flex h-[150px] items-end gap-3">
             {MOCK_WEEKLY_SCORES.map((v, i) => (
@@ -75,7 +75,7 @@ export default function ReportView({ units }: { units: UnitSummary[] }) {
           <p className="mt-4 text-[11px] text-faint">* 주차별 이력은 아직 저장하지 않아 예시 그래프입니다.</p>
         </div>
 
-        <div className="rounded-2xl border border-line bg-white p-5">
+        <div className="rounded-2xl border border-line bg-white p-4">
           <p className="mb-5 text-[11.5px] font-bold tracking-wide text-brand">약한 발음 요소 (예시)</p>
           <div className="flex flex-col gap-3.5">
             {MOCK_WEAK_SOUNDS.map((s) => (
@@ -99,7 +99,7 @@ export default function ReportView({ units }: { units: UnitSummary[] }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-line bg-white p-5">
+      <div className="rounded-2xl border border-line bg-white p-4">
         <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">유닛별 용어 학습 현황</p>
         <div className="flex flex-col">
           <div className="grid grid-cols-[2fr_1fr_1fr] gap-3 border-b border-line py-2.5 text-[11.5px] text-faint">

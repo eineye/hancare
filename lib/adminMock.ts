@@ -8,8 +8,6 @@ export const ADMIN_OVERVIEW = {
   pendingJournalsOverdueCount: 2,
   upcomingMeetings: 3,
   unreachedLearners: 3,
-  sentNoticesLast7Days: 12,
-  sentNoticesReadRate: 83,
 };
 
 export const UPCOMING_MEETINGS = [
@@ -22,10 +20,4 @@ export const PENDING_JOURNAL_REVIEWS = [
   { learnerName: 'Maria Santos', department: '내과', submittedKo: '9월 15일', daysAgo: 3 },
   { learnerName: 'Sari Wulandari', department: '재활', submittedKo: '9월 16일', daysAgo: 2 },
   { learnerName: 'Nguyen Thi Lan', department: '외과', submittedKo: '9월 17일', daysAgo: 1 },
-];
-
-export const RECENT_NOTICES_SENT = [
-  { titleKo: '중간 평가 일정 안내', metaKo: '9월 16일 · 5명 · 열람 4명' },
-  { titleKo: '복습 세트 독려 알림', metaKo: '9월 14일 · 2명 · 열람 1명' },
-  { titleKo: '일지 제출 안내', metaKo: '9월 11일 · 5명 · 열람 5명' },
 ];

@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>역할극 편집기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+  /* 색·폰트 토큰·공통 스타일은 단어장 편집기(hancare-vocab-editor.html)와 같다. */
+  :root{
+    --bg:#F3F6F4; --surface:#FFFFFF; --surface-2:#EAF0EC; --surface-3:#DEE8E2;
+    --ink:#16211E; --ink-muted:#5C6B66; --ink-faint:#8B9B95;
+    --border:#D7E2DD; --border-strong:#B9CBC3;
+    --accent:#276F5F; --accent-strong:#1D5648; --accent-ink:#FFFFFF; --accent-soft:#E1EEE8;
+    --coral:#C85B36; --coral-soft:#F7E4DA; --danger:#B23B24; --danger-soft:#F6DFD9; --success:#2E8B5C;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:16px;
+    --shadow-sm:0 1px 2px rgba(20,32,28,0.06); --shadow-md:0 8px 24px rgba(20,32,28,0.10);
+    --font-display:'Gowun Batang', ui-serif, Georgia, serif;
+    --font-body:'Noto Sans KR', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono:ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#101815; --surface:#17211D; --surface-2:#1D2924; --surface-3:#28342E;
+      --ink:#E7EFEC; --ink-muted:#9DB0A9; --ink-faint:#6E8079;
+      --border:#2B3A34; --border-strong:#3A4C44;
+      --accent:#55B999; --accent-strong:#7BD1B3; --accent-ink:#0B1613; --accent-soft:#1E3931;
+      --coral:#E88A61; --coral-soft:#3A2A20; --danger:#E58165; --danger-soft:#3E2620; --success:#59BE8B;
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.3); --shadow-md:0 8px 24px rgba(0,0,0,0.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101815; --surface:#17211D; --surface-2:#1D2924; --surface-3:#28342E;
+    --ink:#E7EFEC; --ink-muted:#9DB0A9; --ink-faint:#6E8079;
+    --border:#2B3A34; --border-strong:#3A4C44;
+    --accent:#55B999; --accent-strong:#7BD1B3; --accent-ink:#0B1613; --accent-soft:#1E3931;
+    --coral:#E88A61; --coral-soft:#3A2A20; --danger:#E58165; --danger-soft:#3E2620; --success:#59BE8B;
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.3); --shadow-md:0 8px 24px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:14px; line-height:1.5; padding-inline:16px;}
+  h1,h2,h3{font-family:var(--font-display); margin:0;}
+  input,textarea,select,button{font-family:inherit; font-size:inherit; color:inherit;}
+  button{cursor:pointer;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  #app{max-width:1400px; margin:0 auto; padding-block:18px 40px;}
+
+  header.top{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:14px;}
+  .brand h1{font-size:22px; font-weight:700;}
+  .brand .sub{color:var(--ink-muted); font-size:12.5px;}
+  .stats{display:flex; gap:14px; flex-wrap:wrap; margin-top:6px;}
+  .stat{display:flex; flex-direction:column;}
+  .stat b{font-size:15px; color:var(--accent-strong); font-weight:700; font-variant-numeric:tabular-nums;}
+  .stat span{font-size:11px; color:var(--ink-faint);}
+  .status-line{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-faint); margin-top:6px;}
+  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--ink-faint); flex:none;}
+  .status-line.saving .status-dot{background:var(--coral); animation:pulse 1s infinite;}
+  .status-line.saved .status-dot{background:var(--success);}
+  .status-line.offline .status-dot{background:var(--danger);}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.3;}}
+
+  .toolbar{display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;}
+  .toolbar-group{display:flex; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:5px; box-shadow:var(--shadow-sm);}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--surface); color:var(--ink); border-radius:var(--radius-sm); padding:7px 11px; font-size:12.5px; font-weight:500; white-space:nowrap;}
+  .btn:hover{background:var(--surface-2); border-color:var(--border-strong);}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600;}
+  .btn.primary:hover{background:var(--accent-strong); border-color:var(--accent-strong);}
+  .btn.danger{color:var(--danger);}
+  .btn.danger:hover{background:var(--danger-soft); border-color:var(--danger);}
+  .btn.small{padding:4px 8px; font-size:11.5px; border-radius:6px;}
+
+  .banner{display:flex; gap:10px; align-items:flex-start; background:var(--coral-soft); border:1px solid var(--coral); border-radius:var(--radius-md); padding:10px 12px; font-size:12.5px; margin-bottom:14px;}
+  .banner b{color:var(--coral);}
+
+  .filters{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  .filters input, .filters select{border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-sm); padding:7px 10px; font-size:12.5px; outline:none;}
+  .filters input{min-width:220px;}
+  .filters input:focus, .filters select:focus{border-color:var(--accent);}
+  .filters label{font-size:12.5px; color:var(--ink-muted); display:flex; gap:6px; align-items:center;}
+
+  .layout{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:14px; align-items:start;}
+  @media (max-width:1000px){ .layout{grid-template-columns:minmax(0,1fr);} }
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; margin-bottom:14px;}
+  .panel-head{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 14px; border-bottom:1px solid var(--border);}
+  .panel-head h2{font-size:13.5px; font-weight:700;}
+  .panel-head .hint{font-size:11.5px; color:var(--ink-faint);}
+  .panel-body{padding:10px 12px; overflow-x:auto;}
+  .empty{padding:18px; text-align:center; color:var(--ink-faint); font-size:12.5px;}
+
+  table.grid{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.grid th{text-align:left; font-size:11px; font-weight:600; color:var(--ink-faint); padding:0 6px 6px; border-bottom:1px solid var(--border); white-space:nowrap;}
+  table.grid td{padding:4px; vertical-align:middle; border-bottom:1px solid var(--border);}
+  table.grid tr:last-child td{border-bottom:none;}
+  table.grid tr.is-hidden td{opacity:.5;}
+  table.grid input[type=text]{width:100%; min-width:70px; border:1px solid transparent; border-radius:6px; padding:6px 7px; background:var(--surface-2); outline:none;}
+  table.grid input[type=text]:focus{background:var(--surface); border-color:var(--accent);}
+  table.grid input.mono{font-family:var(--font-mono); font-size:11px;}
+  table.grid input.dupe{border-color:var(--danger); background:var(--danger-soft);}
+  table.grid .ro{padding:6px 7px; color:var(--ink); white-space:nowrap;}
+  table.grid .ro.mono{font-family:var(--font-mono); font-size:11px; color:var(--ink-muted);}
+  table.grid .src{font-size:11px; color:var(--ink-muted); white-space:nowrap;}
+  table.grid .tight{width:1%; white-space:nowrap;}
+  .cell-flex{display:flex; gap:4px; align-items:center;}
+  .pill{display:inline-block; font-size:10.5px; padding:1px 7px; border-radius:999px; background:var(--accent-soft); color:var(--accent-strong);}
+
+  .preview{padding:14px;}
+  .vcard{border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--surface);}
+  .vcard .h{font-size:18px; font-weight:700; color:var(--accent-strong);}
+  .vcard .r{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-muted); margin-top:3px;}
+  .vcard .n{font-size:11.5px; color:var(--ink-muted); margin-top:8px;}
+  .vcard .f{display:flex; justify-content:space-between; margin-top:12px; font-size:11px; color:var(--ink-faint);}
+  .vcard .f a{color:var(--accent); text-decoration:none;}
+  .help{font-size:12px; color:var(--ink-muted); line-height:1.6; padding:0 14px 14px;}
+  .help b{color:var(--ink);}
+
+  .overlay{position:fixed; inset:0; background:rgba(10,16,14,0.45); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;}
+  .modal{background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); max-width:560px; width:100%; padding:18px; max-height:85vh; overflow:auto;}
+  .modal h3{font-size:15px; margin-bottom:8px;}
+  .modal p{font-size:12.5px; color:var(--ink-muted); margin:0 0 10px;}
+  .modal textarea{width:100%; min-height:160px; border:1px solid var(--border); border-radius:8px; padding:10px; font-family:var(--font-mono); font-size:11.5px; background:var(--surface-2);}
+  .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:9px 14px; border-radius:999px; font-size:12.5px; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:60;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+  .visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);}
+  /* 역할극 편집기 전용 */
+  .rp-layout{display:grid; grid-template-columns:250px minmax(0,1fr) 320px; gap:14px; align-items:start;}
+  @media (max-width:1150px){ .rp-layout{grid-template-columns:230px minmax(0,1fr);} .rp-layout aside.right{grid-column:1 / -1;} }
+  @media (max-width:760px){ .rp-layout{grid-template-columns:minmax(0,1fr);} }
+  .sit-list{list-style:none; margin:0; padding:8px; max-height:70vh; overflow:auto;}
+  .unit-head{font-size:11px; font-weight:700; color:var(--ink-faint); padding:10px 8px 4px; letter-spacing:.02em;}
+  .sit-item{display:flex; align-items:center; gap:6px; padding:8px; border-radius:var(--radius-sm); cursor:pointer; font-size:12.5px;}
+  .sit-item:hover{background:var(--surface-2);}
+  .sit-item.active{background:var(--accent-soft); color:var(--accent-strong); font-weight:600;}
+  .sit-item .t{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .tag{font-size:10px; border-radius:999px; padding:1px 7px; flex:none;}
+  .tag.on{background:var(--accent-soft); color:var(--accent-strong);}
+  .tag.off{background:var(--danger-soft); color:var(--danger);}
+  .tag.def{background:var(--surface-3); color:var(--ink-faint);}
+
+  .form{display:grid; grid-template-columns:1fr 1fr; gap:10px 12px; padding:14px;}
+  .form .full{grid-column:1 / -1;}
+  .field label{display:block; font-size:11px; font-weight:600; color:var(--ink-faint); margin-bottom:4px;}
+  .field input[type=text], .field textarea{width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 9px; background:var(--surface); outline:none;}
+  .field textarea{resize:vertical; min-height:60px; line-height:1.45;}
+  .field input:focus, .field textarea:focus{border-color:var(--accent);}
+  .field .desc{font-size:11px; color:var(--ink-faint); margin-top:3px;}
+  .switch{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600;}
+  .sit-title{padding:12px 14px 0; font-size:12px; color:var(--ink-muted);}
+  .sit-title b{color:var(--ink); font-size:15px; font-family:var(--font-display);}
+  .disabled-note{margin:0 14px 12px; padding:9px 12px; border-radius:var(--radius-sm); background:var(--danger-soft); color:var(--danger); font-size:12px;}
+  table.grid textarea{width:100%; min-width:160px; border:1px solid transparent; border-radius:6px; padding:6px 7px; background:var(--surface-2); outline:none; resize:vertical; min-height:36px; font-size:12.5px; line-height:1.4;}
+  table.grid textarea:focus{background:var(--surface); border-color:var(--accent);}
+  .panel-actions{display:flex; gap:6px; flex-wrap:wrap;}
+  .icon-btn{border:none; background:transparent; color:var(--ink-faint); border-radius:5px; padding:2px 5px; font-size:11px; line-height:1;}
+  .icon-btn:hover{background:var(--surface-3); color:var(--ink);}
+  .icon-btn:disabled{opacity:.3; cursor:default;}
+
+  .chat{display:flex; flex-direction:column; gap:8px; padding:14px; background:#12241F; min-height:220px; max-height:360px; overflow:auto;}
+  .bubble{max-width:85%; border-radius:14px; padding:8px 11px; font-size:12.5px; line-height:1.45; color:#fff;}
+  .bubble.p{align-self:flex-start; background:rgba(255,255,255,.12); border-bottom-left-radius:4px;}
+  .bubble.u{align-self:flex-end; background:#0E7C66; border-bottom-right-radius:4px;}
+  .bubble small{display:block; font-size:10px; opacity:.6; margin-top:2px;}
+  .chat-input{display:flex; gap:6px; padding:10px; border-top:1px solid var(--border);}
+  .chat-input input{flex:1; min-width:0; border:1px solid var(--border); border-radius:999px; padding:7px 12px; background:var(--surface); outline:none;}
+  .chat-meta{padding:10px 14px; font-size:11.5px; color:var(--ink-muted); border-bottom:1px solid var(--border);}
+  .chat-meta b{color:var(--ink);}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand">
+      <h1>역할극 편집기</h1>
+      <div class="sub">한글케어 역할극 — 상황별 AI 환자 설정 · 첫 대사 · 규칙 응답 · 추천 표현</div>
+      <div class="stats" id="stats"></div>
+      <div class="status-line" id="statusLine"><span class="status-dot"></span><span id="statusText">불러오는 중…</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <button class="btn" id="btnImportJson" type="button">JSON 불러오기</button>
+        <button class="btn" id="btnExportJson" type="button">JSON 내보내기</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="banners"></div>
+
+  <div class="rp-layout">
+    <aside>
+      <section class="panel">
+        <div class="panel-head"><h2>상황 목록</h2><span class="hint">상황마다 역할극 1개</span></div>
+        <ul class="sit-list" id="sitList"></ul>
+      </section>
+    </aside>
+    <main id="editor"></main>
+    <aside class="right">
+      <section class="panel">
+        <div class="panel-head"><h2>테스트 대화</h2><button class="btn small" id="btnRestart" type="button">처음부터</button></div>
+        <div class="chat-meta" id="chatMeta"></div>
+        <div class="chat" id="chat"></div>
+        <div class="chat-input"><input id="chatIn" type="text" placeholder="실습생이 되어 말해 보세요"><button class="btn small primary" id="chatSend" type="button">보내기</button></div>
+        <div class="help" style="padding-top:12px;">
+          여기서는 <b>규칙 응답</b>으로 대답합니다(Gemini 키가 없을 때·단일 파일판과 같음).
+          Gemini가 연결된 서버에서는 <b>환자 설정</b>·<b>목표</b>를 바탕으로 AI가 대사를 만듭니다.
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileJson" accept=".json,application/json" class="visually-hidden">
+
+<script>
+/* ==================================================================
+   역할극 편집기 — 한글케어 역할극 시나리오(content/roleplays.json) 편집
+   데이터: { scenarios: { "unitId/situationId": { enabled, patientNameKo, patientProfileKo, goalKo,
+            openingKo, personaKo, replies:[{keywords,replyKo}], fallbackKo, hintsKo:[] } } }
+   연결 방식 (다른 편집기와 같다)
+   - ?host=hangulcare: 단일 파일판 hangulcare.html 안(iframe). 부모와 postMessage로 get/put.
+   - 서버에서 열림: Next.js의 GET/PUT /api/roleplays 에 자동 저장
+   - file:// 로 따로 열림: 로컬 전용 모드 (JSON 내보내기로 보관)
+   ================================================================== */
+(function(){
+  "use strict";
+
+  function restBackend(url){
+    return {
+      get: function(){ return fetch(url, { cache:"no-store" }).then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); }); },
+      put: function(data){
+        return fetch(url, { method:"PUT", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(data) })
+          .then(function(r){ if(!r.ok) return r.json().catch(function(){ return {}; }).then(function(b){ throw new Error(b.error || ("HTTP " + r.status)); }); });
+      }
+    };
+  }
+  function parentBackend(){
+    var seq = 0, pending = {};
+    window.addEventListener("message", function(e){
+      var d = e.data;
+      if(e.source !== window.parent || !d || d.hcRp !== "res" || !pending[d.id]) return;
+      var p = pending[d.id]; delete pending[d.id];
+      if(d.ok) p.resolve(d.data); else p.reject(new Error(d.error || "저장 실패"));
+    });
+    function call(op, payload){
+      return new Promise(function(resolve, reject){
+        var id = ++seq; pending[id] = { resolve:resolve, reject:reject };
+        window.parent.postMessage({ hcRp:"req", id:id, op:op, payload:payload }, "*");
+      });
+    }
+    return { get: function(){ return call("get"); }, put: function(data){ return call("put", data); } };
+  }
+  var backend = null;
+  if(/[?&]host=hangulcare\b/.test(location.search) && window.parent !== window) backend = parentBackend();
+  else if(location.protocol !== "file:") backend = restBackend("/api/roleplays");
+
+  /* ---------- 상태 ---------- */
+  var situations = [];   // [{unitId, unitTitleKo, category, situationId, menuLabelKo, titleKo, terms:[{hangul,glossEn}], sentences:[..]}]
+  var scenarios = {};    // key → scenario
+  var activeKey = null;
+  var chat = [];
+  var saveTimer = null;
+
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); }
+  function pad2(n){ return String(n).padStart(2, "0"); }
+  function keyOf(s){ return s.unitId + "/" + s.situationId; }
+  function activeSit(){ return situations.find(function(s){ return keyOf(s) === activeKey; }) || null; }
+  function sc(){ if(!scenarios[activeKey]) scenarios[activeKey] = {}; return scenarios[activeKey]; }
+  function hasContent(s){
+    if(!s) return false;
+    return Object.keys(s).some(function(k){ var v = s[k]; return Array.isArray(v) ? v.length : (k === "enabled" ? v === false : !!(v && String(v).trim())); });
+  }
+
+  /* 규칙 응답 — lib/roleplay.ts ruleReply()와 같은 순서 */
+  function ruleReply(s, message, terms){
+    var text = String(message || "").trim();
+    var rules = (s && s.replies) || [];
+    for(var i = 0; i < rules.length; i++){
+      var r = rules[i];
+      if(r.replyKo && (r.keywords || []).some(function(k){ return k.trim() && text.indexOf(k.trim()) !== -1; })) return { text: r.replyKo, why: "규칙: " + r.keywords.join(", ") };
+    }
+    var term = (terms || []).find(function(t){ return text.indexOf(t.hangul) !== -1; });
+    if(term) return { text: "네, " + term.hangul + " 확인 감사합니다.", why: "용어 언급(기본)" };
+    if(text.indexOf("아프") !== -1 || text.indexOf("통증") !== -1) return { text: "네, 조금 아파요. 잘 부탁드립니다.", why: "기본" };
+    if(text.indexOf("감사") !== -1) return { text: "저도 감사합니다.", why: "기본" };
+    return { text: (s && s.fallbackKo && s.fallbackKo.trim()) || "네, 알겠습니다.", why: "기본 대사" };
+  }
+
+  /* ---------- 저장 ---------- */
+  function setStatus(mode, text){
+    document.getElementById("statusLine").className = "status-line " + mode;
+    document.getElementById("statusText").textContent = text;
+  }
+  function cleanConfig(){
+    var out = {};
+    Object.keys(scenarios).forEach(function(k){
+      var s = scenarios[k], c = {};
+      if(s.enabled === false) c.enabled = false;
+      ["patientNameKo","patientProfileKo","goalKo","openingKo","personaKo","fallbackKo"].forEach(function(f){ if(s[f] && s[f].trim()) c[f] = s[f].trim(); });
+      var replies = (s.replies || []).map(function(r){ return { keywords: (r.keywords || []).map(function(x){ return x.trim(); }).filter(Boolean), replyKo: (r.replyKo || "").trim() }; })
+        .filter(function(r){ return r.keywords.length && r.replyKo; });
+      if(replies.length) c.replies = replies;
+      var hints = (s.hintsKo || []).map(function(h){ return h.trim(); }).filter(Boolean);
+      if(hints.length) c.hintsKo = hints;
+      if(Object.keys(c).length) out[k] = c;
+    });
+    return { scenarios: out };
+  }
+  function scheduleSave(){
+    renderStats(); renderList();
+    if(!backend){ setStatus("offline", "로컬 전용 모드 — JSON 내보내기로 저장하세요"); return; }
+    clearTimeout(saveTimer);
+    setStatus("saving", "저장 대기…");
+    saveTimer = setTimeout(function(){
+      setStatus("saving", "저장 중…");
+      backend.put(cleanConfig()).then(function(){
+        var t = new Date();
+        setStatus("saved", "저장됨 · " + pad2(t.getHours()) + ":" + pad2(t.getMinutes()) + " · 역할극 화면에 반영됨");
+      }).catch(function(err){ setStatus("offline", "저장 실패 — " + err.message); });
+    }, 600);
+  }
+
+  /* ---------- 렌더 ---------- */
+  function renderStats(){
+    var configured = situations.filter(function(s){ var x = scenarios[keyOf(s)]; return hasContent(x) && !(x && x.enabled === false); }).length;
+    var off = situations.filter(function(s){ var x = scenarios[keyOf(s)]; return x && x.enabled === false; }).length;
+    var rules = Object.keys(scenarios).reduce(function(n, k){ return n + ((scenarios[k].replies || []).length); }, 0);
+    document.getElementById("stats").innerHTML =
+      '<div class="stat"><b>' + situations.length + '</b><span>상황</span></div>' +
+      '<div class="stat"><b>' + configured + '</b><span>편집한 역할극</span></div>' +
+      '<div class="stat"><b>' + off + '</b><span>사용 안 함</span></div>' +
+      '<div class="stat"><b>' + rules + '</b><span>규칙 응답</span></div>';
+  }
+  function renderList(){
+    var el = document.getElementById("sitList");
+    if(!situations.length){ el.innerHTML = '<li class="empty">' + (backend ? "상황이 없습니다" : "로컬 전용 모드에서는 상황 목록을 불러올 수 없어요") + '</li>'; return; }
+    var html = "", lastUnit = null;
+    situations.forEach(function(s){
+      if(s.unitId !== lastUnit){ lastUnit = s.unitId; html += '<li class="unit-head">' + esc(s.unitTitleKo) + (s.category === "basic" ? " · 기초" : " · 실습") + '</li>'; }
+      var x = scenarios[keyOf(s)];
+      var tag = x && x.enabled === false ? '<span class="tag off">끔</span>' : hasContent(x) ? '<span class="tag on">편집됨</span>' : '<span class="tag def">기본</span>';
+      html += '<li class="sit-item' + (keyOf(s) === activeKey ? " active" : "") + '" data-key="' + esc(keyOf(s)) + '"><span class="t">' + esc(s.menuLabelKo) + '</span>' + tag + '</li>';
+    });
+    el.innerHTML = html;
+  }
+  function field(label, key, value, opts){
+    opts = opts || {};
+    var input = opts.textarea
+      ? '<textarea data-sf="' + key + '" rows="' + (opts.rows || 2) + '" placeholder="' + esc(opts.ph || "") + '">' + esc(value) + '</textarea>'
+      : '<input type="text" data-sf="' + key + '" value="' + esc(value) + '" placeholder="' + esc(opts.ph || "") + '">';
+    return '<div class="field' + (opts.full ? " full" : "") + '"><label>' + label + '</label>' + input + (opts.desc ? '<div class="desc">' + opts.desc + '</div>' : "") + '</div>';
+  }
+  function renderEditor(){
+    var el = document.getElementById("editor"), sit = activeSit();
+    if(!sit){ el.innerHTML = '<section class="panel"><div class="empty">왼쪽에서 상황을 선택하세요.</div></section>'; return; }
+    var s = scenarios[activeKey] || {};
+    var enabled = s.enabled !== false;
+    el.innerHTML =
+      '<section class="panel">' +
+        '<div class="panel-head"><label class="switch"><input type="checkbox" id="enabledChk"' + (enabled ? " checked" : "") + '> 이 상황에서 역할극 사용</label>' +
+        '<button class="btn small danger" id="btnResetScenario" type="button">이 상황 설정 지우기</button></div>' +
+        '<div class="sit-title">' + esc(sit.unitTitleKo) + ' · ' + esc(sit.menuLabelKo) + '<br><b>' + esc(sit.titleKo) + '</b></div>' +
+        (enabled ? "" : '<div class="disabled-note" style="margin-top:10px;">학습자가 이 상황의 역할극을 열면 "아직 준비되지 않았습니다"가 표시됩니다.</div>') +
+        '<div class="form">' +
+          field("환자 이름", "patientNameKo", s.patientNameKo, { ph: "예: 김진수" }) +
+          field("환자 정보", "patientProfileKo", s.patientProfileKo, { ph: "예: 72세 남성, 고혈압으로 입원 3일째" }) +
+          field("학습 목표 (학습자에게 표시)", "goalKo", s.goalKo, { full: true, ph: "예: 환자에게 인사하고 혈압 측정을 설명한 뒤 동의를 구하세요." }) +
+          field("환자 첫 대사", "openingKo", s.openingKo, { full: true, textarea: true, ph: "비워 두면 AI가 첫 인사를 만듭니다 (AI가 없으면 규칙 기본 대사)", desc: "역할극을 열면 환자가 먼저 이 말을 합니다." }) +
+          field("환자 설정 — AI에게 주는 지시", "personaKo", s.personaKo, { full: true, textarea: true, rows: 3, ph: "예: 말수가 적고 조금 불안해함. 팔을 올리면 어깨가 아프다고 말함. 반말은 쓰지 않음.", desc: "Gemini가 연결되어 있을 때 환자 성격·말투·증상에 반영됩니다." }) +
+        '</div>' +
+      '</section>' +
+      '<section class="panel">' +
+        '<div class="panel-head"><h2>규칙 응답 (' + (s.replies || []).length + ')</h2><span class="hint">학습자 말에 키워드가 들어 있으면 환자가 이 대사로 답함 · 위에서부터 먼저 적용</span></div>' +
+        '<div class="panel-body">' + renderReplies(s) + '</div>' +
+        '<div class="form" style="padding-top:4px;">' +
+          field("맞는 규칙이 없을 때 대사", "fallbackKo", s.fallbackKo, { full: true, ph: "비워 두면: 네, 알겠습니다." }) +
+        '</div>' +
+        '<div class="side-foot" style="padding:8px 14px;border-top:1px solid var(--border);"><button class="btn small" id="btnAddReply" type="button">+ 규칙 추가</button></div>' +
+      '</section>' +
+      '<section class="panel">' +
+        '<div class="panel-head"><h2>추천 표현</h2><div class="panel-actions"><button class="btn small" id="btnHintsFromSentences" type="button">이 상황 문장으로 채우기</button></div></div>' +
+        '<div class="form">' +
+          '<div class="field full"><label>한 줄에 하나 — 학습자 화면에 버튼으로 표시되고, 누르면 입력창에 채워집니다</label>' +
+          '<textarea id="hintsTa" rows="4" placeholder="혈압 좀 재겠습니다.">' + esc((s.hintsKo || []).join("\n")) + '</textarea></div>' +
+        '</div>' +
+      '</section>';
+  }
+  function renderReplies(s){
+    var rules = s.replies || [];
+    if(!rules.length) return '<div class="empty">규칙이 없습니다 — 기본 규칙(용어 언급·통증·감사)만 적용됩니다.</div>';
+    return '<table class="grid"><thead><tr><th>키워드 (쉼표로 구분)</th><th>환자 대사</th><th></th></tr></thead><tbody>' +
+      rules.map(function(r, i){
+        return '<tr data-ridx="' + i + '">' +
+          '<td style="width:34%"><input type="text" data-rf="keywords" value="' + esc((r.keywords || []).join(", ")) + '" placeholder="혈압, 재겠"></td>' +
+          '<td><textarea data-rf="replyKo" rows="1" placeholder="네, 팔 걷을게요.">' + esc(r.replyKo) + '</textarea></td>' +
+          '<td class="tight" style="white-space:nowrap;width:1%;"><button class="icon-btn" data-rmove="-1" type="button"' + (i === 0 ? " disabled" : "") + '>▲</button><button class="icon-btn" data-rmove="1" type="button"' + (i === rules.length - 1 ? " disabled" : "") + '>▼</button> <button class="btn small danger" data-rdel="1" type="button">삭제</button></td>' +
+        '</tr>';
+      }).join("") + '</tbody></table>';
+  }
+  function resetChat(){
+    var sit = activeSit(), s = scenarios[activeKey] || {};
+    chat = [];
+    if(sit) chat.push({ role:"p", text: (s.openingKo && s.openingKo.trim()) || "안녕하세요.", why: s.openingKo ? "첫 대사" : "첫 대사 미설정 — 서버에서는 AI가 인사를 만듭니다" });
+    renderChat();
+  }
+  function renderChat(){
+    var sit = activeSit(), s = scenarios[activeKey] || {};
+    document.getElementById("chatMeta").innerHTML = !sit ? "상황을 선택하세요" :
+      '환자: <b>' + esc([s.patientNameKo, s.patientProfileKo].filter(Boolean).join(" · ") || "AI") + '</b>' + (s.goalKo ? '<br>목표: ' + esc(s.goalKo) : "") + (s.enabled === false ? '<br><span style="color:var(--danger)">사용 안 함 상태</span>' : "");
+    var el = document.getElementById("chat");
+    el.innerHTML = chat.map(function(m){ return '<div class="bubble ' + m.role + '">' + esc(m.text) + (m.why ? '<small>' + esc(m.why) + '</small>' : "") + '</div>'; }).join("");
+    el.scrollTop = el.scrollHeight;
+  }
+  function renderBanners(){
+    document.getElementById("banners").innerHTML = backend ? "" :
+      '<div class="banner"><div><b>로컬 전용 모드.</b> 한글케어 서버/앱 밖에서 파일만 열어 자동 저장이 꺼져 있어요. 관리자 메뉴 "역할극 편집"에서 열면 학습자 역할극에 바로 반영됩니다.</div></div>';
+  }
+  function renderAll(){ renderStats(); renderList(); renderEditor(); resetChat(); renderBanners(); }
+
+  /* ---------- 이벤트 ---------- */
+  document.addEventListener("input", function(ev){
+    var t = ev.target; if(!activeKey) return;
+    var sf = t.getAttribute && t.getAttribute("data-sf"), rf = t.getAttribute && t.getAttribute("data-rf");
+    if(sf){ sc()[sf] = t.value; if(sf === "openingKo") resetChat(); else renderChat(); scheduleSave(); }
+    else if(rf){
+      var tr = t.closest("tr[data-ridx]"), r = sc().replies[Number(tr.getAttribute("data-ridx"))];
+      if(rf === "keywords") r.keywords = t.value.split(/[,，]/).map(function(x){ return x.trim(); }).filter(Boolean);
+      else r.replyKo = t.value;
+      scheduleSave();
+    } else if(t.id === "hintsTa"){
+      sc().hintsKo = t.value.split("\n");
+      scheduleSave();
+    }
+  });
+  document.addEventListener("change", function(ev){
+    if(ev.target.id === "enabledChk"){
+      if(ev.target.checked) delete sc().enabled; else sc().enabled = false;
+      renderEditor(); renderChat(); scheduleSave();
+    }
+  });
+  document.addEventListener("click", function(ev){
+    var t = ev.target;
+    var li = t.closest && t.closest(".sit-item");
+    if(li){ activeKey = li.getAttribute("data-key"); renderList(); renderEditor(); resetChat(); return; }
+    if(!activeKey) return;
+    var tr = t.closest && t.closest("tr[data-ridx]");
+    if(tr){
+      var i = Number(tr.getAttribute("data-ridx")), rules = sc().replies;
+      var mv = t.closest("[data-rmove]");
+      if(mv && !mv.disabled){ var j = i + Number(mv.getAttribute("data-rmove")); var x = rules[i]; rules[i] = rules[j]; rules[j] = x; renderEditor(); scheduleSave(); return; }
+      if(t.closest("[data-rdel]")){ rules.splice(i, 1); renderEditor(); scheduleSave(); return; }
+    }
+    if(t.id === "btnAddReply"){
+      var s = sc(); s.replies = s.replies || []; s.replies.push({ keywords: [], replyKo: "" });
+      renderEditor();
+      var ins = document.querySelectorAll('#editor tr[data-ridx] input[data-rf="keywords"]'); if(ins.length) ins[ins.length - 1].focus();
+    }
+    if(t.id === "btnHintsFromSentences"){
+      var sit = activeSit(); if(!sit) return;
+      var cur = (sc().hintsKo || []).map(function(h){ return h.trim(); }).filter(Boolean);
+      (sit.sentences || []).forEach(function(x){ if(cur.indexOf(x) === -1) cur.push(x); });
+      sc().hintsKo = cur; renderEditor(); scheduleSave(); toast("상황 문장 " + (sit.sentences || []).length + "개를 넣었어요");
+    }
+    if(t.id === "btnResetScenario"){
+      delete scenarios[activeKey]; renderEditor(); resetChat(); scheduleSave(); toast("이 상황 설정을 지웠어요 — 기본 역할극으로 동작합니다");
+    }
+  });
+  function sendTest(){
+    var inp = document.getElementById("chatIn"), text = inp.value.trim(), sit = activeSit();
+    if(!text || !sit) return;
+    chat.push({ role:"u", text:text });
+    var r = ruleReply(scenarios[activeKey], text, sit.terms);
+    chat.push({ role:"p", text:r.text, why:r.why });
+    inp.value = ""; renderChat();
+  }
+  document.getElementById("chatSend").addEventListener("click", sendTest);
+  document.getElementById("chatIn").addEventListener("keydown", function(e){ if(e.key === "Enter") sendTest(); });
+  document.getElementById("btnRestart").addEventListener("click", resetChat);
+
+  /* ---------- 불러오기 / 내보내기 ---------- */
+  var toastTimer;
+  function toast(msg){
+    var el = document.getElementById("toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2400);
+  }
+  function closeModal(){ document.getElementById("modalRoot").innerHTML = ""; }
+  function applyJson(text){
+    var d = JSON.parse(text);
+    if(!d || typeof d.scenarios !== "object" || Array.isArray(d.scenarios)) throw new Error('{ "scenarios": {...} } 형식이 아니에요');
+    scenarios = JSON.parse(JSON.stringify(d.scenarios));
+    renderAll(); scheduleSave(); toast("JSON을 불러왔어요");
+  }
+  document.getElementById("btnExportJson").addEventListener("click", function(){
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(cleanConfig(), null, 2) + "\n"], { type:"application/json" }));
+    a.download = "roleplays.json"; document.body.appendChild(a); a.click(); a.remove();
+  });
+  document.getElementById("btnImportJson").addEventListener("click", function(){
+    document.getElementById("modalRoot").innerHTML =
+      '<div class="overlay" id="overlayEl"><div class="modal"><h3>JSON 불러오기</h3>' +
+      '<p>roleplays.json 형식(<code>{ "scenarios": {...} }</code>)을 붙여넣거나 파일을 선택하세요. 지금 설정을 <b>교체</b>합니다.</p>' +
+      '<textarea id="jsonIn"></textarea><div class="modal-actions">' +
+      '<button class="btn" id="mCancel" type="button">취소</button><button class="btn" id="mFile" type="button">파일 선택…</button>' +
+      '<button class="btn primary" id="mApply" type="button">교체하기</button></div></div></div>';
+    document.getElementById("mCancel").onclick = closeModal;
+    document.getElementById("overlayEl").onclick = function(e){ if(e.target.id === "overlayEl") closeModal(); };
+    document.getElementById("mFile").onclick = function(){ document.getElementById("fileJson").click(); };
+    document.getElementById("mApply").onclick = function(){
+      try { applyJson(document.getElementById("jsonIn").value); closeModal(); } catch(err){ toast("불러오기 실패 — " + err.message); }
+    };
+  });
+  document.getElementById("fileJson").addEventListener("change", function(ev){
+    var f = ev.target.files[0]; if(!f) return;
+    f.text().then(function(text){ try { applyJson(text); closeModal(); } catch(err){ toast("불러오기 실패 — " + err.message); } });
+    ev.target.value = "";
+  });
+
+  /* ---------- 시작 ---------- */
+  function start(){
+    if(!backend){ renderAll(); setStatus("offline", "로컬 전용 모드 — JSON 내보내기로 저장하세요"); return; }
+    backend.get().then(function(data){
+      situations = (data && Array.isArray(data.situations)) ? data.situations : [];
+      scenarios = (data && data.config && data.config.scenarios && typeof data.config.scenarios === "object") ? JSON.parse(JSON.stringify(data.config.scenarios)) : {};
+      activeKey = situations[0] ? keyOf(situations[0]) : null;
+      renderAll();
+      setStatus("saved", "연결됨 · 자동 저장 켜짐");
+    }).catch(function(err){
+      backend = null; renderAll();
+      setStatus("offline", "서버 연결 실패 — 로컬 전용 모드 (" + err.message + ")");
+    });
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+</script>
+</body>
+</html>

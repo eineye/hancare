@@ -136,11 +136,24 @@ graph TB
      ├─ <AIFeedback>                   // 6. AI 피드백
      │    ├─ feedbackItems[] (경고/성공 카드)
      │    └─ actions: [집중 연습, 다음 문장]
-     └─ <ChatPanel>                    // 6. LLM 대화창
+     └─ <ChatPanel>                    // 6. LLM 대화창(이후 제거됨, 아래 보강 참고)
           ├─ messages[]
           ├─ quickActions: [예문 더 보기, 역할극 시작]
           └─ <ChatInput placeholder="모국어로 질문 가능" />
 ```
+
+> **보강**: `<AvatarTeacher>`(우측 상단 전체, "4. AI 아바타 선생님")와 `<ChatPanel>`은
+> 이후 모두 제거됐다. `<ChatPanel>`의 "대화 시작"과 `<AvatarTeacher>`의 "대화 시작"(이
+> 화면에서 대화)은 왼쪽 메뉴의 전용 "역할극"(`/roleplay`, Gemini API로 실제 대화)과
+> 기능이 겹쳤고, 그다음 `<AvatarTeacher>` 자체("다시 듣기"/"입모양 보기")도 기초한글
+> 화면의 "메디쌤과 대화 연습" 팝업(같은 Canvas 2D 캐릭터 엔진을 독립 페이지로 노출)과
+> 겹쳐 함께 정리했다 — 역할극은 `/roleplay` 화면 하나에서만, 자유 발화 연습은 메디쌤
+> 팝업 하나에서만 하도록 정리했다. "다시 듣기"/"느리게"(원어민 발음 재생)는
+> `<RepeatAfterMe>`가 이미 자체적으로 제공하고 있었으므로 기능 손실 없이 제거됐다.
+> 우측 컬럼이 사라져 학습 화면은 단일 컬럼으로 바뀌었고, 이후 다른 메뉴 화면들과
+> 동일하게 폭 제한 없이 콘텐츠 영역 전체 너비를 쓰도록 재정리했다. 이 엔진은 이제
+> 역할극의 "AI 환자" 아바타(`components/TeacherAvatar.tsx`)와 메디쌤 팝업
+> (`public/medi-ssam.html`)에서만 쓰인다.
 
 ### 3.3 학습 사이클 상태 머신
 
@@ -393,21 +406,57 @@ hancare/
 ## 11. 구현 노트 (프론트엔드 프로토타입, 2026)
 
 본 설계를 바탕으로 저장소 루트에 Next.js 기반 **동작하는 프론트엔드 프로토타입**을
-구현했다. 실행 방법은 저장소 루트의 `README.md`를 참고. 설계 대비 아래 두 가지는
+구현했다. 실행 방법은 저장소 루트의 `README.md`를 참고. 설계 대비 아래 세 가지는
 비용/구현 범위를 고려해 대체했다:
 
 - **LLM 대화(§6.3)**: Claude API 대신 **Gemini API**(`gemini-1.5-flash`)로 연동
   (`app/api/chat/route.ts`). 무료 테스트 티어가 있어 프로토타입 단계의 비용 부담이
   적다. 시스템 프롬프트 주입, 역할극, 모국어 질문 지원 등 설계 의도는 동일하게 유지.
+- **학습 음성(TTS, §6.1)**: §6.1이 전제한 "한국어 TTS(존댓말 어미 자연스러운 모델)"를
+  **Gemini 2.5 TTS**(`gemini-2.5-flash-preview-tts`)로 연동했다(`app/api/tts/route.ts`,
+  `lib/geminiTts.ts`) — LLM 대화와 같은 `GEMINI_API_KEY`를 재사용한다. 관리자가
+  `/admin/voice-settings`에서 음색(성별 느낌 × 표준 아나운서/친근한 대화체/안내방송톤/
+  또박또박한 스타일 8종, `lib/ttsVoices.ts`)을 고르면 `content/ttsSettings.json`에
+  저장되어 학습 화면 전체(따라 읽기·단어 듣기·단어장·영상 자막, `lib/speech.ts`의
+  `speak()`)에 바로 적용된다. 키가 없거나 호출이 실패하면 기존 브라우저 내장 음성
+  (Web Speech API)으로 자동 대체된다. 역할극의 "AI 환자" 아바타와 메디쌤 팝업
+  (`public/medi-ssam.html`)도 같은 음색을 쓴다 — 아래 "아바타 입모양" 절의 Canvas 2D
+  캐릭터 엔진이 이미 갖추고 있던 `speakAudio(src, text)`(오디오 재생 시각 + 가능하면
+  `AnalyserNode` 음량 분석으로 입모양을 구동하는, 엔진 스스로 "가장 정확한 방식"이라고
+  표시해 둔 메서드)에 Gemini가 합성한 오디오를 그대로 흘려보내는 식으로 연결했다
+  (`components/RoleplayView.tsx`의 `speakPatient()`, `public/medi-ssam.html`의
+  `fetchGeminiAudioEl()`). 실패하면 엔진 자체의 Web Speech 폴백(`speak()`, 그마저 안
+  되면 무음 입모양만 재생하는 `playText()`)으로 넘어간다. 서버가 없어
+  `GEMINI_API_KEY`를 안전하게 둘 수 없는 단일 파일판 `hangulcare.html`(학습 화면·역할극·
+  저장소 루트 `medi-ssam.html` 모두 포함)은 Gemini와는 연동되지 않지만, 대신 같은
+  관리자 메뉴 자리에 브라우저 내장 음성(Web Speech API, `getVoices()`) 중에서 고르는
+  별도의 "음성 설정" 화면을 둬(`hc-voice-settings`에 이 브라우저에만 저장) `/admin/
+  voice-settings`와 같은 위치·구조로 기능 공백 없이 맞췄다 — 품질은 Gemini보다
+  낮지만(기기별 설치 음성에 의존) 구조적 공백은 남기지 않는 절충이다.
 - **PWA(§3.1)**: `next-pwa`/workbox 계열 라이브러리는 이 문서 작성 시점 기준으로
   빌드 도구 체인에 해결되지 않은 취약 의존성(`serialize-javascript` 등)이 남아있어,
   대신 손으로 작성한 최소 서비스워커(`public/sw.js`)를 사용했다. 오프라인 캐싱
   전략이 더 정교하게 필요해지면 그때 workbox 계열 재도입을 검토한다.
 
-그 외 STT/TTS(브라우저 Web Speech API), 발음 채점(텍스트 유사도 근사치),
-콘텐츠(로컬 JSON)는 이 문서 §6에서 설명한 실제 파이프라인의 자리표시자이며,
-상용 API/자체 모델로 교체 시 `lib/speech.ts`, `lib/scoring.ts`, `lib/content.ts`의
-인터페이스만 유지하면 되도록 분리해두었다.
+### 알림(§6 Notification Service 보강)
+
+알림(`/notices`, `/admin/alerts`)은 애초에 고정 목데이터 3건이었으나, 관리자가
+제목·내용·대상을 직접 작성하면 `content/notices.json`에 실제로 저장되고 **모든
+학습자**의 알림 화면·상단바 알림 벨 배지에 바로 반영되도록 구현했다
+(`app/api/notices/route.ts`, `app/api/notices/[id]/route.ts`, `lib/notices.ts`,
+작성·삭제는 관리자만 — `middleware.ts`). "오늘/이번 주/이전" 묶음과 표시 시각은
+저장된 `createdAt` 하나만으로 매 요청마다 계산한다(`components/NoticesView.tsx`).
+실제 발송(푸시 등)·열람 추적 서버는 없어 "이 목록에 나타남"으로 전달을 대신하고,
+읽음 여부는 기존대로 각 학습자 브라우저의 로컬 상태로만 구분된다(관리자는 열람률을
+볼 수 없다). 서버가 없는 단일 파일판 `hangulcare.html`은 같은 기능을 브라우저
+`localStorage`(`hc-admin-notices`)로 구현해, 그 브라우저 안에서는 작성자·학습자
+화면이 바로 공유되지만 다른 기기와는 공유되지 않는다 — 다른 관리자 기능들과 같은
+한계다.
+
+그 외 STT(브라우저 Web Speech API), 발음 채점(텍스트 유사도 근사치), 콘텐츠(로컬
+JSON)는 이 문서 §6에서 설명한 실제 파이프라인의 자리표시자이며, 상용 API/자체 모델로
+교체 시 `lib/speech.ts`, `lib/scoring.ts`, `lib/content.ts`의 인터페이스만 유지하면
+되도록 분리해두었다.
 
 ### 아바타 입모양 (§6.1 보강)
 
@@ -437,13 +486,33 @@ viseme 시퀀스"는 두 가지 이유로 이번 프로토타입에서는 근사
 
 그래서 `onBoundary`에 대한 의존을 제거하고, `speaking` 상태인 동안 컴포넌트가
 스스로 일정한 리듬(약 110~240ms 간격, 매번 살짝 무작위)으로 다음 `setTimeout`을
-예약하며 입모양을 순환시키는 방식으로 바꿨다(`components/Avatar2D.tsx`,
-독립 실행형 `hangulcare.html`도 동일 로직으로 포팅됨). 이 방식은 TTS
+예약하며 입모양을 순환시키는 방식으로 바꿨다. 이 방식은 TTS
 엔진·음성·이벤트 지원 여부와 무관하게 항상 동작한다 — 실제 발음에 맞는
 모양은 아니지만, 같은 모양만 반복하거나 아예 멈춰있는 것보다 훨씬 "말하는
-것처럼" 보인다. 상용 TTS로 교체되면 이 타이머 자리에 해당 API가 제공하는
+것처럼" 보인다.
+
+이후 자모 분해 기반 비셈 타임라인 + Canvas 2D 벡터 캐릭터 엔진
+(`lib/teacher2d/character2d-canvas.js`, 독립 실행형 `hangulcare.html`은 같은
+엔진의 전역 스크립트판)으로 교체하면서 위 6가지 입모양·무작위 타이머 방식은
+`components/Avatar2D.tsx`와 함께 제거됐다 — 처음엔 학습 화면의 "AI 아바타
+선생님"과 역할극의 "AI 환자" 아바타 모두 이 엔진을 썼지만, 학습 화면의
+아바타는 이후 기초한글의 "메디쌤과 대화 연습" 팝업과 기능이 겹쳐
+`components/AvatarTeacher.tsx`와 함께 제거됐다(§3.2 보강 참고). 지금은 역할극의
+"AI 환자"와 메디쌤 팝업(`public/medi-ssam.html`)만 이 엔진을 쓰며, 환자 쪽은
+`palette`만 바꿔 남자 노인 인상을 표현한다(README의 "아바타" 항목 참고). 상용
+TTS로 교체되면 이 엔진의 텍스트 기반 타임라인 자리에 해당 API가 제공하는
 viseme 타이밍 이벤트를 연결해 무작위 선택 대신 실제 음소에 맞는 모양을
 고르도록 바꾸면 된다.
+
+**추가(Gemini TTS 연동 이후)**: Gemini 2.5 TTS는 Azure/Polly와 달리 viseme·스피치마크를
+반환하지 않는다. 대신 엔진이 처음부터 갖추고 있던 세 번째 재생 경로
+`speakAudio(src, text)`(§11 "학습 음성" 보강 참고 — 위 1번 문제였던 "speechSynthesis
+오디오는 AnalyserNode에 연결할 수 없다"는 제약이 **일반 `<audio>` 요소에는 적용되지
+않으므로**, Gemini가 합성한 WAV를 그 요소로 재생하면 실시간 음량을 읽어 입모양에 반영할
+수 있다)를 그대로 썼다 — 음소 단위 정확도는 아니지만, 텍스트 기반 추정(`playText`)보다
+한 단계 더 실제 발화에 가깝다. 진짜 viseme API(Azure Speech 등)로 교체할 때도 이
+`speakAudio()`가 이미 받는 `opts.visemes` 인자에 그 이벤트를 그대로 꽂으면 되므로,
+위 로드맵 설명은 여전히 유효하다.
 
 ### 로그인 · 진도관리(코스 선택) · 관리자 화면
 

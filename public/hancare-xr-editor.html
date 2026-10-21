@@ -1,0 +1,740 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>XR실습 편집기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+  /* 색·폰트 토큰·공통 스타일은 단어장 편집기(hancare-vocab-editor.html)와 같다. */
+  :root{
+    --bg:#F3F6F4; --surface:#FFFFFF; --surface-2:#EAF0EC; --surface-3:#DEE8E2;
+    --ink:#16211E; --ink-muted:#5C6B66; --ink-faint:#8B9B95;
+    --border:#D7E2DD; --border-strong:#B9CBC3;
+    --accent:#276F5F; --accent-strong:#1D5648; --accent-ink:#FFFFFF; --accent-soft:#E1EEE8;
+    --coral:#C85B36; --coral-soft:#F7E4DA; --danger:#B23B24; --danger-soft:#F6DFD9; --success:#2E8B5C;
+    --radius-sm:6px; --radius-md:10px; --radius-lg:16px;
+    --shadow-sm:0 1px 2px rgba(20,32,28,0.06); --shadow-md:0 8px 24px rgba(20,32,28,0.10);
+    --font-display:'Gowun Batang', ui-serif, Georgia, serif;
+    --font-body:'Noto Sans KR', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono:ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#101815; --surface:#17211D; --surface-2:#1D2924; --surface-3:#28342E;
+      --ink:#E7EFEC; --ink-muted:#9DB0A9; --ink-faint:#6E8079;
+      --border:#2B3A34; --border-strong:#3A4C44;
+      --accent:#55B999; --accent-strong:#7BD1B3; --accent-ink:#0B1613; --accent-soft:#1E3931;
+      --coral:#E88A61; --coral-soft:#3A2A20; --danger:#E58165; --danger-soft:#3E2620; --success:#59BE8B;
+      --shadow-sm:0 1px 2px rgba(0,0,0,0.3); --shadow-md:0 8px 24px rgba(0,0,0,0.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#101815; --surface:#17211D; --surface-2:#1D2924; --surface-3:#28342E;
+    --ink:#E7EFEC; --ink-muted:#9DB0A9; --ink-faint:#6E8079;
+    --border:#2B3A34; --border-strong:#3A4C44;
+    --accent:#55B999; --accent-strong:#7BD1B3; --accent-ink:#0B1613; --accent-soft:#1E3931;
+    --coral:#E88A61; --coral-soft:#3A2A20; --danger:#E58165; --danger-soft:#3E2620; --success:#59BE8B;
+    --shadow-sm:0 1px 2px rgba(0,0,0,0.3); --shadow-md:0 8px 24px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:14px; line-height:1.5; padding-inline:16px;}
+  h1,h2,h3{font-family:var(--font-display); margin:0;}
+  input,textarea,select,button{font-family:inherit; font-size:inherit; color:inherit;}
+  button{cursor:pointer;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  #app{max-width:1400px; margin:0 auto; padding-block:18px 40px;}
+
+  header.top{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:14px;}
+  .brand h1{font-size:22px; font-weight:700;}
+  .brand .sub{color:var(--ink-muted); font-size:12.5px;}
+  .stats{display:flex; gap:14px; flex-wrap:wrap; margin-top:6px;}
+  .stat{display:flex; flex-direction:column;}
+  .stat b{font-size:15px; color:var(--accent-strong); font-weight:700; font-variant-numeric:tabular-nums;}
+  .stat span{font-size:11px; color:var(--ink-faint);}
+  .status-line{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-faint); margin-top:6px;}
+  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--ink-faint); flex:none;}
+  .status-line.saving .status-dot{background:var(--coral); animation:pulse 1s infinite;}
+  .status-line.saved .status-dot{background:var(--success);}
+  .status-line.offline .status-dot{background:var(--danger);}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.3;}}
+
+  .toolbar{display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start;}
+  .toolbar-group{display:flex; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:5px; box-shadow:var(--shadow-sm);}
+  .btn{display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--surface); color:var(--ink); border-radius:var(--radius-sm); padding:7px 11px; font-size:12.5px; font-weight:500; white-space:nowrap;}
+  .btn:hover{background:var(--surface-2); border-color:var(--border-strong);}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600;}
+  .btn.primary:hover{background:var(--accent-strong); border-color:var(--accent-strong);}
+  .btn.danger{color:var(--danger);}
+  .btn.danger:hover{background:var(--danger-soft); border-color:var(--danger);}
+  .btn.small{padding:4px 8px; font-size:11.5px; border-radius:6px;}
+  .btn:disabled{opacity:.4; cursor:default;}
+
+  .banner{display:flex; gap:10px; align-items:flex-start; background:var(--coral-soft); border:1px solid var(--coral); border-radius:var(--radius-md); padding:10px 12px; font-size:12.5px; margin-bottom:14px;}
+  .banner b{color:var(--coral);}
+
+  .layout{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:14px; align-items:start;}
+  @media (max-width:1000px){ .layout{grid-template-columns:minmax(0,1fr);} }
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; margin-bottom:14px;}
+  .panel-head{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 14px; border-bottom:1px solid var(--border);}
+  .panel-head h2{font-size:13.5px; font-weight:700;}
+  .panel-head .hint{font-size:11.5px; color:var(--ink-faint);}
+  .panel-body{padding:10px 12px;}
+  .empty{padding:18px; text-align:center; color:var(--ink-faint); font-size:12.5px;}
+
+  .preview{padding:14px;}
+  .vcard{border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--surface);}
+  .help{font-size:12px; color:var(--ink-muted); line-height:1.6; padding:0 14px 14px;}
+  .help b{color:var(--ink);}
+
+  .overlay{position:fixed; inset:0; background:rgba(10,16,14,0.45); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;}
+  .modal{background:var(--surface); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); max-width:560px; width:100%; padding:18px; max-height:85vh; overflow:auto;}
+  .modal h3{font-size:15px; margin-bottom:8px;}
+  .modal p{font-size:12.5px; color:var(--ink-muted); margin:0 0 10px;}
+  .modal textarea{width:100%; min-height:160px; border:1px solid var(--border); border-radius:8px; padding:10px; font-family:var(--font-mono); font-size:11.5px; background:var(--surface-2);}
+  .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:9px 14px; border-radius:999px; font-size:12.5px; opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:60;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+  .visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);}
+  /* XR실습 편집기 전용 */
+  .xr-layout{display:grid; grid-template-columns:240px minmax(0,1fr) 300px; gap:14px; align-items:start;}
+  @media (max-width:1150px){ .xr-layout{grid-template-columns:220px minmax(0,1fr);} .xr-layout aside.right{grid-column:1 / -1;} }
+  @media (max-width:760px){ .xr-layout{grid-template-columns:minmax(0,1fr);} }
+  .mod-list{list-style:none; margin:0; padding:8px;}
+  .mod-item{display:flex; align-items:center; gap:6px; padding:8px; border-radius:var(--radius-sm); cursor:pointer; font-size:12.5px;}
+  .mod-item:hover{background:var(--surface-2);}
+  .mod-item.active{background:var(--accent-soft); color:var(--accent-strong); font-weight:600;}
+  .mod-item .num{font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); width:18px; flex:none;}
+  .mod-item .t{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .mod-item .h{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);}
+  .icon-btn{border:none; background:transparent; color:var(--ink-faint); border-radius:5px; padding:2px 5px; font-size:11px; line-height:1;}
+  .icon-btn:hover{background:var(--surface-3); color:var(--ink);}
+  .icon-btn:disabled{opacity:.3; cursor:default;}
+  .side-foot{padding:8px; border-top:1px solid var(--border);}
+  .side-foot .btn{width:100%; justify-content:center;}
+  .side-sum{padding:0 14px 12px; font-size:11.5px; color:var(--ink-muted);}
+
+  .form{display:grid; grid-template-columns:1fr 1fr; gap:10px 12px; padding:14px;}
+  .form .full{grid-column:1 / -1;}
+  .field label{display:block; font-size:11px; font-weight:600; color:var(--ink-faint); margin-bottom:4px;}
+  .field input, .field textarea{width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 9px; background:var(--surface); outline:none;}
+  .field textarea{resize:vertical; min-height:56px;}
+  .field input:focus, .field textarea:focus{border-color:var(--accent);}
+  .field input.mono{font-family:var(--font-mono); font-size:12px;}
+  .field input.dupe{border-color:var(--danger); background:var(--danger-soft);}
+  .field .note{font-size:11px; color:var(--coral); margin-top:3px;}
+
+  .upload-box{grid-column:1 / -1; border:1px dashed var(--border-strong); border-radius:var(--radius-md); padding:12px; background:var(--surface-2);}
+  .upload-box .row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .upload-box .bar{height:6px; border-radius:999px; background:var(--surface-3); overflow:hidden; margin-top:8px;}
+  .upload-box .bar > div{height:100%; background:var(--accent); width:0%; transition:width .15s;}
+  .upload-box .msg{font-size:11.5px; color:var(--ink-muted); margin-top:6px;}
+  .upload-box .msg.err{color:var(--danger);}
+  .upload-box .msg.ok{color:var(--success);}
+
+  .xcard{border:1px solid var(--border); border-radius:14px; padding:14px; background:var(--surface);}
+  .xcard .top{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--ink-faint);}
+  .xcard .badge{background:var(--accent); color:var(--accent-ink); border-radius:999px; padding:1px 8px; font-weight:700;}
+  .xcard .ttl{font-size:16px; font-weight:700; margin-top:8px; color:var(--ink);}
+  .xcard .sub{font-size:11.5px; color:var(--ink-muted);}
+  .xcard .status{display:inline-block; margin-top:10px; font-size:11px; border-radius:999px; padding:3px 10px;}
+  .xcard .status.on{background:var(--accent-soft); color:var(--accent-strong);}
+  .xcard .status.off{background:var(--surface-2); color:var(--ink-faint);}
+  .xcard .url{margin-top:8px; font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint); word-break:break-all;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand">
+      <h1>XR실습 편집기</h1>
+      <div class="sub">한글케어 XR실습(HnaCare XR) — Unity WebGL 빌드 연결·모듈 편집</div>
+      <div class="stats" id="stats"></div>
+      <div class="status-line" id="statusLine"><span class="status-dot"></span><span id="statusText">불러오는 중…</span></div>
+    </div>
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <button class="btn" id="btnImportExcel" type="button">엑셀 불러오기</button>
+        <button class="btn" id="btnImportJson" type="button">JSON 불러오기</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn" id="btnExportExcel" type="button">엑셀로 내보내기</button>
+        <button class="btn" id="btnExportJson" type="button">JSON 내보내기</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn primary" id="btnAddModule" type="button">+ 새 모듈</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="banners"></div>
+
+  <div class="xr-layout">
+    <aside>
+      <section class="panel">
+        <div class="panel-head"><h2>모듈 목록</h2><span class="hint">▲▼로 순서 변경</span></div>
+        <ul class="mod-list" id="modList"></ul>
+        <div class="side-sum" id="sideSum"></div>
+        <div class="side-foot"><button class="btn small" id="btnAddModule2" type="button">+ 모듈 추가</button></div>
+      </section>
+    </aside>
+    <main id="editor"></main>
+    <aside class="right">
+      <section class="panel">
+        <div class="panel-head"><h2>학습자 화면 미리보기</h2></div>
+        <div class="preview" id="preview"></div>
+        <div class="help">
+          <b>적용 방식</b><br>
+          저장하면 학습자 <b>XR실습</b> 목록·실습 화면과 커리큘럼의 XR실습 항목에 바로 반영됩니다.<br>
+          <b>빌드 URL</b>이 비어 있으면 학습 화면에는 &ldquo;아직 콘텐츠가 연결되지 않았습니다&rdquo; 안내만 보입니다.<br>
+          Unity에서 <b>WebGL</b> 플랫폼으로 빌드한 폴더 전체(또는 그 안의 내용)를 zip으로 압축해 올리세요 — 압축 형식은
+          빌드 설정의 Compression Format을 <b>Disabled</b>로 두는 것을 권장합니다(Gzip/Brotli도 지원하지만 더 느립니다).
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileJson" accept=".json,application/json" class="visually-hidden">
+<input type="file" id="fileExcel" accept=".xlsx,.xls" class="visually-hidden">
+<input type="file" id="fileZip" accept=".zip,application/zip" class="visually-hidden">
+<input type="file" id="fileZipClient" accept=".zip,application/zip" class="visually-hidden">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/* ==================================================================
+   XR실습 편집기 — 한글케어 XR실습 모듈(content/xr-modules.json) 편집
+   스키마: docs/XR_MODULE_DESIGN.md §6 (XrModule) — Unity WebGL 빌드(.zip)를
+   올리면 서버가 uploads/xr-builds/{id}/에 풀고 buildUrl을 채운다.
+   연결 방식 (실습내용·단어장 편집기와 같다)
+   - ?host=hangulcare: 단일 파일판 hangulcare.html 안(iframe). 부모와 postMessage로 get/put.
+     이 모드에는 Next.js 서버가 없지만, https(또는 http://localhost)로 열렸고 브라우저가
+     Service Worker를 지원하면 zip을 이 브라우저의 IndexedDB(hc-xr-builds)에 직접 풀어
+     저장한다 — sw-xr-builds.js가 hc-xr-blob/{id}/... 요청을 가로채 거기서 서빙한다.
+     file://로 직접 연 경우(Service Worker 등록 자체가 막힘)에는 buildUrl을 직접 입력하는
+     텍스트 필드만 보인다.
+   - 서버에서 열림: Next.js의 GET/PUT /api/xr-modules + POST /api/xr-modules/upload
+   - file:// 로 따로 열림(hangulcare 호스트 아님): 로컬 전용 모드 (JSON/엑셀 내보내기로 보관, 업로드 불가)
+   ================================================================== */
+(function(){
+  "use strict";
+
+  /* ---------- 백엔드 어댑터 ---------- */
+  function restBackend(url){
+    return {
+      get: function(){ return fetch(url, { cache:"no-store" }).then(function(r){ if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); }); },
+      put: function(data){
+        return fetch(url, { method:"PUT", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(data) })
+          .then(function(r){ if(!r.ok) return r.json().catch(function(){ return {}; }).then(function(b){ throw new Error(b.error || ("HTTP " + r.status)); }); });
+      },
+      canUpload: true
+    };
+  }
+  function parentBackend(){
+    var seq = 0, pending = {};
+    window.addEventListener("message", function(e){
+      var d = e.data;
+      if(e.source !== window.parent || !d || d.hcXr !== "res" || !pending[d.id]) return;
+      var p = pending[d.id]; delete pending[d.id];
+      if(d.ok) p.resolve(d.data); else p.reject(new Error(d.error || "저장 실패"));
+    });
+    function call(op, payload){
+      return new Promise(function(resolve, reject){
+        var id = ++seq; pending[id] = { resolve:resolve, reject:reject };
+        window.parent.postMessage({ hcXr:"req", id:id, op:op, payload:payload }, "*");
+      });
+    }
+    return { get: function(){ return call("get"); }, put: function(data){ return call("put", data); }, canUpload: false };
+  }
+  var IS_HANGULCARE_HOST = /[?&]host=hangulcare\b/.test(location.search) && window.parent !== window;
+  var backend = null;
+  if(IS_HANGULCARE_HOST) backend = parentBackend();
+  else if(location.protocol !== "file:") backend = restBackend("/api/xr-modules");
+
+  /* ---------- hangulcare.html 전용: Service Worker + IndexedDB로 실제 zip 업로드 ----------
+     Next.js 서버 없이도 sw-xr-builds.js(저장소 루트)가 hc-xr-blob/{id}/... 요청을 가로채
+     IndexedDB(hc-xr-builds/files)에서 꺼내 서빙한다. lib/xrBuilds.ts의 extractXrBuild()와
+     같은 검증(경로 탈출·zip 폭탄·index.html 탐색·공통 루트 폴더 제거)을 클라이언트에서 한다. */
+  var CLIENT_SW_PREFIX = "hc-xr-blob/";
+  var MAX_CLIENT_ZIP_BYTES = 200 * 1024 * 1024;
+  var MAX_CLIENT_UNCOMPRESSED_BYTES = 400 * 1024 * 1024;
+  var MAX_CLIENT_ENTRY_COUNT = 4000;
+  function clientUploadSupported(){
+    return "serviceWorker" in navigator && "indexedDB" in window && location.protocol !== "file:";
+  }
+  if(IS_HANGULCARE_HOST && clientUploadSupported()){
+    navigator.serviceWorker.register("../sw-xr-builds.js").catch(function(e){ console.warn("[xr-editor] Service Worker 등록 실패", e); });
+  }
+  function openXrBuildsDb(){
+    return new Promise(function(resolve, reject){
+      var req = indexedDB.open("hc-xr-builds", 1);
+      req.onupgradeneeded = function(){
+        var db = req.result;
+        if(!db.objectStoreNames.contains("files")){
+          var store = db.createObjectStore("files", { keyPath:"key" });
+          store.createIndex("moduleId", "moduleId", { unique:false });
+        }
+      };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  }
+  function deleteClientBuild(moduleId){
+    return openXrBuildsDb().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction("files", "readwrite");
+        var idx = tx.objectStore("files").index("moduleId");
+        var req = idx.openCursor(IDBKeyRange.only(moduleId));
+        req.onsuccess = function(){ var c = req.result; if(c){ c.delete(); c.continue(); } };
+        tx.oncomplete = function(){ resolve(); };
+        tx.onerror = function(){ reject(tx.error); };
+      });
+    });
+  }
+  var CLIENT_MIME_BY_EXT = {
+    ".html":"text/html; charset=utf-8", ".htm":"text/html; charset=utf-8", ".js":"text/javascript; charset=utf-8",
+    ".mjs":"text/javascript; charset=utf-8", ".json":"application/json", ".css":"text/css; charset=utf-8",
+    ".wasm":"application/wasm", ".data":"application/octet-stream", ".mem":"application/octet-stream",
+    ".symbols":"application/octet-stream", ".unityweb":"application/octet-stream", ".bin":"application/octet-stream",
+    ".png":"image/png", ".jpg":"image/jpeg", ".jpeg":"image/jpeg", ".gif":"image/gif", ".svg":"image/svg+xml",
+    ".ico":"image/x-icon", ".webp":"image/webp", ".ttf":"font/ttf", ".woff":"font/woff", ".woff2":"font/woff2",
+    ".txt":"text/plain; charset=utf-8", ".xml":"application/xml"
+  };
+  function clientFileHeaders(name){
+    var n = name, enc;
+    if(/\.gz$/i.test(n)){ enc = "gzip"; n = n.slice(0, -3); }
+    else if(/\.br$/i.test(n)){ enc = "br"; n = n.slice(0, -3); }
+    var dot = n.lastIndexOf(".");
+    var ext = dot === -1 ? "" : n.slice(dot).toLowerCase();
+    var out = { contentType: CLIENT_MIME_BY_EXT[ext] || "application/octet-stream" };
+    if(enc) out.contentEncoding = enc;
+    return out;
+  }
+  function clientFindCommonRootDir(names){
+    if(!names.length) return "";
+    var first = names[0].indexOf("/");
+    if(first === -1) return "";
+    var candidate = names[0].slice(0, first + 1);
+    return names.every(function(n){ return n.indexOf(candidate) === 0; }) ? candidate : "";
+  }
+  /** zip 파일을 검증 후 IndexedDB(hc-xr-builds/files)에 쓴다. 성공하면 {buildUrl, fileCount}를 돌려준다.
+   * 문제가 있으면 디스크(IndexedDB)에 아무것도 쓰기 전에 거부한다 — 서버 쪽 extractXrBuild()와 동일한 순서. */
+  function extractClientXrBuild(moduleId, file){
+    if(!/^[a-z0-9][a-z0-9-]{0,63}$/.test(moduleId)) return Promise.reject(new Error("모듈 id 형식이 올바르지 않습니다(영문 소문자·숫자·하이픈만)."));
+    if(file.size > MAX_CLIENT_ZIP_BYTES) return Promise.reject(new Error("파일이 너무 큽니다(최대 " + (MAX_CLIENT_ZIP_BYTES / 1024 / 1024) + "MB)."));
+    if(!window.JSZip) return Promise.reject(new Error("zip 라이브러리를 불러오지 못했어요(네트워크 확인)."));
+    return file.arrayBuffer().then(function(buf){
+      return JSZip.loadAsync(buf).catch(function(){ throw new Error("zip 파일을 열 수 없습니다. 올바른 zip 파일인지 확인해주세요."); });
+    }).then(function(zip){
+      var entries = [];
+      zip.forEach(function(relPath, entry){ entries.push(entry); });
+      if(!entries.length) throw new Error("빈 zip 파일입니다.");
+      if(entries.length > MAX_CLIENT_ENTRY_COUNT) throw new Error("파일이 너무 많습니다(최대 " + MAX_CLIENT_ENTRY_COUNT + "개).");
+      var fileNames = entries.filter(function(e){ return !e.dir; }).map(function(e){ return e.name.replace(/\\/g, "/"); });
+      var commonPrefix = clientFindCommonRootDir(fileNames);
+      var safe = [], totalSize = 0;
+      var tasks = entries.map(function(entry){
+        var raw = entry.name.replace(/\\/g, "/");
+        var stripped = commonPrefix && raw.indexOf(commonPrefix) === 0 ? raw.slice(commonPrefix.length) : raw;
+        if(!stripped) return Promise.resolve();
+        if(stripped.charAt(0) === "/" || stripped.split("/").indexOf("..") !== -1){
+          throw new Error("허용되지 않는 경로가 포함되어 있습니다: " + entry.name);
+        }
+        if(entry.dir) return Promise.resolve();
+        return entry.async("blob").then(function(blob){
+          totalSize += blob.size;
+          if(totalSize > MAX_CLIENT_UNCOMPRESSED_BYTES) throw new Error("압축 해제 용량이 너무 큽니다(최대 " + (MAX_CLIENT_UNCOMPRESSED_BYTES / 1024 / 1024) + "MB).");
+          safe.push({ relPath: stripped, blob: blob });
+        });
+      });
+      return Promise.all(tasks).then(function(){
+        if(!safe.length) throw new Error("zip 안에 파일이 없습니다.");
+        var paths = safe.map(function(s){ return s.relPath; });
+        var indexRel = paths.find(function(p){ return p.toLowerCase() === "index.html"; })
+          || paths.find(function(p){ return p.toLowerCase().slice(-11) === "/index.html"; });
+        if(!indexRel) throw new Error("압축 파일 안에서 index.html을 찾지 못했습니다. Unity WebGL 빌드 결과물을 통째로 압축했는지 확인해주세요.");
+        return { safe: safe, indexRel: indexRel };
+      });
+    }).then(function(result){
+      return deleteClientBuild(moduleId).then(function(){ return result; });
+    }).then(function(result){
+      return openXrBuildsDb().then(function(db){
+        return new Promise(function(resolve, reject){
+          var tx = db.transaction("files", "readwrite");
+          var store = tx.objectStore("files");
+          result.safe.forEach(function(s){
+            var h = clientFileHeaders(s.relPath);
+            store.put({ key: moduleId + "/" + s.relPath, moduleId: moduleId, data: s.blob, contentType: h.contentType, contentEncoding: h.contentEncoding });
+          });
+          tx.oncomplete = function(){ resolve(); };
+          tx.onerror = function(){ reject(tx.error); };
+        });
+      }).then(function(){
+        return { buildUrl: CLIENT_SW_PREFIX + moduleId + "/" + result.indexRel, fileCount: result.safe.length };
+      });
+    });
+  }
+
+  /* ---------- 상태 ---------- */
+  var modules = [];
+  var current = null;   // 선택한 모듈 객체 (id를 편집 중이어도 선택이 유지되도록 객체로 들고 있는다)
+  var saveTimer = null;
+  var uploading = false;
+
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]; }); }
+  function pad2(n){ return String(n).padStart(2, "0"); }
+  function active(){ return modules.indexOf(current) !== -1 ? current : null; }
+  function uniqueId(base, used){ var id = base, i = 2; while(used.has(id)){ id = base + "-" + i++; } return id; }
+  function normalize(arr){
+    return (Array.isArray(arr) ? arr : []).slice().sort(function(a,b){ return (a.order||0) - (b.order||0); }).map(function(m){
+      return {
+        id: String(m.id || ""), titleKo: m.titleKo || "", titleEn: m.titleEn || "",
+        legalHours: typeof m.legalHours === "number" ? m.legalHours : Number(m.legalHours) || 0,
+        buildUrl: m.buildUrl || "", buildUploadedAt: typeof m.buildUploadedAt === "number" ? m.buildUploadedAt : undefined
+      };
+    });
+  }
+  function exportArray(){
+    return modules.map(function(m, i){
+      var out = { id:m.id, order:i + 1, titleKo:m.titleKo, titleEn:m.titleEn, legalHours:m.legalHours };
+      if(m.buildUrl) out.buildUrl = m.buildUrl;
+      if(m.buildUploadedAt) out.buildUploadedAt = m.buildUploadedAt;
+      return out;
+    });
+  }
+  function problems(){
+    var list = [], seen = {};
+    modules.forEach(function(m, i){
+      if(!m.id.trim()) list.push((i+1) + "번째 모듈 id가 비어 있어요");
+      else if(!/^[a-z0-9][a-z0-9-]{0,63}$/.test(m.id)) list.push("모듈 id는 영문 소문자·숫자·하이픈만 쓸 수 있어요: " + m.id);
+      else if(seen[m.id]) list.push("모듈 id 중복: " + m.id);
+      seen[m.id] = true;
+    });
+    return list;
+  }
+
+  /* ---------- 저장 ---------- */
+  function setStatus(mode, text){
+    document.getElementById("statusLine").className = "status-line " + mode;
+    document.getElementById("statusText").textContent = text;
+  }
+  function scheduleSave(){
+    renderStats();
+    if(!backend){ setStatus("offline", "로컬 전용 모드 — 내보내기로 저장하세요"); return; }
+    clearTimeout(saveTimer);
+    var bad = problems();
+    if(bad.length){ setStatus("offline", "저장 보류 — " + bad[0]); return; }
+    setStatus("saving", "저장 대기…");
+    saveTimer = setTimeout(function(){
+      setStatus("saving", "저장 중…");
+      backend.put(exportArray()).then(function(){
+        var t = new Date();
+        setStatus("saved", "저장됨 · " + pad2(t.getHours()) + ":" + pad2(t.getMinutes()) + " · XR실습 화면에 반영됨");
+      }).catch(function(err){ setStatus("offline", "저장 실패 — " + err.message); });
+    }, 600);
+  }
+  /* ---------- 렌더 ---------- */
+  function renderStats(){
+    var hours = modules.reduce(function(s, m){ return s + (Number(m.legalHours) || 0); }, 0);
+    var connected = modules.filter(function(m){ return m.buildUrl; }).length;
+    document.getElementById("stats").innerHTML =
+      '<div class="stat"><b>' + modules.length + '</b><span>모듈</span></div>' +
+      '<div class="stat"><b>' + connected + '</b><span>콘텐츠 연결됨</span></div>' +
+      '<div class="stat"><b>' + hours + '</b><span>법정 실습시간 합계(h)</span></div>';
+    document.getElementById("sideSum").textContent = "법정 실습시간 합계 " + hours + "시간";
+  }
+  function renderList(){
+    var el = document.getElementById("modList");
+    if(!modules.length){ el.innerHTML = '<li class="empty">모듈이 없습니다</li>'; return; }
+    el.innerHTML = modules.map(function(m, i){
+      return '<li class="mod-item' + (m === current ? " active" : "") + '" data-mid="' + esc(m.id) + '" data-idx="' + i + '">' +
+        '<span class="num">' + (i + 1) + '</span><span class="t">' + esc(m.titleKo || "(제목 없음)") + '</span>' +
+        '<span class="h">' + esc(m.legalHours) + 'h</span>' +
+        '<button class="icon-btn" data-move="-1" type="button" title="위로"' + (i === 0 ? " disabled" : "") + '>▲</button>' +
+        '<button class="icon-btn" data-move="1" type="button" title="아래로"' + (i === modules.length - 1 ? " disabled" : "") + '>▼</button>' +
+      '</li>';
+    }).join("");
+  }
+  function field(label, key, value, opts){
+    opts = opts || {};
+    var input = '<input data-mf="' + key + '" type="' + (opts.number ? "number" : "text") + '"' + (opts.number ? ' min="0" step="1"' : "") + ' value="' + esc(value) + '"' + (opts.cls ? ' class="' + opts.cls + '"' : "") + (opts.readonly ? " readonly" : "") + '>';
+    return '<div class="field' + (opts.full ? " full" : "") + '"><label>' + label + '</label>' + input + (opts.note ? '<div class="note">' + opts.note + '</div>' : "") + '</div>';
+  }
+  function renderEditor(){
+    var el = document.getElementById("editor"), m = active();
+    if(!m){ el.innerHTML = '<section class="panel"><div class="empty">왼쪽에서 모듈을 선택하거나 새 모듈을 추가하세요.</div></section>'; return; }
+    var dupId = modules.filter(function(x){ return x.id === m.id; }).length > 1;
+    el.innerHTML =
+      '<section class="panel"><div class="panel-head"><h2>모듈 정보</h2><button class="btn small danger" id="btnDelModule" type="button">이 모듈 삭제</button></div>' +
+      '<div class="form">' +
+        field("모듈 ID", "id", m.id, { cls: "mono" + (dupId || !m.id.trim() ? " dupe" : ""), note: "업로드 폴더명으로도 쓰여요 — 영문 소문자·숫자·하이픈만" }) +
+        field("법정 실습시간 (시간)", "legalHours", m.legalHours, { number: true }) +
+        field("모듈명 (한글)", "titleKo", m.titleKo) +
+        field("모듈명 (영문)", "titleEn", m.titleEn) +
+        renderBuildField(m) +
+      '</div></section>';
+  }
+  function renderBuildField(m){
+    if(backend && backend.canUpload){
+      return '<div class="field full"><label>Unity WebGL 빌드 URL</label>' +
+        '<input data-mf="buildUrl" type="text" class="mono" value="' + esc(m.buildUrl) + '" placeholder="/api/xr-builds/… 또는 외부에 호스팅된 URL">' +
+        '<div class="note" style="color:var(--ink-faint)">업로드하면 자동으로 채워져요. 이미 다른 곳에 호스팅된 빌드가 있으면 URL을 직접 입력해도 됩니다.</div></div>' +
+        '<div class="upload-box" id="uploadBox">' +
+          '<div class="row"><button class="btn small primary" id="btnUploadZip" type="button">Unity WebGL 빌드(.zip) 올리기</button>' +
+          (m.buildUploadedAt ? '<span class="msg">마지막 업로드 ' + esc(new Date(m.buildUploadedAt).toLocaleString("ko-KR")) + '</span>' : "") +
+          '</div><div class="bar" id="uploadBar" style="display:none"><div></div></div><div class="msg" id="uploadMsg"></div>' +
+        '</div>';
+    }
+    if(IS_HANGULCARE_HOST && clientUploadSupported()){
+      return '<div class="field full"><label>Unity WebGL 빌드 URL</label>' +
+        '<input data-mf="buildUrl" type="text" class="mono" value="' + esc(m.buildUrl) + '" placeholder="hc-xr-blob/… 또는 외부에 호스팅된 URL">' +
+        '<div class="note" style="color:var(--ink-faint)">업로드하면 자동으로 채워져요(이 브라우저 안에 저장됩니다 — 다른 사람·다른 기기에는 보이지 않아요). 이미 다른 곳에 호스팅된 빌드가 있으면 URL을 직접 입력해도 됩니다.</div></div>' +
+        '<div class="upload-box" id="uploadBoxClient">' +
+          '<div class="row"><button class="btn small primary" id="btnUploadZipClient" type="button">Unity WebGL 빌드(.zip) 올리기(이 브라우저에 저장)</button>' +
+          (m.buildUploadedAt ? '<span class="msg">마지막 업로드 ' + esc(new Date(m.buildUploadedAt).toLocaleString("ko-KR")) + '</span>' : "") +
+          '</div><div class="msg" id="uploadMsgClient"></div>' +
+        '</div>';
+    }
+    var reason = IS_HANGULCARE_HOST
+      ? (location.protocol === "file:"
+          ? "file://로 직접 연 경우 브라우저 제한으로 업로드할 수 없습니다 — https로 호스팅해서 열거나, 빌드를 다른 곳에 올린 뒤 URL을 입력해 주세요."
+          : "이 브라우저는 업로드에 필요한 기능(Service Worker)을 지원하지 않습니다 — 빌드를 다른 곳에 올린 뒤 URL을 입력해 주세요.")
+      : "이 화면에서는 서버가 없어 직접 업로드할 수 없습니다 — 빌드를 다른 곳에 올린 뒤 그 URL을 입력해 주세요.";
+    return '<div class="field full"><label>Unity WebGL 빌드 URL</label>' +
+      '<input data-mf="buildUrl" type="text" class="mono" value="' + esc(m.buildUrl) + '" placeholder="https://… (Unity WebGL 빌드 index.html 주소)">' +
+      '<div class="note" style="color:var(--ink-faint)">' + reason + '</div></div>';
+  }
+  function renderPreview(){
+    var el = document.getElementById("preview"), m = active();
+    if(!m){ el.innerHTML = '<div class="empty">모듈을 선택하세요</div>'; return; }
+    var idx = modules.indexOf(m);
+    el.innerHTML = '<div class="xcard">' +
+      '<div class="top"><span class="badge">' + (idx + 1) + '</span><span>법정 ' + esc(m.legalHours) + '시간</span></div>' +
+      '<div class="ttl">' + esc(m.titleKo || "(모듈명)") + '</div><div class="sub">' + esc(m.titleEn) + '</div>' +
+      (m.buildUrl
+        ? '<span class="status on">콘텐츠 연결됨</span><div class="url">' + esc(m.buildUrl) + '</div>'
+        : '<span class="status off">콘텐츠 없음</span>') +
+    '</div>';
+  }
+  function renderBanners(){
+    document.getElementById("banners").innerHTML = backend ? "" :
+      '<div class="banner"><div><b>로컬 전용 모드.</b> 한글케어 서버/앱 밖에서 파일만 열어 자동 저장이 꺼져 있어요. ' +
+      '관리자 메뉴 "XR실습 편집"에서 열면 학습자 XR실습 화면에 바로 반영됩니다. 여기서 편집한 내용은 JSON/엑셀로 내보내 보관하세요.</div></div>';
+  }
+  function renderAll(){ renderStats(); renderList(); renderEditor(); renderPreview(); renderBanners(); }
+
+  /* ---------- 편집 이벤트 ---------- */
+  document.addEventListener("input", function(ev){
+    var t = ev.target, m = active(); if(!m) return;
+    var mf = t.getAttribute && t.getAttribute("data-mf");
+    if(!mf) return;
+    if(mf === "legalHours") m.legalHours = Math.max(0, Number(t.value) || 0);
+    else if(mf === "id"){
+      m.id = t.value.trim();
+      var dup = !m.id || modules.filter(function(x){ return x.id === m.id; }).length > 1;
+      t.classList.toggle("dupe", dup);
+    } else if(mf === "buildUrl") m.buildUrl = t.value.trim();
+    else m[mf] = t.value;
+    renderList(); renderPreview(); scheduleSave();
+  });
+  document.addEventListener("click", function(ev){
+    var t = ev.target;
+    var li = t.closest && t.closest(".mod-item");
+    if(li){
+      var idx = Number(li.getAttribute("data-idx"));
+      var mv = t.closest("[data-move]");
+      if(mv){
+        if(mv.disabled) return;
+        var j = idx + Number(mv.getAttribute("data-move"));
+        var tmp = modules[idx]; modules[idx] = modules[j]; modules[j] = tmp;
+        current = tmp;
+        renderAll(); scheduleSave(); return;
+      }
+      current = modules[idx]; renderAll(); return;
+    }
+    var m = active();
+    if(t.id === "btnUploadZip" && m) document.getElementById("fileZip").click();
+    if(t.id === "btnUploadZipClient" && m) document.getElementById("fileZipClient").click();
+    if(t.id === "btnDelModule" && m) confirmModal("모듈 삭제", "“" + (m.titleKo || m.id) + "” 모듈을 삭제할까요? 업로드된 빌드도 함께 지워집니다.", "삭제", function(){
+      var idx2 = modules.indexOf(m);
+      modules.splice(idx2, 1);
+      current = modules[Math.min(idx2, modules.length - 1)] || null;
+      if(IS_HANGULCARE_HOST && clientUploadSupported()) deleteClientBuild(m.id).catch(function(){});
+      renderAll(); scheduleSave(); toast("모듈을 삭제했어요");
+    });
+  });
+  function addModule(){
+    var used = new Set(modules.map(function(x){ return x.id; }));
+    var m = { id: uniqueId("xr-module-" + (modules.length + 1), used), titleKo:"새 XR 모듈", titleEn:"New XR module", legalHours:0, buildUrl:"" };
+    modules.push(m); current = m;
+    renderAll(); scheduleSave();
+    var inp = document.querySelector('#editor input[data-mf="titleKo"]'); if(inp){ inp.focus(); inp.select(); }
+  }
+  document.getElementById("btnAddModule").addEventListener("click", addModule);
+  document.getElementById("btnAddModule2").addEventListener("click", addModule);
+
+  /* ---------- zip 업로드 ---------- */
+  document.getElementById("fileZip").addEventListener("change", function(ev){
+    var f = ev.target.files[0]; ev.target.value = "";
+    var m = active(); if(!f || !m) return;
+    if(!m.id.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(m.id)){
+      toast("먼저 모듈 ID를 영문 소문자·숫자·하이픈으로 정해주세요"); return;
+    }
+    if(uploading) return;
+    uploading = true;
+    var bar = document.getElementById("uploadBar"), fill = bar.querySelector("div"), msg = document.getElementById("uploadMsg");
+    bar.style.display = ""; fill.style.width = "0%"; msg.className = "msg"; msg.textContent = "업로드 중…(" + Math.round(f.size / 1024 / 1024) + "MB)";
+
+    // 저장 중인 모듈 id를 올리는 동안 바꾸면 엉뚱한 모듈에 결과가 붙을 수 있어 고정해둔다.
+    var targetModule = m, targetId = m.id;
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/xr-modules/upload?id=" + encodeURIComponent(targetId));
+    xhr.upload.onprogress = function(e){ if(e.lengthComputable) fill.style.width = Math.round(e.loaded / e.total * 100) + "%"; };
+    xhr.onload = function(){
+      uploading = false;
+      var body = {}; try { body = JSON.parse(xhr.responseText); } catch(e){}
+      if(xhr.status >= 200 && xhr.status < 300 && body.buildUrl){
+        if(modules.indexOf(targetModule) !== -1 && targetModule.id === targetId){
+          targetModule.buildUrl = body.buildUrl;
+          targetModule.buildUploadedAt = Date.now();
+          renderEditor(); renderPreview(); scheduleSave();
+        }
+        fill.style.width = "100%"; msg.className = "msg ok"; msg.textContent = "업로드 완료 — 파일 " + (body.fileCount || "?") + "개";
+      } else {
+        msg.className = "msg err"; msg.textContent = "업로드 실패 — " + (body.error || ("HTTP " + xhr.status));
+      }
+    };
+    xhr.onerror = function(){ uploading = false; msg.className = "msg err"; msg.textContent = "업로드 실패 — 네트워크 오류"; };
+    xhr.send(f);
+  });
+  document.getElementById("fileZipClient").addEventListener("change", function(ev){
+    var f = ev.target.files[0]; ev.target.value = "";
+    var m = active(); if(!f || !m) return;
+    if(!m.id.trim() || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(m.id)){
+      toast("먼저 모듈 ID를 영문 소문자·숫자·하이픈으로 정해주세요"); return;
+    }
+    if(uploading) return;
+    uploading = true;
+    var msg = document.getElementById("uploadMsgClient");
+    msg.className = "msg"; msg.textContent = "처리 중…(" + Math.round(f.size / 1024 / 1024) + "MB)";
+    var targetModule = m, targetId = m.id;
+    extractClientXrBuild(targetId, f).then(function(result){
+      uploading = false;
+      if(modules.indexOf(targetModule) !== -1 && targetModule.id === targetId){
+        targetModule.buildUrl = result.buildUrl;
+        targetModule.buildUploadedAt = Date.now();
+        renderEditor(); renderPreview(); scheduleSave();
+      }
+      msg.className = "msg ok"; msg.textContent = "업로드 완료 — 파일 " + result.fileCount + "개(이 브라우저에 저장됨)";
+    }).catch(function(err){
+      uploading = false;
+      msg.className = "msg err"; msg.textContent = "업로드 실패 — " + err.message;
+    });
+  });
+
+  /* ---------- 모달 / 토스트 ---------- */
+  var toastTimer;
+  function toast(msg){
+    var el = document.getElementById("toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2400);
+  }
+  function closeModal(){ document.getElementById("modalRoot").innerHTML = ""; }
+  function openModal(html){
+    document.getElementById("modalRoot").innerHTML = '<div class="overlay" id="overlayEl">' + html + '</div>';
+    document.getElementById("overlayEl").onclick = function(e){ if(e.target.id === "overlayEl") closeModal(); };
+  }
+  function confirmModal(title, msg, okLabel, onOk){
+    openModal('<div class="modal"><h3>' + esc(title) + '</h3><p>' + esc(msg) + '</p><div class="modal-actions">' +
+      '<button class="btn" id="mCancel" type="button">취소</button><button class="btn danger" id="mOk" type="button">' + esc(okLabel) + '</button></div></div>');
+    document.getElementById("mCancel").onclick = closeModal;
+    document.getElementById("mOk").onclick = function(){ closeModal(); onOk(); };
+  }
+  function download(name, blob){
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  }
+
+  /* ---------- 불러오기 / 내보내기 ---------- */
+  function replaceAll(arr, label){
+    var next = normalize(arr);
+    if(!next.length) throw new Error("모듈이 하나도 없어요");
+    modules = next; current = modules[0];
+    renderAll(); scheduleSave(); toast(label + " 불러오기를 완료했어요");
+  }
+  document.getElementById("btnExportJson").addEventListener("click", function(){
+    download("xr-modules.json", new Blob([JSON.stringify(exportArray(), null, 2) + "\n"], { type:"application/json" }));
+  });
+  document.getElementById("btnImportJson").addEventListener("click", function(){
+    openModal('<div class="modal"><h3>JSON 불러오기</h3><p>xr-modules.json 형식(모듈 배열)을 붙여넣거나 파일을 선택하세요. 지금 모듈 전체를 <b>교체</b>합니다.</p>' +
+      '<textarea id="jsonIn"></textarea><div class="modal-actions">' +
+      '<button class="btn" id="mCancel" type="button">취소</button><button class="btn" id="mFile" type="button">파일 선택…</button>' +
+      '<button class="btn primary" id="mApply" type="button">교체하기</button></div></div>');
+    document.getElementById("mCancel").onclick = closeModal;
+    document.getElementById("mFile").onclick = function(){ document.getElementById("fileJson").click(); };
+    document.getElementById("mApply").onclick = function(){
+      try { var d = JSON.parse(document.getElementById("jsonIn").value); if(!Array.isArray(d)) throw new Error("루트가 배열이 아니에요"); replaceAll(d, "JSON"); closeModal(); }
+      catch(err){ toast("불러오기 실패 — " + err.message); }
+    };
+  });
+  document.getElementById("fileJson").addEventListener("change", function(ev){
+    var f = ev.target.files[0]; if(!f) return;
+    f.text().then(function(text){
+      try { var d = JSON.parse(text); if(!Array.isArray(d)) throw new Error("루트가 배열이 아니에요"); replaceAll(d, "JSON"); closeModal(); }
+      catch(err){ toast("불러오기 실패 — " + err.message); }
+    });
+    ev.target.value = "";
+  });
+  document.getElementById("btnExportExcel").addEventListener("click", function(){
+    if(!window.XLSX){ toast("엑셀 라이브러리를 불러오지 못했어요 (네트워크 확인)"); return; }
+    var wb = XLSX.utils.book_new(), mods = [];
+    exportArray().forEach(function(m){
+      mods.push({ moduleId:m.id, order:m.order, titleKo:m.titleKo, titleEn:m.titleEn, legalHours:m.legalHours, buildUrl:m.buildUrl || "" });
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(mods), "Modules");
+    download("hancare-xr-modules.xlsx", new Blob([XLSX.write(wb, { bookType:"xlsx", type:"array" })], { type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+  });
+  document.getElementById("btnImportExcel").addEventListener("click", function(){ document.getElementById("fileExcel").click(); });
+  document.getElementById("fileExcel").addEventListener("change", function(ev){
+    var f = ev.target.files[0]; if(!f) return;
+    if(!window.XLSX){ toast("엑셀 라이브러리를 불러오지 못했어요 (네트워크 확인)"); return; }
+    f.arrayBuffer().then(function(buf){
+      try{
+        var wb = XLSX.read(buf, { type:"array" });
+        if(!wb.Sheets.Modules) throw new Error("Modules 시트가 없어요 (엑셀로 내보내기 형식을 쓰세요)");
+        var map = {}, arr = [];
+        XLSX.utils.sheet_to_json(wb.Sheets.Modules, { defval:"" }).forEach(function(r){
+          var id = String(r.moduleId || "").trim(); if(!id || map[id]) return;
+          map[id] = { id:id, order:Number(r.order) || arr.length + 1, titleKo:String(r.titleKo), titleEn:String(r.titleEn), legalHours:Number(r.legalHours) || 0, buildUrl:String(r.buildUrl || "") };
+          arr.push(map[id]);
+        });
+        openModal('<div class="modal"><h3>엑셀 불러오기</h3><p>모듈 ' + arr.length + '개로 지금 모듈 전체를 교체합니다. 계속할까요?</p><div class="modal-actions">' +
+          '<button class="btn" id="mCancel" type="button">취소</button><button class="btn primary" id="mOk" type="button">교체하기</button></div></div>');
+        document.getElementById("mCancel").onclick = closeModal;
+        document.getElementById("mOk").onclick = function(){ closeModal(); try { replaceAll(arr, "엑셀"); } catch(err){ toast("불러오기 실패 — " + err.message); } };
+      } catch(err){ toast("엑셀 불러오기 실패 — " + err.message); }
+    });
+    ev.target.value = "";
+  });
+
+  /* ---------- 시작 ---------- */
+  function start(){
+    if(!backend){ renderAll(); setStatus("offline", "로컬 전용 모드 — JSON을 불러와 편집하고 내보내기로 저장하세요"); return; }
+    backend.get().then(function(data){
+      modules = normalize(data);
+      current = modules[0] || null;
+      renderAll();
+      setStatus("saved", "연결됨 · 자동 저장 켜짐");
+    }).catch(function(err){
+      backend = null; renderAll();
+      setStatus("offline", "서버 연결 실패 — 로컬 전용 모드 (" + err.message + ")");
+    });
+  }
+  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+</script>
+</body>
+</html>
