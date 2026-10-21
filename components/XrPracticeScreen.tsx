@@ -75,7 +75,6 @@ export default function XrPracticeScreen({ module: m, prevHref, nextHref, progre
             title={m.titleKo}
             className="h-full w-full border-0"
             allow="autoplay; fullscreen; xr-spatial-tracking; gamepad"
-            allowFullScreen
           />
           <button
             type="button"
