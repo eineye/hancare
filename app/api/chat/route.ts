@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { NextRequest } from 'next/server';
-import type { ChatMessage } from '@/lib/types';
+import { DAY, MINUTE, clientIp, getSessionUser, rateLimited } from '@/lib/apiAuth';
+import { ruleReply } from '@/lib/roleplay';
+import type { ChatMessage, RoleplayScenario } from '@/lib/types';
 
 export const runtime = 'nodejs';
 
@@ -13,6 +15,30 @@ interface ChatRequestBody {
   history: ChatMessage[];
   situationTitleKo: string;
   terms: { hangul: string; glossEn: string }[];
+  /** 역할극 화면에서만 보낸다 — 있으면 AI가 선생님이 아니라 이 시나리오의 환자 역할로 답한다. */
+  roleplay?: RoleplayScenario;
+}
+
+// 역할극: 관리자 "역할극 편집"(content/roleplays.json)에서 정한 환자 설정을 따른다.
+function buildRoleplayPrompt(body: ChatRequestBody, rp: RoleplayScenario): string {
+  const termList = body.terms.map((t) => `- ${t.hangul} (${t.glossEn})`).join('\n');
+  return [
+    '당신은 "한글케어" 앱 역할극에서 병원 환자 역할을 맡습니다. 상대는 한국 의료기관에서 실습 중인 외국인 간호조무 실습생(TOPIK 초급)입니다.',
+    `상황: ${body.situationTitleKo}`,
+    rp.patientNameKo || rp.patientProfileKo ? `환자: ${[rp.patientNameKo, rp.patientProfileKo].filter(Boolean).join(', ')}` : '',
+    rp.personaKo ? `환자 설정(성격·말투·증상): ${rp.personaKo}` : '',
+    rp.goalKo ? `실습생의 학습 목표: ${rp.goalKo} — 실습생이 이 목표를 연습할 수 있도록 자연스럽게 대화를 이끄세요.` : '',
+    '이번 상황의 의료 용어:',
+    termList || '(없음)',
+    '',
+    '규칙:',
+    '- 끝까지 환자 역할을 유지하고, 환자가 실제로 할 법한 말만 하세요.',
+    '- 한 번에 1~2문장, 쉬운 존댓말 한국어로 답하세요.',
+    '- 실습생이 모국어로 물으면 환자로서 짧게 한국어로 답하되, 괄호 안에 쉬운 설명을 덧붙여도 됩니다.',
+    '- 실제 임상 판단·처치 조언은 하지 마세요. 환자 역할이므로 "간호사 선생님께 여쭤볼게요" 식으로 넘기세요.',
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function buildSystemPrompt(body: ChatRequestBody): string {
@@ -33,10 +59,24 @@ function buildSystemPrompt(body: ChatRequestBody): string {
 }
 
 export async function POST(req: NextRequest) {
+  // 키 남용 방지: 사용자당 호출 횟수 제한 (docs/SECURITY.md)
+  const user = await getSessionUser(req);
+  const limited = rateLimited(user?.id ?? clientIp(req) ?? 'anonymous', [
+    { name: 'chat-min', limit: 15, windowMs: MINUTE },
+    { name: 'chat-day', limit: 400, windowMs: DAY },
+  ]);
+  if (limited) return limited;
   const apiKey = process.env.GEMINI_API_KEY;
   const body = (await req.json()) as ChatRequestBody;
 
   if (!apiKey) {
+    // 역할극은 키가 없어도 편집기에서 정한 규칙 응답으로 대화를 이어간다.
+    if (body.roleplay) {
+      return new Response(ruleReply(body.roleplay, body.message, body.terms), {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      });
+    }
     return new Response(
       '이 기능을 사용하려면 서버 환경변수 GEMINI_API_KEY 설정이 필요합니다. ' +
         '(.env.example 참고, https://aistudio.google.com/app/apikey 에서 무료로 발급받을 수 있습니다.)',
@@ -48,7 +88,7 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: MODEL_NAME,
-      systemInstruction: buildSystemPrompt(body),
+      systemInstruction: body.roleplay ? buildRoleplayPrompt(body, body.roleplay) : buildSystemPrompt(body),
     });
 
     const chat = model.startChat({

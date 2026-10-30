@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/auth';
-import { useJournalStore, usePracticedTermsStore, useProgressStore, useStatsStore } from '@/lib/store';
+import { useJournalStore, usePracticedTermsStore, useProgressStore, useSettingsStore, useStatsStore } from '@/lib/store';
 import type { VocabCard } from '@/lib/vocab';
 
 interface SituationRef {
@@ -32,6 +32,7 @@ export default function HomeContent({
   const lastSituationId = useProgressStore((s) => s.lastSituationId);
   const practicedTermIds = usePracticedTermsStore((s) => s.practicedTermIds);
   const journalEntries = useJournalStore((s) => s.entries);
+  const displayLang = useSettingsStore((s) => s.displayLang);
 
   const avgAccuracy = accuracyCount > 0 ? Math.round(accuracySum / accuracyCount) : 0;
 
@@ -44,7 +45,7 @@ export default function HomeContent({
   const recentJournal = journalEntries.slice(0, 2);
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div className="flex flex-wrap items-center gap-7 rounded-[18px] bg-brand-dark p-7 text-white sm:p-8">
         <div className="min-w-[260px] flex-1">
           {current && (
@@ -70,6 +71,9 @@ export default function HomeContent({
             >
               역할극 연습
             </Link>
+            <Link href="/video" className="rounded-[11px] border border-white/25 bg-white/10 px-5 py-3 text-sm">
+              영상으로 배우기
+            </Link>
           </div>
         </div>
         <div className="flex flex-wrap gap-3.5">
@@ -91,8 +95,8 @@ export default function HomeContent({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-2xl border border-line bg-white p-5">
+      <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-2xl border border-line bg-white p-4">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-[11.5px] font-bold tracking-wide text-brand">주간 발음 추이 (예시)</p>
           </div>
@@ -112,7 +116,7 @@ export default function HomeContent({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-line bg-white p-5">
+        <div className="rounded-2xl border border-line bg-white p-4">
           <p className="mb-4 text-[11.5px] font-bold tracking-wide text-brand">복습이 필요한 용어</p>
           {reviewCards.length === 0 ? (
             <p className="text-sm text-muted">
@@ -123,12 +127,12 @@ export default function HomeContent({
               {reviewCards.map((c) => (
                 <Link
                   key={c.id}
-                  href={c.situationHref}
+                  href={c.situationHref ?? '/vocab'}
                   className="flex items-center gap-3.5 rounded-xl bg-panel px-4 py-3 hover:bg-chip"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-[15px] font-bold text-brand-dark">{c.hangul}</p>
-                    <p className="mt-0.5 text-[11.5px] text-muted">{c.glossEn}</p>
+                    {displayLang !== 'ko' && <p className="mt-0.5 text-[11.5px] text-muted">{c.glossEn}</p>}
                   </div>
                   <span className="text-xs text-brand">듣기 →</span>
                 </Link>
@@ -140,7 +144,7 @@ export default function HomeContent({
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-line bg-white p-5">
+        <div className="rounded-2xl border border-line bg-white p-4">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-[11.5px] font-bold tracking-wide text-brand">최근 실습 일지</p>
             <Link href="/journal" className="text-xs text-brand">

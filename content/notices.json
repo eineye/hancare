@@ -1,0 +1,23 @@
+[
+  {
+    "id": "notice-seed-1",
+    "titleKo": "복습 세트가 준비되었습니다",
+    "detailKo": "발음 점수가 낮은 용어 위주로 골랐습니다. 단어장에서 확인해보세요.",
+    "audienceKo": "전체 학습자",
+    "createdAt": 1791256026903
+  },
+  {
+    "id": "notice-seed-2",
+    "titleKo": "중간 평가 일정 안내",
+    "detailKo": "9월 23일 수요일 11시, 실습교육실에서 회화 실기 중간 평가가 있습니다.",
+    "audienceKo": "전체 학습자",
+    "createdAt": 1791176826903
+  },
+  {
+    "id": "notice-seed-3",
+    "titleKo": "일지 제출 안내",
+    "detailKo": "이번 주 실습 일지를 아직 제출하지 않은 분들은 오늘 중으로 작성해주세요.",
+    "audienceKo": "미접속 3일 이상 3명",
+    "createdAt": 1790831226903
+  }
+]

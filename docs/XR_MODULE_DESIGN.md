@@ -1,34 +1,30 @@
 # XR실습(HnaCare XR) 구성 지침
 
-> 원본: 「외국인 간호조무사 현장실습 훈련용 XR콘텐츠 — HnaCare XR」 기술 스펙 PDF
-> 본 문서는 로그인 후 대메뉴(진도관리, `/courses`)에서 **XR실습**을 선택했을 때
-> 실행되는 화면·데이터·상태 구조를 정의한다. `docs/PROGRAM_DESIGN.md`(전체 서비스
-> 설계)와 `content/README.md`(콘텐츠 파일 규칙)를 함께 참고할 것.
+> 로그인 후 대메뉴(진도관리, `/courses`)에서 **XR실습**을 선택했을 때 실행되는
+> 화면·데이터·업로드 구조를 정의한다. `docs/PROGRAM_DESIGN.md`(전체 서비스 설계)와
+> `content/README.md`(콘텐츠 파일 규칙)를 함께 참고할 것.
+>
+> 이전 버전의 이 문서는 PDF 스펙을 그대로 옮긴 "5대 모듈 + 인터랙션 버튼 + 목데이터
+> 결과문구" 프로토타입(Three.js 와이어프레임/`public/xr/vital-signs.html` 심화
+> 데모)을 설명했다. 그 프로토타입은 실제 3D 콘텐츠가 아니었으므로 전부 걷어내고,
+> **관리자가 Unity로 직접 제작한 WebGL 빌드를 업로드해 그대로 실행**하는 방식으로
+> 교체했다. 아래는 그 구조만 설명한다.
 
 ---
 
 ## 1. 개요
 
-HnaCare XR은 별도 설치 없이 **크롬/엣지 등 표준 브라우저**에서 실행되는 3D 실습
-콘텐츠다. PDF 스펙 요지:
-
-- WebGL 2.0 기반 자체 3D viewer, 플러그인 불필요, 저사양 PC 대응
-- 입력은 마우스·키보드
-- 다국어(한국어/영어/몽골어/베트남어/미얀마어) 번역 지원
-- 3D 인터랙션 콘텐츠, 개인별 진도 관리 및 LMS 연동
-- Unity 제작 콘텐츠 연동(인터랙션 파트)
-
-### 기술 스택 (PDF 원문)
-
-| 계층 | 스택 |
-|---|---|
-| 3D Engine & Graphics | Three.js (r160+) / WebGL 2.0, glTF/GLB Draco 파서, Cannon-es 물리 충돌, LOD 최적화, 커스텀 GLSL 셰이더(멸균 영역 표시) |
-| Audio & Speech AI | Web Audio API, 3D 공간음향(Spatial Audio), Web Speech API + Whisper 경량 모델(STT), 다국어 Web Speech Synthesis(TTS), Korotkoff 사운드 파형 동기화 |
-| App Shell & State | React 18 & TypeScript, Zustand 상태관리, Tailwind CSS, HTML5 Canvas HUD 오버레이, Web Worker 연산 분산 |
-
-**App Shell & State 계층은 한글케어 본 앱과 완전히 동일한 스택**(Next.js/React/TS +
-Zustand + Tailwind)이므로, XR실습도 별도 앱이 아니라 **같은 Next.js 프로젝트 안의
-라우트**로 통합한다.
+- XR실습 모듈은 관리자가 **Unity(WebGL 플랫폼)로 만든 3D 인터랙션 콘텐츠**를
+  `.zip`으로 올리면, 서버가 압축을 풀어 정적 파일로 호스팅하고 학습 화면은 그
+  결과물을 `<iframe>`으로 띄운다. 콘텐츠의 실제 로직(청진기 소리, 혈압계 게이지,
+  무균술 판정 등)은 전부 Unity 프로젝트 쪽에서 구현한다 — 이 앱은 업로드·배치·
+  표시만 담당한다.
+- Unreal Engine의 웹 임베드(Pixel Streaming)는 별도 GPU 스트리밍 서버가 필요해
+  이 프로젝트 범위 밖이고, APK는 브라우저에서 실행할 수 없어 지원하지 않는다.
+  **Unity WebGL 빌드만 지원**한다.
+- 모듈을 몇 개 둘지, 어떤 모듈에 어떤 빌드를 연결할지는 전부 관리자가 "XR실습
+  편집" 화면에서 정한다 — 더 이상 코드에 고정된 5대 모듈이 없다. 빌드를 올리기
+  전까지 해당 모듈은 "콘텐츠 없음" 상태로 비어 있다.
 
 ---
 
@@ -41,156 +37,221 @@ graph LR
     B -->|실습한글| C
     B -->|XR실습| D[XR 모듈 목록 /xr]
     D -->|모듈 선택| E[XR 실습 화면 /xr/:moduleId]
-    E -->|리포트 제출| B
+    E -->|iframe| F[Unity WebGL 빌드]
 ```
 
-- `/courses`의 "XR실습" 섹션은 `lib/courses.ts`에서 `content/xr-modules.json`을 읽어
-  5대 모듈명·법정 실습시간을 보여주고, 각 항목이 `/xr/${module.id}`로 연결되어
-  실제로 열어볼 수 있다(Phase 1 완료 — §7 로드맵 참고).
+- `/courses`의 "XR실습" 섹션은 `lib/courses.ts`에서 `content/xr-modules.json`을
+  읽어 모듈명·법정 실습시간을 보여주고, 각 항목이 `/xr/${module.id}`로 연결된다.
 - `/xr`(모듈 목록)과 `/xr/[moduleId]`(실습 화면)는 다른 라우트와 동일하게
   `AuthGuard role="any"`로 로그인만 확인한다.
-- `/xr`, `/xr/[moduleId]`도 다른 라우트와 동일하게 `AuthGuard role="any"`로 로그인
-  여부만 확인한다(§4 User Service 서버 인증 붙기 전까지는 프로토타입 수준).
+- 관리자 전용 `/admin/xr-editor`는 `public/hancare-xr-editor.html`을 iframe으로
+  띄운다(다른 콘텐츠 편집기와 동일한 패턴).
 
 ---
 
-## 3. 5대 실습 모듈 (PDF 원문)
+## 3. 업로드 → 호스팅 → 실행 흐름
 
-| 모듈 | 법정시간 | 핵심 3D 인터랙션 요소 | 적용 기술 |
-|---|---|---|---|
-| 1. 활력징후 및 기초사정 | 20h | 가상 청진기 상완동맥 접촉, 혈압계 가압/감압 게이지 조작, 자가 혈당 채혈 | Web Audio 오디오 노드, Raycaster 좌표 추적, Canvas 게이지 |
-| 2. 무균술 및 상처관리 | 25h | 멸균포 개봉, 핀셋 기구 전달, 멸균 경계면 침범 시 실시간 경고 하이라이트 | GLSL 오버레이 셰이더, Cannon-es 정밀 바운딩 충돌체 |
-| 3. 영양 및 배설 보조 | 20h | L-tube 위내 공기 주입음 청취, 도뇨관 고정, 방광 기준 소변백 중력 높이 판정 | Spatial Audio PannerNode, 중력 벡터 판정 알고리즘 |
-| 4. 투약 및 기도흡인 | 20h | 인슐린 피하주사 각도(45~90도) 판정, 석션 카테터 회전 발치 시간 측정 | 3D 벡터 각도 연산, 정밀 인터벌 타이머 엔진 |
-| 5. 체위변경 및 안전 | 15h | 편마비 환자 지지점 선정, 신체역학 중심점 표시, 휠체어 잠금 브레이크 조작 | Three.js IK(역운동학), 골격 조인트 트래킹 |
+```mermaid
+graph LR
+    A[관리자: Unity WebGL 빌드 폴더를 .zip으로 압축] --> B["XR실습 편집에서 업로드\nPOST /api/xr-modules/upload?id=..."]
+    B --> C["서버가 zip 해제\nuploads/xr-builds/{id}/"]
+    C --> D["buildUrl = /api/xr-builds/{id}/index.html\ncontent/xr-modules.json에 저장"]
+    D --> E["학습 화면 iframe src=buildUrl"]
+```
 
-이 표는 그대로 `content/xr-modules.json`의 5개 엔트리(`order` 1~5)로 옮겨두었다.
-각 모듈은 환자명·상황 대사(`situationKo/En`)와, 해당 모듈의 인터랙션 버튼 목록
-(`interactions[]`, 클릭 시 보여줄 결과 문구 포함)을 갖는다.
+- **업로드 API**: `POST /api/xr-modules/upload?id={moduleId}` — 본문은 zip
+  바이트 그대로(스트리밍 수신, 최대 400MB). `lib/xrBuilds.ts`의
+  `extractXrBuild()`가 처리한다.
+  - **경로 탈출(zip-slip) 방지**: 각 항목의 정규화된 상대경로가 `..`로
+    시작하거나 절대경로면 전체 업로드를 거부한다(디스크에 아무것도 쓰기 전에
+    전부 검사).
+  - **zip 폭탄 방지**: 압축 해제 후 합계 용량(기본 800MB)과 항목 수(기본
+    8000개) 상한을 넘으면 거부한다.
+  - **공통 루트 폴더 자동 제거**: 관리자가 Unity 빌드 출력 폴더 전체를 통째로
+    압축했다면(그 폴더 하나가 모든 항목의 공통 조상이면) 그 폴더명을 벗겨
+    `index.html`이 바로 밑에 오도록 맞춘다.
+  - `index.html`을 찾지 못하면(루트 또는 그 바로 아래 한 단계) 오류로 거부한다.
+  - 성공하면 기존 빌드를 통째로 지우고 새로 쓴 뒤 `{ buildUrl, fileCount }`를
+    돌려준다.
+- **저장 위치**: `uploads/xr-builds/{moduleId}/` — `public/`이 아니다. 영상
+  업로드(`uploads/videos/`, §5 VIDEO_EDITOR_DESIGN)와 같은 이유로, 운영 서버는
+  빌드 시점에 있던 `public/` 파일만 제공하므로 런타임에 올린 파일은 `uploads/`에
+  두고 전용 라우트로 제공해야 한다. 이 디렉터리는 git에 포함되지 않는다
+  (`.gitignore`).
+- **제공 라우트**: `GET /api/xr-builds/[moduleId]/[...path]` —
+  `lib/xrBuilds.ts`의 `resolveXrBuildFile()`로 경로 탈출을 막고,
+  `xrBuildFileHeaders()`로 확장자별 Content-Type을 정한다. Unity WebGL이
+  Gzip/Brotli로 압축해 올리는 경우(`.data.gz`, `.wasm.br` 등)도 `Content-Encoding`
+  헤더를 붙여 그대로 서빙한다 — 단, 가능하면 Unity 빌드 설정의 Compression
+  Format을 **Disabled**로 두길 권장한다(가장 호환성이 좋고 빠르다).
+  이 라우트도 다른 `/api/*`와 동일하게 로그인한 사용자만 접근할 수 있다
+  (`middleware.ts`).
+- 모듈이 삭제되거나(편집기에서 모듈 행 삭제 후 저장) 다른 모듈로 교체되면
+  `deleteXrBuild()`가 `uploads/xr-builds/{id}/`를 통째로 지운다(`PUT
+  /api/xr-modules`가 이전 모듈 id 목록과 비교해 자동 처리).
+- **외부에 이미 호스팅된 빌드**를 쓰고 싶으면 업로드 없이 `buildUrl`에 그 주소를
+  직접 입력해도 된다(S3, 별도 CDN 등). 이 방식은 서버 유무와 무관하게 항상 쓸 수 있다.
+
+### 3.1 단일 파일판(`hangulcare.html`) 전용 — Service Worker + IndexedDB
+
+`hangulcare.html`에는 Next.js 서버가 없어 위 업로드 API를 쓸 수 없지만, **https(또는
+`http://localhost`)로 호스팅했다면** 서버 없이도 이 브라우저 안에서 실제로 zip을
+업로드할 수 있다 — `file://`로 직접 연 경우는 예외(아래 참고).
+
+```mermaid
+graph LR
+    A[관리자: hangulcare.html의 XR실습 편집에서 .zip 선택] --> B["JSZip으로 압축 해제\n(public/hancare-xr-editor.html)"]
+    B --> C["IndexedDB(hc-xr-builds/files)에 저장"]
+    C --> D["buildUrl = hc-xr-blob/{id}/index.html"]
+    D --> E["학습 화면 iframe → sw-xr-builds.js가 가로채 서빙"]
+```
+
+- **압축 해제**: `public/hancare-xr-editor.html`의 `extractClientXrBuild()`가
+  브라우저에서 [JSZip](https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js)로
+  zip을 읽는다 — 경로 탈출 거부, 공통 루트 폴더 제거, `index.html` 탐색,
+  용량(기본 400MB)·항목 수(기본 4000개) 상한까지 서버 쪽 `extractXrBuild()`와
+  같은 순서로 검증한다(서버보다 상한을 낮춘 이유는 브라우저 메모리 제약).
+  문제가 있으면 IndexedDB에 아무것도 쓰기 전에 거부한다.
+- **저장**: IndexedDB `hc-xr-builds`의 `files` 오브젝트 스토어에 `{ key:
+  "{moduleId}/{relPath}", moduleId, data: Blob, contentType, contentEncoding }`
+  형태로 쓴다. **이 브라우저에만 저장되며 다른 사람·다른 기기·서버 어디에도
+  올라가지 않는다.**
+- **서빙**: 저장소 루트의 `sw-xr-builds.js`(Service Worker)가 `hc-xr-blob/{id}/
+  {path...}` 요청을 가로채 IndexedDB에서 꺼내 돌려준다 — `app/api/xr-builds/
+  [moduleId]/[...path]` 라우트와 같은 역할을 서버 없이 한다. **단, gzip 압축
+  자산은 서버 경로와 다르게 처리한다**: Service Worker가 직접 만든 `Response`는
+  실제 네트워크 응답이 아니어서, `Content-Encoding` 헤더를 붙여도 브라우저가
+  자동으로 압축을 풀어주지 않는다(전송계층 디코더는 진짜 HTTP 응답에만 붙는다 —
+  실제로 이 때문에 "Unity 로더가 압축 안 풀린 raw gzip 바이트를 그대로 받아
+  `SyntaxError: Invalid or unexpected token`을 내는" 버그가 있었다). 그래서
+  `sw-xr-builds.js`는 `DecompressionStream("gzip")`으로 **직접 풀어서** 돌려준다.
+  Brotli(`.br`)는 브라우저에 JS로 쓸 수 있는 네이티브 압축 해제 API가 없어 이
+  방식으로는 풀 수 없으므로, `extractClientXrBuild()`가 업로드 시점에 `.br`
+  파일이 섞여 있으면 거부한다(Compression Format을 Disabled나 Gzip으로 바꿔
+  다시 내보내 달라는 안내와 함께) — 브라우저 전용 경로에서는 **Disabled 또는
+  Gzip만** 지원한다. Next.js 서버 경로(`app/api/xr-builds`)는 진짜 HTTP 응답이라
+  Brotli를 포함해 전부 브라우저가 알아서 풀어주므로 이 제약이 없다.
+- **등록 시점**: `hangulcare.html`이 로드될 때 한 번 등록한다(상대 경로
+  `sw-xr-builds.js` — 서브 경로에 배포해도 자동으로 그 디렉터리를 스코프로 잡는다).
+  학습 화면(`renderXrPractice`)은 `navigator.serviceWorker.ready`가 풀릴 때까지
+  "콘텐츠를 준비하고 있습니다…" 안내를 보여준 뒤 자동으로 iframe을 띄운다(브라우저가
+  이 세션에서 처음 Service Worker를 활성화하는 극히 짧은 순간을 위한 안전장치 — 보통
+  사용자가 로그인→메뉴 이동하는 동안 이미 끝나 있다).
+- **`file://`로 직접 연 경우**: 브라우저가 Service Worker 등록 자체를 금지하므로(보안
+  정책상 `file:` 출처는 Service Worker를 쓸 수 없다) 이 방식이 통째로 비활성화되고,
+  §5의 "URL 직접 입력" 모드로 자동 전환된다.
+- **정리**: 모듈을 편집기에서 삭제하거나 "모듈 전체 지우기"를 누르면
+  `hangulcare.html`의 `xrClientDeleteModule()`/`xrClientClearAll()`이 해당
+  IndexedDB 레코드도 함께 지운다(서버 쪽 `deleteXrBuild()`와 같은 역할).
 
 ---
 
-## 4. 화면 UI 구성 (모듈 1 "활력징후 및 기초사정" 기준, PDF p.3 목업 매핑)
+## 4. 화면 UI 구성
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 실습 모듈: 활력징후 및 기초사정                XrModuleHeader   │
-├───────────────────────────────────────┬─────────────────────┤
-│ ┌───────────────┐                     │  환자정보            │ ← InfoButton
-│ │ 인터랙션 결과   │                     │  상황안내(동영상)     │ ← InfoButton
-│ │ 모니터(게이지)  │   3D 환자 뷰포트      │  실습시작 (강조)      │ ← StartButton
-│ │ SYS/DIA/Pulse  │   (PatientViewport)  │  가상 청진기          │ ┐
-│ └───────────────┘                     │  상완동맥접촉         │ │ InteractionButton[]
-│                                        │  혈압계 사용          │ │ (실습시작 전 비활성)
-│  ⚠ 상황 설명 텍스트(말풍선)             │  혈당 채혈            │ ┘
-│  "김진수: 숨이 조금 차고..."   [다음]   │  도움말               │
-│                                        │  리포트제출           │
-│                                        ├─────────────────────┤
-│                                        │ 사용자: 홍길동         │ SessionInfoPanel
-│                                        │ 접속시간 / 총실습시간   │
-└───────────────────────────────────────┴─────────────────────┘
+│ 모듈명 · 영문명              모듈 2 / 5   ←  →   ← 목록       │ XrModuleHeader
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│              <iframe src={buildUrl}>  (16:9)                 │ Unity WebGL 빌드
+│                                                      [전체화면]│
+│                                                               │
+├─────────────────────────────────────────────────────────────┤
+│ 법정 실습시간 20시간                                           │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-| PDF 라벨 | 컴포넌트(제안) | 동작 |
-|---|---|---|
-| 현재 진행하는 실습 모듈 제목 | `XrModuleHeader` | 모듈 titleKo/En, 코스 목록 복귀 링크(기존 `LessonHeader`와 동일 패턴) |
-| 인터랙션 결과 모니터 | `InteractionMonitor` | 최근 인터랙션 결과를 게이지/텍스트로 표시. 초기엔 빈 상태 |
-| 상황 설명 텍스트 + 다음 | `SituationDialogue` | 환자 대사 말풍선 + "다음" 버튼(추후 다중 턴 대사로 확장 가능하도록 배열 스키마 고려) |
-| 환자정보 / 상황안내 | `InfoButton` × 2 | 모달 또는 사이드 패널로 환자 정보·상황 안내 영상 표시(영상 자산은 별도 준비 필요) |
-| 실습시작 | `StartButton` | 클릭 시 아래 인터랙션 버튼들이 활성화(Zustand `started: true`) |
-| 가상 청진기 / 상완동맥접촉 / 혈압계 사용 / 혈당 채혈 | `InteractionButton[]` | `content/xr-modules.json`의 `interactions[]`를 순회 렌더. 클릭 시 결과를 `InteractionMonitor`에 반영 |
-| 도움말 | `HelpButton` | 현재 모듈 사용법 안내 |
-| 리포트제출 | `SubmitReportButton` | 완료한 인터랙션 결과를 모아 리포트 형태로 요약, 진도관리(관리자 화면)에 반영 |
-| 사용자/접속시간/총실습시간 | `SessionInfoPanel` | `lib/auth.ts`의 로그인 계정 + 세션 시작 시각 + 누적 실습시간(모듈별 `legalHours` 대비 진행률로 확장 가능) |
+`buildUrl`이 비어 있으면(아직 빌드를 올리지 않은 모듈) iframe 대신 "아직 이
+모듈에 콘텐츠가 연결되지 않았습니다" 안내 카드를 보여준다.
 
-`PatientViewport`(3D 뷰포트) 자리는 실제 3D 에셋이 준비되기 전까지 안내 이미지/설명
-placeholder로 대체하고, Phase 2(§7)에서 Three.js 캔버스로 교체한다.
+| 컴포넌트 | 역할 |
+|---|---|
+| `components/XrModuleGrid.tsx` | `/xr` 목록 — 모듈 카드(순서·법정시간·콘텐츠 연결 여부) |
+| `components/XrPracticeScreen.tsx` | `/xr/[moduleId]` — iframe + 전체화면 토글 + 이전/다음/목록 이동 |
+| `public/hancare-xr-editor.html` | 관리자 편집기 — 모듈 CRUD + zip 업로드 위젯(§5) |
+| `lib/xrBuilds.ts` | 서버 전용 — zip 추출·검증, 빌드 파일 경로 안전성 검사 |
+| `sw-xr-builds.js` | 단일 파일판 전용 Service Worker — IndexedDB에 저장된 빌드를 서빙(§3.1) |
+
+Unity WebGL 콘텐츠 내부의 완료 신호(예: "이 환자 확인 끝났음")를 앱이 알아내는
+방법은 없다 — iframe은 기본적으로 불투명한 블랙박스다. 완료율·리포트 제출 같은
+진행 상태 추적 기능은 Unity 콘텐츠가 `window.postMessage`로 알려주는 자체
+프로토콜을 만들기 전까지는 제공하지 않는다(가짜 완료 표시를 보여주는 대신,
+기능 자체를 없앴다 — 이전 버전은 `lib/xrStore.ts`로 목데이터 완료 상태를
+추적했으나 실제 콘텐츠 진행과 무관했다).
 
 ---
 
-## 5. 상태 머신 (Zustand, `lib/xrStore.ts` 예정)
+## 5. 관리자 편집기 (`public/hancare-xr-editor.html`)
 
-```mermaid
-stateDiagram-v2
-    [*] --> 대기: 모듈 진입
-    대기 --> 진행중: 실습시작 클릭
-    진행중 --> 진행중: 인터랙션 버튼 클릭 (결과 기록)
-    진행중 --> 제출완료: 리포트제출 클릭
-    제출완료 --> [*]: 코스 목록으로 복귀
-```
+다른 콘텐츠 편집기(단어장·영상·역할극)와 동일한 3중 백엔드 어댑터 패턴을 쓴다.
 
-상태 필드(제안):
+| 실행 환경 | 백엔드 | 업로드 위젯 |
+|---|---|---|
+| Next.js 서버에서 열림(`/admin/xr-editor`) | `GET/PUT /api/xr-modules` | `POST /api/xr-modules/upload`로 서버에 직접 업로드 |
+| 단일 파일판(`hangulcare.html`) 안에서 iframe(`?host=hangulcare`), **https로 호스팅** | `postMessage`(`hcXr` 메시지, 이 브라우저의 localStorage에 보관) | Service Worker + IndexedDB로 이 브라우저 안에 직접 업로드(§3.1) |
+| 단일 파일판을 **`file://`로 직접 연 경우** | `postMessage`(위와 동일) | 숨김 — `buildUrl`을 텍스트로 직접 입력만(Service Worker 등록 자체가 브라우저에서 막힘) |
+| `file://`로 편집기만 단독 실행 | 없음(JSON/엑셀 내보내기로만 보관) | 숨김 — 동일하게 텍스트 입력만 |
 
-```ts
-interface XrPracticeState {
-  started: boolean;
-  sessionStartedAt: number | null;         // 접속시간 표시용
-  completedInteractions: Record<string, string>; // interactionId -> resultKo
-  reportSubmitted: boolean;
-}
-```
-
-한글케어 학습화면의 `useLessonStore` 패턴(§3.3 상태머신)과 동일한 방식으로,
-페이지 이동 없이 한 화면 안에서 상태만 전이시킨다.
+필드: 모듈 ID(영문 소문자·숫자·하이픈 — 업로드 폴더명으로도 쓰임)·순서·
+모듈명(한/영)·법정 실습시간·빌드 URL. 엑셀 내보내기는 `Modules` 시트 하나
+(id/order/titleKo/titleEn/legalHours/buildUrl)만 쓴다.
 
 ---
 
 ## 6. 데이터 스키마
 
 ```ts
-interface XrInteraction {
-  id: string;
-  labelKo: string; labelEn: string;
-  resultKo: string; resultEn: string;  // 실제 3D/물리 연산 대신 프로토타입 단계의 목데이터 결과
-}
-
 interface XrModule {
-  id: string;
+  id: string;             // uploads/xr-builds/{id}/ 폴더명으로도 쓰여 영문 소문자·숫자·하이픈만 허용
   order: number;
   titleKo: string; titleEn: string;
-  legalHours: number;                  // 법정 실습시간
-  patientNameKo: string;
-  situationKo: string; situationEn: string;
-  techNoteKo: string;                  // 적용 기술 스택(표시용)
-  interactions: XrInteraction[];
+  legalHours: number;                 // 법정 실습시간
+  buildUrl?: string;                  // Unity WebGL 빌드 index.html URL. 없으면 "콘텐츠 없음"
+  buildUploadedAt?: number;           // 직접 업로드한 경우의 업로드 시각(epoch ms, 표시용)
 }
 ```
 
-- 위치: `content/xr-modules.json` (이미 5개 모듈 반영됨)
+- 위치: `content/xr-modules.json` (기본값은 빈 배열 `[]` — 관리자가 모듈을
+  추가하고 빌드를 올려야 채워진다)
 - 로딩: `lib/content.ts`의 `getXrModules()`/`getXrModule(id)` — 다른 콘텐츠와
-  동일하게 **매 요청마다 파일을 새로 읽어** 재배포 없이 갱신된다(`content/README.md`
-  참고).
+  동일하게 매 요청마다 파일을 새로 읽는다(`content/README.md` 참고)
+- 검증: `lib/contentStore.ts`의 `cleanXrModules()` — id 중복·형식, `legalHours`
+  숫자 범위를 확인한다. `SAFE_MODULE_ID` 정규식은 `lib/xrBuilds.ts`의
+  `isSafeModuleId()`와 같은 규칙을 쓴다(의도적으로 중복 정의 — 폴더명 안전성과
+  콘텐츠 검증이 같은 규칙을 따라야 하기 때문).
 - 진도관리 메뉴 연동: `lib/courses.ts`의 `getCourseSections()`가 이 목록을 읽어
-  XR실습 섹션 아이템(모듈명 + 법정시간)을 자동 생성한다.
+  XR실습 섹션 아이템(모듈명 + 법정시간)을 자동 생성한다(변경 없음).
 
 ---
 
-## 7. 구현 로드맵
+## 7. 알려진 제약 / 다음 단계
 
-| 단계 | 범위 | 상태 |
-|---|---|---|
-| **Phase 0** | 콘텐츠 스키마·진도관리 메뉴 연동(5개 모듈명·법정시간 노출) | ✅ 완료 |
-| **Phase 1** | `/xr`, `/xr/[moduleId]` 화면 셸 구현 — §4 UI를 실제 컴포넌트로, 인터랙션 버튼 클릭 시 `content`의 목데이터 결과 표시(3D 없이 텍스트/게이지만) | ✅ 완료 — `components/XrModuleGrid.tsx`, `components/XrPracticeScreen.tsx`, `lib/xrStore.ts`. 독립 HTML 프로토타입(claude.ai 아티팩트)으로 먼저 검증한 뒤 동일 로직을 그대로 이식했다 |
-| **Phase 2** | 모듈 1(활력징후)에 실제 Three.js/WebGL 뷰포트 도입 — 절차적 3D 병상·환자 모형 + Raycaster 클릭 히트박스(청진기/상완동맥 등) + Web Audio 합성음(청진음) + Canvas 게이지 | 예정 |
-| **Phase 3** | 모듈 2~5에 각 모듈 고유 기술 적용 — GLSL 멸균 경계 셰이더, Cannon-es 충돌, Spatial Audio, IK 골격 트래킹. 실제 3D 에셋(glTF) 제작·튜닝 필요 | 예정(3D 에셋 확보 후) |
-| **Phase 4** | Whisper 기반 STT, 다국어 TTS(현재 앱은 ko/en만 지원 — 몽골어/베트남어/미얀마어는 `textXx` 필드 추가로 스키마 확장 가능), LMS 연동(진도 데이터 내보내기), Unity 인터랙션 콘텐츠 임베드 | 예정 |
-
-Phase 2~4는 3D 에셋 제작, 물리 파라미터 튜닝, 실제 STT 모델 서빙 등 이 코드
-세션만으로는 끝낼 수 없는 별도 리소스(디자이너/3D 아티스트, GPU 서빙)가 필요하다.
-Phase 0~1은 지금 코드베이스 패턴(content 핫리로드, Zustand 상태머신, AuthGuard)
-그대로 확장하면 되므로 다음 작업으로 바로 진행 가능하다.
+- **완료 추적 없음**: §4에서 설명한 대로, Unity 콘텐츠의 내부 진행 상태를 앱이
+  알 방법이 없다. 필요하면 Unity 쪽에 `window.parent.postMessage(...)`로 완료
+  이벤트를 보내는 작은 브리지 스크립트를 만들고, `XrPracticeScreen.tsx`에
+  `message` 리스너를 추가하는 방식으로 확장할 수 있다(Unity 프로젝트 코드 수정
+  필요 — 이 세션 범위 밖).
+- **Unreal / APK 미지원**: §1에서 설명한 대로 의도적으로 범위에서 제외했다.
+  Unreal 콘텐츠를 웹에 올리려면 Pixel Streaming용 GPU 스트리밍 서버가 별도로
+  필요하다.
+- **압축 포맷 호환성**: Unity가 Brotli로 압축한 빌드(`.br`)는 일부 구형
+  브라우저에서 `Content-Encoding: br` 지원이 제한적일 수 있다. 가능하면
+  Compression Format을 Disabled로 빌드하길 권장(§3).
+- **대용량 빌드**: 업로드 상한은 400MB(zip), 해제 후 800MB다. 더 큰 빌드가
+  필요하면 `lib/xrBuilds.ts`의 `MAX_XR_BUILD_UPLOAD_BYTES`를 조정하거나, 외부
+  CDN에 올리고 `buildUrl`만 입력하는 방식(§3)을 쓴다.
 
 ---
 
-## 8. 다국어 / LMS / 진도관리 연동 메모
+## 8. 다국어 / LMS 연동 메모
 
-- **다국어**: 현재 `Lang`은 `'ko' | 'en'`. 몽골어/베트남어/미얀마어 지원 시
-  `Situation`/`XrModule`과 동일하게 `textMn`, `textVi`, `textMy` 필드를 추가하고
-  `lib/store.ts`의 `Lang` 유니온을 확장하는 방식을 권장(스키마 이미 필드 확장에
-  열려 있음).
+- **다국어**: 모듈명(`titleKo`/`titleEn`)만 앱이 관리한다. Unity WebGL 콘텐츠
+  내부의 언어 전환은 Unity 프로젝트 쪽 책임이다(필요하면 Unity가 URL 쿼리스트링
+  등으로 언어를 받도록 구현해, `buildUrl`에 포함시키는 방식을 쓸 수 있다).
 - **LMS 연동**: `data/learners.json` + `/admin` 화면이 현재는 목데이터이지만,
   실제 LMS 연동 시 `docs/PROGRAM_DESIGN.md` §4 User/Session Service의 API로
-  대체하고, XR 모듈의 `completedInteractions`/리포트 데이터를 세션 로그로 적재하면
-  된다.
-- **진도관리**: `/admin`의 "코스 구성" 카드가 이미 섹션별 콘텐츠 준비 개수를
-  집계하므로, XR 모듈이 "available"로 바뀌면 자동으로 반영된다(코드 변경 불필요).
+  대체한다. XR실습의 완료/점수 데이터를 LMS로 보내려면 §7에서 설명한 Unity
+  postMessage 브리지가 먼저 필요하다.
+- **진도관리**: `/admin`의 "코스 구성" 카드가 등록된 XR 모듈 개수를 그대로
+  보여준다(코드 변경 불필요) — 다만 모듈이 있어도 `buildUrl`이 비어 있으면
+  학습자 화면에는 "콘텐츠 없음"으로 보인다는 점에 유의.

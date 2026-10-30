@@ -2,12 +2,12 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore, type Role } from '@/lib/auth';
+import { fetchServerSession, useAuthStore, type Role } from '@/lib/auth';
 
 /**
- * 로그인 여부/역할을 클라이언트에서만 확인하는 라우트 가드. 실제 서버 세션 검증이
- * 아니라 프로토타입 단계의 UX용 가드이며(localStorage 기반), 진짜 접근 제어가
- * 필요해지면 docs/PROGRAM_DESIGN.md §4 User Service의 서버 인증으로 교체해야 한다.
+ * 화면 이동용 가드. 실제 접근 제어는 서버(middleware.ts — API·편집기 페이지)가 하고,
+ * 여기서는 브라우저에 기억된 로그인 정보를 서버 세션과 맞춰 본다(만료·다른 탭 로그아웃 등).
+ * docs/SECURITY.md
  */
 export default function AuthGuard({
   role,
@@ -21,7 +21,23 @@ export default function AuthGuard({
   const account = useAuthStore((s) => s.account);
   const hydrated = useAuthStore((s) => s.hydrated);
 
+  const login = useAuthStore((s) => s.login);
+  const logout = useAuthStore((s) => s.logout);
   const allowed = !!account && (role === 'any' || account.role === role);
+
+  // 서버 세션이 없거나(만료) 다른 계정이면 서버 쪽을 따른다.
+  useEffect(() => {
+    if (!hydrated || !account) return;
+    let cancelled = false;
+    fetchServerSession().then((s) => {
+      if (cancelled || !s) return;
+      if (!s.account) logout();
+      else if (s.account.id !== account.id || s.account.role !== account.role) login(s.account);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, account, login, logout]);
 
   useEffect(() => {
     if (!hydrated) return;

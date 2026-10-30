@@ -1,0 +1,53 @@
+[
+  {
+    "id": "video-nursing-assistant",
+    "order": 1,
+    "titleKo": "나는 누구일까요? — 간호조무사 소개",
+    "titleEn": "Who am I? — Meet the nursing assistant",
+    "descriptionKo": "간호조무사가 병원에서 하는 일(활력징후 확인, 진료 보조, 간호, 수술실 보조)을 반말 독백으로 소개하는 대한간호조무사협회 홍보 영상입니다.",
+    "src": "/videos/nursing-assistant.mp4",
+    "poster": "",
+    "durationSec": 89,
+    "levelTag": "초급 2",
+    "related": { "unitId": "unit-1", "situationId": "situation-1", "labelKo": "혈압·체온 측정" },
+    "cues": [
+      { "id": "na-1", "start": 2.5, "end": 4.0, "speakerKo": "간호조무사", "textKo": "내가 누구냐고?", "textEn": "Who am I, you ask?", "terms": [{ "hangul": "누구냐고", "glossEn": "(you ask) who — quoting a question"  }]},
+      { "id": "na-2", "start": 4.0, "end": 6.0, "speakerKo": "간호조무사", "textKo": "그럼 이제 맞춰봐!", "textEn": "Then go ahead and guess!", "terms": [{ "hangul": "맞춰봐", "glossEn": "try guessing (standard form: 맞혀 봐)"  }]},
+      { "id": "na-3", "start": 7.0, "end": 11.0, "textKo": "당신을 위해 건강을 잇다", "textEn": "Connecting health, for you.", "terms": [{ "hangul": "위해", "glossEn": "for (the sake of)"  }, {  "hangul": "잇다", "glossEn": "to connect, to continue"  }]},
+      { "id": "na-4", "start": 18.0, "end": 21.0, "speakerKo": "간호조무사", "textKo": "병원에 들어서면 아마 나를 제일 먼저 보게 될 거야", "textEn": "When you walk into a hospital, I'm probably the first person you'll see.", "terms": [{ "hangul": "들어서면", "glossEn": "when you step in"  }, {  "hangul": "제일 먼저", "glossEn": "first of all"  }, {  "hangul": "보게 될 거야", "glossEn": "you will end up seeing"  }]},
+      { "id": "na-5", "start": 21.0, "end": 23.0, "speakerKo": "간호조무사", "textKo": "우리는 항상 여기 있거든", "textEn": "Because we're always here.", "terms": [{ "hangul": "항상", "glossEn": "always"  }, {  "hangul": "있거든", "glossEn": "(because) we are — giving a reason"  }]},
+      { "id": "na-6", "start": 25.0, "end": 28.0, "speakerKo": "간호조무사", "textKo": "우리는 바이탈 사인을 체크하지", "textEn": "We check vital signs.", "terms": [{ "hangul": "바이탈 사인", "glossEn": "vital signs (= 활력징후)"  }, {  "hangul": "체크하지", "glossEn": "we check (casual)"  }]},
+      { "id": "na-7", "start": 33.0, "end": 35.5, "speakerKo": "간호조무사", "textKo": "의사의 지도하에 진료를 보조하고", "textEn": "We assist with medical care under a doctor's guidance,", "terms": [{ "hangul": "지도하에", "glossEn": "under the guidance of"  }, {  "hangul": "진료", "glossEn": "medical care, treatment"  }, {  "hangul": "보조하고", "glossEn": "assist, and"  }]},
+      { "id": "na-8", "start": 40.0, "end": 42.0, "speakerKo": "간호조무사", "textKo": "우리는 직접 간호도 하지", "textEn": "We also give nursing care ourselves.", "terms": [{ "hangul": "직접", "glossEn": "directly, in person"  }, {  "hangul": "간호", "glossEn": "nursing care"  }]},
+      { "id": "na-9", "start": 46.0, "end": 49.0, "speakerKo": "간호조무사", "textKo": "수술실에서 어시스트도 하지", "textEn": "We also assist in the operating room.", "terms": [{ "hangul": "수술실", "glossEn": "operating room"  }, {  "hangul": "어시스트", "glossEn": "assist (= 보조)"  }]},
+      { "id": "na-10", "start": 52.0, "end": 55.0, "speakerKo": "간호조무사", "textKo": "내가 어디 있냐고?", "textEn": "Where am I, you ask?", "terms": [{ "hangul": "어디 있냐고", "glossEn": "(you ask) where I am"  }]},
+      { "id": "na-11", "start": 61.5, "end": 63.5, "speakerKo": "간호조무사", "textKo": "나는 항상 여기에 있어", "textEn": "I'm always here.", "terms": [{ "hangul": "여기에 있어", "glossEn": "am here"  }]},
+      { "id": "na-12", "start": 63.5, "end": 66.5, "speakerKo": "간호조무사", "textKo": "당신의 건강을 이어줄 수 있는 곳 어디든", "textEn": "Anywhere I can help keep your health going.", "terms": [{ "hangul": "이어줄 수 있는", "glossEn": "that can connect / keep going"  }, {  "hangul": "어디든", "glossEn": "anywhere"  }]},
+      { "id": "na-13", "start": 68.5, "end": 70.5, "speakerKo": "간호조무사", "textKo": "이제 내가 누군지 알겠어?", "textEn": "Now do you know who I am?", "terms": [{ "hangul": "누군지", "glossEn": "who (I am)"  }, {  "hangul": "알겠어", "glossEn": "do you get it?"  }]},
+      { "id": "na-14", "start": 70.5, "end": 72.5, "speakerKo": "간호조무사", "textKo": "나는 간호조무사야!", "textEn": "I'm a nursing assistant!", "terms": [{ "hangul": "간호조무사", "glossEn": "nursing assistant"  }]},
+      { "id": "na-15", "start": 73.0, "end": 78.0, "textKo": "당신을 위해 건강을 잇다", "textEn": "Connecting health, for you.", "terms": [{ "hangul": "위해", "glossEn": "for (the sake of)"  }, {  "hangul": "잇다", "glossEn": "to connect, to continue"  }]},
+      { "id": "na-16", "start": 78.0, "end": 85.5, "textKo": "간호조무사 보수교육과 자격신고, 더 든든한 대한민국의 시작입니다.", "textEn": "Continuing education and license registration for nursing assistants — the start of a more reassuring Korea.", "terms": [{ "hangul": "보수교육", "glossEn": "continuing (refresher) education"  }, {  "hangul": "자격신고", "glossEn": "license registration"  }, {  "hangul": "든든한", "glossEn": "reassuring, dependable"  }]}
+    ]
+  },
+  {
+    "id": "video-medication",
+    "order": 2,
+    "titleKo": "식후 투약 안내",
+    "titleEn": "After-meal medication",
+    "descriptionKo": "점심 식사 후 환자에게 약 먹을 시간을 알리고 복용 방법을 설명하는 장면입니다.",
+    "src": "/videos/medication.mp4",
+    "poster": "",
+    "durationSec": 28,
+    "levelTag": "초급 2",
+    "related": { "unitId": "unit-1", "situationId": "situation-2", "labelKo": "투약 시간 안내" },
+    "cues": [
+      { "id": "med-1", "start": 0, "end": 4, "speakerKo": "실습생", "textKo": "점심 맛있게 드셨어요?", "textEn": "Did you enjoy your lunch?", "terms": [{ "hangul": "드셨어요", "glossEn": "did you eat (honorific)"  }]},
+      { "id": "med-2", "start": 4, "end": 8, "speakerKo": "실습생", "textKo": "지금 약 드실 시간이에요.", "textEn": "It's time to take your medicine now.", "terms": [{ "hangul": "약", "glossEn": "medicine"  }, {  "hangul": "드실 시간", "glossEn": "time to take (honorific)"  }]},
+      { "id": "med-3", "start": 8, "end": 12, "speakerKo": "환자", "textKo": "이 알약은 몇 개 먹어요?", "textEn": "How many of these pills do I take?", "terms": [{ "hangul": "알약", "glossEn": "pill"  }]},
+      { "id": "med-4", "start": 12, "end": 16, "speakerKo": "실습생", "textKo": "처방전대로 두 알 드시면 돼요.", "textEn": "Take two pills, as prescribed.", "terms": [{ "hangul": "처방전", "glossEn": "prescription"  }, {  "hangul": "드시면 돼요", "glossEn": "you can take (it's fine to take)"  }]},
+      { "id": "med-5", "start": 16, "end": 20, "speakerKo": "실습생", "textKo": "물과 함께 드세요.", "textEn": "Please take it with water.", "terms": [{ "hangul": "물과 함께", "glossEn": "with water"  }]},
+      { "id": "med-6", "start": 20, "end": 24, "speakerKo": "환자", "textKo": "어제 먹고 속이 좀 안 좋았어요.", "textEn": "My stomach felt a bit upset after taking it yesterday.", "terms": [{ "hangul": "속이 좀 안 좋았어요", "glossEn": "(my) stomach felt a bit upset" }]},
+      { "id": "med-7", "start": 24, "end": 28, "speakerKo": "실습생", "textKo": "부작용일 수 있으니 간호사 선생님께 바로 알려 드릴게요.", "textEn": "It could be a side effect, so I'll let the nurse know right away.", "terms": [{ "hangul": "부작용", "glossEn": "side effect"  }, {  "hangul": "알려 드릴게요", "glossEn": "I will let (them) know"  }]}
+    ]
+  }
+]

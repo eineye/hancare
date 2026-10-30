@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useXrProgressStore, getModuleProgress } from '@/lib/xrStore';
 import { useAuthStore } from '@/lib/auth';
 import type { XrModule } from '@/lib/types';
 
@@ -14,7 +13,8 @@ function formatElapsed(ms: number) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
-function ModuleCard({ module: m, done }: { module: XrModule; done: boolean }) {
+function ModuleCard({ module: m }: { module: XrModule }) {
+  const hasBuild = !!m.buildUrl;
   return (
     <Link
       href={`/xr/${m.id}`}
@@ -28,12 +28,11 @@ function ModuleCard({ module: m, done }: { module: XrModule; done: boolean }) {
       </div>
       <h3 className="text-sm font-bold leading-snug text-brand-dark">{m.titleKo}</h3>
       <p className="text-xs text-faint">{m.titleEn}</p>
-      <p className="text-xs text-muted">환자: {m.patientNameKo}</p>
-      <p className="font-mono text-[11px] leading-relaxed text-faint">{m.techNoteKo}</p>
       <div className="mt-auto flex gap-1.5 pt-1">
-        <span className="rounded-full bg-panel px-2.5 py-1 text-[11px] font-semibold text-muted">테스트 가능</span>
-        {done && (
-          <span className="rounded-full bg-chip px-2.5 py-1 text-[11px] font-semibold text-brand">완료 ✓</span>
+        {hasBuild ? (
+          <span className="rounded-full bg-chip px-2.5 py-1 text-[11px] font-semibold text-brand">콘텐츠 연결됨</span>
+        ) : (
+          <span className="rounded-full bg-panel px-2.5 py-1 text-[11px] font-semibold text-faint">콘텐츠 없음</span>
         )}
       </div>
     </Link>
@@ -42,7 +41,6 @@ function ModuleCard({ module: m, done }: { module: XrModule; done: boolean }) {
 
 export default function XrModuleGrid({ modules }: { modules: XrModule[] }) {
   const account = useAuthStore((s) => s.account);
-  const progress = useXrProgressStore((s) => s.progress);
   const [sessionStart] = useState(() => Date.now());
   const [elapsed, setElapsed] = useState(0);
 
@@ -51,18 +49,18 @@ export default function XrModuleGrid({ modules }: { modules: XrModule[] }) {
     return () => clearInterval(id);
   }, [sessionStart]);
 
-  const doneCount = modules.filter((m) => getModuleProgress(progress, m.id).submitted).length;
+  const connectedCount = modules.filter((m) => m.buildUrl).length;
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-3.5">
       <div>
         <p className="text-[11.5px] font-bold tracking-wide text-brand">XR실습 XR PRACTICE</p>
         <h1 className="mt-2.5 text-[28px] font-black tracking-tight text-brand-dark sm:text-[30px]">
-          HnaCare XR 5대 모듈
+          HnaCare XR 실습 모듈
         </h1>
         <p className="mt-2 text-sm text-muted">
-          <code>docs/XR_MODULE_DESIGN.md</code>의 Phase 1(화면 흐름·상호작용 셸)입니다. 실제 3D 뷰어·물리 엔진은
-          아직 없고, 인터랙션 버튼 결과는 미리 정의된 텍스트로 대체되어 있습니다.
+          관리자가 Unity WebGL로 제작한 3D 인터랙션 콘텐츠를 올리면 모듈 카드에 연결됩니다. 자세한 내용은{' '}
+          <code>docs/XR_MODULE_DESIGN.md</code> 참고.
         </p>
       </div>
 
@@ -80,25 +78,34 @@ export default function XrModuleGrid({ modules }: { modules: XrModule[] }) {
           <p className="mt-1.5 font-mono text-sm font-bold text-brand-dark">{formatElapsed(elapsed)}</p>
         </div>
         <div className="rounded-2xl border border-line bg-white p-4 text-center">
-          <p className="text-xs text-faint">완료한 모듈</p>
+          <p className="text-xs text-faint">콘텐츠 연결된 모듈</p>
           <p className="mt-1.5 font-mono text-sm font-bold text-brand-dark">
-            {doneCount} / {modules.length}
+            {connectedCount} / {modules.length}
           </p>
         </div>
       </div>
 
       <div className="flex items-baseline justify-between">
-        <h2 className="text-base font-bold text-brand-dark">XR실습 5대 모듈</h2>
-        <span className="font-mono text-xs text-faint">
-          법정 실습시간 합계 {modules.reduce((sum, m) => sum + m.legalHours, 0)}시간
-        </span>
+        <h2 className="text-base font-bold text-brand-dark">XR실습 모듈</h2>
+        {modules.length > 0 && (
+          <span className="font-mono text-xs text-faint">
+            법정 실습시간 합계 {modules.reduce((sum, m) => sum + m.legalHours, 0)}시간
+          </span>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {modules.map((m) => (
-          <ModuleCard key={m.id} module={m} done={getModuleProgress(progress, m.id).submitted} />
-        ))}
-      </div>
+      {modules.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-line bg-white p-8 text-center text-sm text-muted">
+          아직 등록된 XR실습 모듈이 없습니다. 관리자 모드의 &ldquo;XR실습 편집&rdquo;에서 모듈을 추가하고 Unity
+          WebGL 빌드를 올려주세요.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {modules.map((m) => (
+            <ModuleCard key={m.id} module={m} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
