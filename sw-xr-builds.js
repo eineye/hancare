@@ -55,16 +55,24 @@ self.addEventListener("fetch", function (event) {
     getFile(key)
       .then(function (rec) {
         if (!rec) return new Response("Not found", { status: 404 });
-        // rec.data는 Blob이라 크기를 미리 알 수 있다 — Content-Length를 직접 붙여 준다
-        // (Unity 로더가 이게 없으면 "다운로드 진행률을 못 보여준다"는 안내를 띄운다).
-        var headers = {
-          "Content-Type": rec.contentType || "application/octet-stream",
-          "Content-Length": String(rec.data.size),
-          "Cache-Control": "no-store",
-        };
-        if (rec.contentEncoding) headers["Content-Encoding"] = rec.contentEncoding;
+        var headers = { "Content-Type": rec.contentType || "application/octet-stream", "Cache-Control": "no-store" };
+
+        // 중요: 이 Response는 Service Worker가 JS로 직접 만든 것이라, 진짜 네트워크 응답과
+        // 달리 브라우저가 Content-Encoding을 보고 자동으로 압축을 풀어주지 않는다(전송계층
+        // 디코더는 실제 HTTP 응답에만 붙는다). 그래서 gzip은 여기서 직접 풀어서 돌려준다 —
+        // 그냥 Content-Encoding: gzip 헤더만 붙이면 Unity 로더가 "압축 안 풀렸다"며
+        // 원본 gzip 바이트를 그대로 받아 SyntaxError를 낸다(실제로 보고된 버그).
+        if (rec.contentEncoding === "gzip" && typeof DecompressionStream !== "undefined") {
+          var decompressed = rec.data.stream().pipeThrough(new DecompressionStream("gzip"));
+          return new Response(decompressed, { status: 200, headers: headers });
+        }
+        // br(Brotli)은 브라우저에 JS에서 쓸 수 있는 네이티브 압축 해제 API가 없어 여기서는
+        // 풀어줄 수 없다 — extractClientXrBuild()가 업로드 시점에 .br 파일을 이미 거부하므로
+        // 정상 경로에서는 여기까지 오지 않는다. 혹시 남아있어도 "이미 풀렸다고 속이지"
+        // 않도록 Content-Encoding 헤더는 빼고 원본 그대로 돌려준다.
+        headers["Content-Length"] = String(rec.data.size);
         return new Response(rec.data, { status: 200, headers: headers });
       })
-      .catch(function () { return new Response("Internal Error", { status: 500 }); })
+      .catch(function (err) { return new Response("Internal Error: " + (err && err.message), { status: 500 }); })
   );
 });

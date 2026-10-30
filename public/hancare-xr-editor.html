@@ -344,6 +344,11 @@
           throw new Error("허용되지 않는 경로가 포함되어 있습니다: " + entry.name);
         }
         if(entry.dir) return Promise.resolve();
+        if(/\.br$/i.test(stripped)){
+          // 브라우저에는 Brotli를 JS에서 풀 수 있는 네이티브 API가 없어, 이 화면(Service
+          // Worker) 경로에서는 재생 시 "Invalid or unexpected token" 오류로 이어진다.
+          throw new Error("Brotli로 압축된 파일이 있습니다(" + stripped + "). 이 화면에서는 Brotli를 풀 수 없어요 — Unity 빌드 설정의 Compression Format을 Disabled나 Gzip으로 바꿔 다시 내보내 주세요.");
+        }
         return entry.async("blob").then(function(blob){
           totalSize += blob.size;
           if(totalSize > MAX_CLIENT_UNCOMPRESSED_BYTES) throw new Error("압축 해제 용량이 너무 큽니다(최대 " + (MAX_CLIENT_UNCOMPRESSED_BYTES / 1024 / 1024) + "MB).");
