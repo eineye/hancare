@@ -117,9 +117,20 @@ graph LR
   형태로 쓴다. **이 브라우저에만 저장되며 다른 사람·다른 기기·서버 어디에도
   올라가지 않는다.**
 - **서빙**: 저장소 루트의 `sw-xr-builds.js`(Service Worker)가 `hc-xr-blob/{id}/
-  {path...}` 요청을 가로채 IndexedDB에서 꺼내 `Content-Type`/`Content-Encoding`과
-  함께 돌려준다 — `app/api/xr-builds/[moduleId]/[...path]` 라우트와 같은 역할을
-  서버 없이 한다.
+  {path...}` 요청을 가로채 IndexedDB에서 꺼내 돌려준다 — `app/api/xr-builds/
+  [moduleId]/[...path]` 라우트와 같은 역할을 서버 없이 한다. **단, gzip 압축
+  자산은 서버 경로와 다르게 처리한다**: Service Worker가 직접 만든 `Response`는
+  실제 네트워크 응답이 아니어서, `Content-Encoding` 헤더를 붙여도 브라우저가
+  자동으로 압축을 풀어주지 않는다(전송계층 디코더는 진짜 HTTP 응답에만 붙는다 —
+  실제로 이 때문에 "Unity 로더가 압축 안 풀린 raw gzip 바이트를 그대로 받아
+  `SyntaxError: Invalid or unexpected token`을 내는" 버그가 있었다). 그래서
+  `sw-xr-builds.js`는 `DecompressionStream("gzip")`으로 **직접 풀어서** 돌려준다.
+  Brotli(`.br`)는 브라우저에 JS로 쓸 수 있는 네이티브 압축 해제 API가 없어 이
+  방식으로는 풀 수 없으므로, `extractClientXrBuild()`가 업로드 시점에 `.br`
+  파일이 섞여 있으면 거부한다(Compression Format을 Disabled나 Gzip으로 바꿔
+  다시 내보내 달라는 안내와 함께) — 브라우저 전용 경로에서는 **Disabled 또는
+  Gzip만** 지원한다. Next.js 서버 경로(`app/api/xr-builds`)는 진짜 HTTP 응답이라
+  Brotli를 포함해 전부 브라우저가 알아서 풀어주므로 이 제약이 없다.
 - **등록 시점**: `hangulcare.html`이 로드될 때 한 번 등록한다(상대 경로
   `sw-xr-builds.js` — 서브 경로에 배포해도 자동으로 그 디렉터리를 스코프로 잡는다).
   학습 화면(`renderXrPractice`)은 `navigator.serviceWorker.ready`가 풀릴 때까지
